@@ -1,7 +1,7 @@
 // api/mcp.js — Zentric Protocol MCP over HTTP (JSON-RPC 2.0 subset)
 // Compatible with Claude Desktop remote MCP and Smithery
 
-export const config = { runtime: 'nodejs20.x' };
+export const config = { runtime: 'nodejs' };
 
 const TOOL_NAME = 'analyze_prompt';
 const ENDPOINT = 'https://api.zentricprotocol.com/v1/analyze';
