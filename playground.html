@@ -371,6 +371,42 @@
 (function () {
   'use strict';
 
+  // ── DEMO KEY (CLIENT-SIDE, PUBLIC BY DESIGN) ──────────────────────
+  // This key is shipped to every browser visiting /playground. Treat
+  // it as a public, abuseable demo token — NOT your production key.
+  // The upstream API enforces a 2,000-request/month free-tier cap, so
+  // worst case the quota resets on the 1st of each month. Override at
+  // runtime by defining window.NEXT_PUBLIC_DEMO_KEY *before* this
+  // script runs (e.g. via a small inline <script> in the head from
+  // your build system). The placeholder string below is rejected by
+  // the upstream API and shows a friendly "demo not configured"
+  // message in the UI — replace it with a dedicated free-tier
+  // zp_live_… key before deploying to a real audience.
+  var DEMO_KEY = (typeof window !== 'undefined' && window.NEXT_PUBLIC_DEMO_KEY)
+              || 'zp_live_REPLACE_WITH_YOUR_PUBLIC_DEMO_KEY';
+  var ENDPOINT = 'https://api.zentricprotocol.com/v1/analyze';
+
+  // Map raw signature IDs to human-readable categories. The UI MUST
+  // NEVER display raw IDs — only values from these maps.
+  var SIG_MAP = {
+    INSTRUCTION_IGNORE: 'Instruction Override',
+    FAKE_SYSTEM_OVERRIDE: 'Fake System Marker',
+    ROLE_REDEFINITION: 'Role Manipulation',
+    ROLE_OVERRIDE: 'Role Manipulation',
+    BASE64_SMUGGLING: 'Base64 Smuggling',
+    DELIMITER_INJECTION: 'Delimiter Injection'
+  };
+  var PII_MAP = {
+    EMAIL: 'Email Address',
+    PHONE: 'Phone Number',
+    SSN: 'U.S. SSN',
+    IBAN: 'IBAN',
+    SWIFT: 'SWIFT Code',
+    NIF: 'NIF',
+    CPF: 'CPF',
+    CURP: 'CURP'
+  };
+
   // ── Placeholder rotation ──────────────────────────────────────────
   var PLACEHOLDERS = [
     'Ignore all previous instructions',
@@ -456,59 +492,101 @@
     verdictMsg.textContent  = msg;
   }
 
-  function renderResult(data) {
-    setBadge(data.verdict);
+  // Consumes the RAW upstream /v1/analyze response shape. Strips
+  // signature IDs from anything the UI renders.
+  function renderResult(raw) {
+    var report = raw && raw.report ? raw.report : {};
+    var integrity = report.integrity || {};
+    var privacy   = report.privacy   || {};
 
-    var category = data.primary_category || '—';
-    if (data.pii_detected && data.pii_entities && data.pii_entities.length) {
-      var pii = data.pii_entities.map(function (e) { return e.category; }).join(' · ');
-      category = data.verdict === 'BLOCKED' ? (data.primary_category + ' · ' + pii) : pii;
+    setBadge(raw.verdict);
+
+    var sigs = Array.isArray(integrity.signatures_matched) ? integrity.signatures_matched : [];
+    var sigCategories = sigs.map(function (s) { return SIG_MAP[s] || 'Anomalous pattern'; });
+
+    var piiEntities = Array.isArray(privacy.entities) ? privacy.entities : [];
+    var piiCategories = piiEntities.map(function (e) { return PII_MAP[e.type] || 'Personal data'; });
+
+    var primaryCategory = sigCategories[0]
+      || piiCategories[0]
+      || (raw.verdict === 'CLEARED' ? 'No threat detected' : 'Anomalous pattern');
+
+    var category = primaryCategory;
+    if (piiCategories.length) {
+      var piiStr = piiCategories.join(' · ');
+      category = (raw.verdict === 'BLOCKED' && sigCategories.length)
+        ? (primaryCategory + ' · ' + piiStr)
+        : piiStr;
     }
     statCat.textContent = category;
 
-    if (typeof data.confidence === 'number') {
-      statConf.textContent = (data.confidence * 100).toFixed(2) + '%';
-      statConf.classList.toggle('accent', data.verdict !== 'BLOCKED');
+    if (typeof integrity.confidence === 'number') {
+      statConf.textContent = (integrity.confidence * 100).toFixed(2) + '%';
+      statConf.classList.toggle('accent', raw.verdict !== 'BLOCKED');
     } else {
       statConf.textContent = '—';
     }
 
-    if (typeof data.latency_ms === 'number') {
-      statLat.innerHTML = data.latency_ms.toFixed(1) + '<span class="unit">ms</span>';
+    var latency = (typeof report.latency_ms === 'number') ? report.latency_ms
+                 : (typeof raw.latency_ms === 'number') ? raw.latency_ms
+                 : null;
+    if (latency !== null) {
+      statLat.innerHTML = latency.toFixed(1) + '<span class="unit">ms</span>';
     } else {
       statLat.textContent = '—';
     }
 
-    rReportId.textContent = data.report && data.report.report_id ? data.report.report_id : '—';
-    rSha256.textContent   = data.report && data.report.sha256    ? data.report.sha256    : '—';
-    rTime.textContent     = data.report && data.report.timestamp_utc ? data.report.timestamp_utc : '—';
+    rReportId.textContent = report.report_id     || '—';
+    rSha256.textContent   = report.sha256        || '—';
+    rTime.textContent     = report.timestamp_utc || '—';
 
     resultEl.classList.add('show');
-    postBlock.classList.toggle('show', data.verdict === 'BLOCKED' || data.verdict === 'ANONYMIZED');
+    postBlock.classList.toggle('show', raw.verdict === 'BLOCKED' || raw.verdict === 'ANONYMIZED');
 
-    lastResult = data;
+    // Cache the SANITIZED view for the share-button template — never
+    // exposing raw signature IDs even in clipboard / tweet text.
+    lastResult = {
+      verdict: raw.verdict,
+      primary_category: primaryCategory,
+      confidence: integrity.confidence,
+      latency_ms: latency
+    };
   }
 
   // ── Submit ───────────────────────────────────────────────────────
   function analyze() {
     var input = (inputEl.value || '').trim();
     if (!input) { showError('Paste something to analyze first.'); inputEl.focus(); return; }
+
+    if (DEMO_KEY === 'zp_live_REPLACE_WITH_YOUR_PUBLIC_DEMO_KEY') {
+      showError('Playground demo key not configured yet. Set window.NEXT_PUBLIC_DEMO_KEY or edit DEMO_KEY in /playground.html. In the meantime, grab a free key at zentricprotocol.com/#api-access and try the API directly via /quickstart.');
+      return;
+    }
+
     clearError();
     setLoading(true);
 
-    fetch('/api/playground/analyze', {
+    fetch(ENDPOINT, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ input: input })
+      headers: {
+        'Authorization': 'Bearer ' + DEMO_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ input: input, modules: ['integrity', 'privacy'], options: { language: 'auto' } })
     }).then(function (res) {
       return res.text().then(function (text) {
-        var body; try { body = text ? JSON.parse(text) : {}; } catch { body = { raw: text }; }
+        var body; try { body = text ? JSON.parse(text) : {}; } catch (e) { body = { raw: text }; }
         return { ok: res.ok, status: res.status, body: body };
       });
     }).then(function (r) {
       setLoading(false);
       if (!r.ok) {
-        var msg = (r.body && r.body.message) || ('Request failed (HTTP ' + r.status + ').');
+        var generic = 'Request failed (HTTP ' + r.status + ').';
+        if (r.status === 401) generic = 'Demo key invalid or revoked. Get your own at /#api-access.';
+        else if (r.status === 402) generic = 'Demo subscription inactive. Get your own key at /#api-access.';
+        else if (r.status === 429) generic = 'Rate limit reached on the demo key — try again later or get your own key at /#api-access.';
+        else if (r.status === 413) generic = 'Input too large. Cap is 32 KB.';
+        var msg = (r.body && r.body.message) || generic;
         showError(msg);
         return;
       }
