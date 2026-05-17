@@ -12,6 +12,14 @@ startCommand:
           Your Zentric Protocol API key. Get a free key (2,000 requests/month,
           no credit card) at https://zentricprotocol.com
         x-secret: true
+      defaultModules:
+        type: string
+        title: Default Modules
+        description: >-
+          Comma-separated list of modules to run by default: "integrity,privacy"
+          (both), "integrity" (injection only), or "privacy" (PII only).
+          Defaults to "integrity,privacy".
+        default: integrity,privacy
   commandFunction: |-
     (config) => ({
       command: "npx",
