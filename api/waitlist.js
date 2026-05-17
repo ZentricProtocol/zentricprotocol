@@ -71,52 +71,67 @@ async function sendWelcomeEmail(email, apiKey) {
       subject: 'Your Zentric Protocol API key — 2,000 free requests',
       html: `
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark light">
+  <meta name="supported-color-schemes" content="dark light">
+  <title>Your Zentric Protocol API key</title>
 </head>
-<body style="margin:0;padding:0;background:#0A0A0A;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0A0A0A;padding:48px 24px;">
+<body style="margin:0;padding:0;background:#0A0A0A;color:#F5F5F5;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Helvetica,Arial,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0A0A0A;padding:48px 24px;">
     <tr>
-      <td align="center">
-        <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
+      <td align="center" style="background:#0A0A0A;">
+        <table role="presentation" width="560" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;width:100%;background:#0A0A0A;">
 
-          <!-- Logo -->
+          <!-- HEADER: logo mark + wordmark -->
           <tr>
-            <td style="padding-bottom:32px;">
-              <span style="font-family:monospace;font-size:11px;letter-spacing:0.2em;color:#00FFC2;text-transform:uppercase;">ZENTRIC PROTOCOL</span>
+            <td style="background:#0A0A0A;padding:0 0 40px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+                <tr>
+                  <td style="background:#0A0A0A;vertical-align:middle;padding:0 12px 0 0;line-height:0;">
+                    <svg width="22" height="22" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg" style="display:block;">
+                      <polygon points="260,84 740,84 980,500 911,620 512,620 731,240 170,240" fill="#F5F5F5"/>
+                      <polygon points="740,916 260,916 20,500 89,380 488,380 269,760 830,760" fill="#F5F5F5"/>
+                    </svg>
+                  </td>
+                  <td style="background:#0A0A0A;vertical-align:middle;">
+                    <span style="font-family:Menlo,Monaco,Consolas,'Courier New',Courier,monospace;font-size:12px;font-weight:700;letter-spacing:0.22em;color:#F5F5F5;text-transform:uppercase;">ZENTRIC&nbsp;PROTOCOL</span>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
 
-          <!-- Headline -->
+          <!-- HERO -->
           <tr>
-            <td style="padding-bottom:24px;border-bottom:1px solid rgba(245,245,245,0.08);">
-              <h1 style="margin:0;font-size:28px;font-weight:700;color:#F5F5F5;letter-spacing:-0.04em;line-height:1.2;">
+            <td style="background:#0A0A0A;padding:0 0 28px;border-bottom:1px solid rgba(245,245,245,0.08);">
+              <h1 style="margin:0 0 14px;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:32px;font-weight:800;color:#F5F5F5;letter-spacing:-0.04em;line-height:1.04;">
                 Your API key is ready.
               </h1>
-              <p style="margin:12px 0 0;font-size:15px;color:rgba(245,245,245,0.6);line-height:1.6;">
-                2,000 free requests. No credit card required. Save this key — it won't be shown again.
+              <p style="margin:0;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:15px;color:rgba(245,245,245,0.6);line-height:1.6;">
+                2,000 free requests. No credit card. Save this key — it won't be shown again.
               </p>
             </td>
           </tr>
 
-          <!-- API Key -->
+          <!-- API KEY -->
           <tr>
-            <td style="padding:24px 0;border-bottom:1px solid rgba(245,245,245,0.08);">
-              <p style="margin:0 0 8px;font-family:monospace;font-size:10px;letter-spacing:0.18em;color:rgba(245,245,245,0.4);text-transform:uppercase;">Your API Key</p>
-              <div style="background:rgba(245,245,245,0.04);border:1px solid rgba(245,245,245,0.1);border-radius:6px;padding:14px 16px;">
-                <code style="font-family:monospace;font-size:13px;color:#00FFC2;word-break:break-all;">${apiKey}</code>
+            <td style="background:#0A0A0A;padding:28px 0;border-bottom:1px solid rgba(245,245,245,0.08);">
+              <p style="margin:0 0 10px;font-family:Menlo,Monaco,Consolas,'Courier New',Courier,monospace;font-size:10px;font-weight:600;letter-spacing:0.22em;color:rgba(245,245,245,0.4);text-transform:uppercase;">// Your API Key</p>
+              <div style="background:rgba(245,245,245,0.025);border:1px solid rgba(245,245,245,0.12);border-radius:6px;padding:16px 18px;">
+                <code style="font-family:Menlo,Monaco,Consolas,'Courier New',Courier,monospace;font-size:13px;color:#00FFC2;word-break:break-all;letter-spacing:0.01em;">${apiKey}</code>
               </div>
             </td>
           </tr>
 
-          <!-- First call -->
+          <!-- FIRST CALL -->
           <tr>
-            <td style="padding:24px 0;border-bottom:1px solid rgba(245,245,245,0.08);">
-              <p style="margin:0 0 12px;font-size:14px;font-weight:600;color:#F5F5F5;">Make your first call</p>
-              <div style="background:rgba(245,245,245,0.04);border:1px solid rgba(245,245,245,0.1);border-radius:6px;padding:16px;">
-                <pre style="margin:0;font-family:monospace;font-size:12px;color:rgba(245,245,245,0.8);white-space:pre-wrap;word-break:break-all;">curl -X POST https://api.zentricprotocol.com/v1/analyze \\
+            <td style="background:#0A0A0A;padding:28px 0;border-bottom:1px solid rgba(245,245,245,0.08);">
+              <p style="margin:0 0 10px;font-family:Menlo,Monaco,Consolas,'Courier New',Courier,monospace;font-size:10px;font-weight:600;letter-spacing:0.22em;color:rgba(245,245,245,0.4);text-transform:uppercase;">// Make your first call</p>
+              <div style="background:rgba(245,245,245,0.025);border:1px solid rgba(245,245,245,0.12);border-radius:6px;padding:16px 18px;">
+                <pre style="margin:0;font-family:Menlo,Monaco,Consolas,'Courier New',Courier,monospace;font-size:12px;color:rgba(245,245,245,0.85);line-height:1.7;white-space:pre-wrap;word-break:break-all;">curl -X POST https://api.zentricprotocol.com/v1/analyze \\
   -H "Authorization: Bearer ${apiKey}" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -127,33 +142,33 @@ async function sendWelcomeEmail(email, apiKey) {
             </td>
           </tr>
 
-          <!-- What you get -->
+          <!-- WHAT EACH REQUEST RETURNS -->
           <tr>
-            <td style="padding:24px 0;border-bottom:1px solid rgba(245,245,245,0.08);">
-              <p style="margin:0 0 16px;font-size:14px;font-weight:600;color:#F5F5F5;">What each request returns</p>
-              <table width="100%" cellpadding="0" cellspacing="0">
+            <td style="background:#0A0A0A;padding:28px 0;border-bottom:1px solid rgba(245,245,245,0.08);">
+              <p style="margin:0 0 16px;font-family:Menlo,Monaco,Consolas,'Courier New',Courier,monospace;font-size:10px;font-weight:600;letter-spacing:0.22em;color:rgba(245,245,245,0.4);text-transform:uppercase;">// What each request returns</p>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0A0A0A;">
                 <tr>
-                  <td style="padding:6px 0;">
-                    <span style="display:inline-block;width:6px;height:6px;background:#00FFC2;border-radius:50%;margin-right:10px;vertical-align:middle;"></span>
-                    <span style="font-size:13px;color:rgba(245,245,245,0.7);">Injection detection across 22 signatures, 7 languages</span>
+                  <td style="background:#0A0A0A;padding:6px 0;">
+                    <span style="display:inline-block;width:5px;height:5px;background:#00FFC2;border-radius:50%;margin:0 14px 2px 0;vertical-align:middle;"></span>
+                    <span style="font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;color:rgba(245,245,245,0.78);line-height:1.6;">Injection detection across 22 signatures, 7 languages</span>
                   </td>
                 </tr>
                 <tr>
-                  <td style="padding:6px 0;">
-                    <span style="display:inline-block;width:6px;height:6px;background:#00FFC2;border-radius:50%;margin-right:10px;vertical-align:middle;"></span>
-                    <span style="font-size:13px;color:rgba(245,245,245,0.7);">PII detection — 17 entity types (SSN, IBAN, email, passport...)</span>
+                  <td style="background:#0A0A0A;padding:6px 0;">
+                    <span style="display:inline-block;width:5px;height:5px;background:#00FFC2;border-radius:50%;margin:0 14px 2px 0;vertical-align:middle;"></span>
+                    <span style="font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;color:rgba(245,245,245,0.78);line-height:1.6;">PII detection — 17 entity types (SSN, IBAN, email, passport...)</span>
                   </td>
                 </tr>
                 <tr>
-                  <td style="padding:6px 0;">
-                    <span style="display:inline-block;width:6px;height:6px;background:#00FFC2;border-radius:50%;margin-right:10px;vertical-align:middle;"></span>
-                    <span style="font-size:13px;color:rgba(245,245,245,0.7);">SHA-256 signed audit report — UUID + timestamp UTC</span>
+                  <td style="background:#0A0A0A;padding:6px 0;">
+                    <span style="display:inline-block;width:5px;height:5px;background:#00FFC2;border-radius:50%;margin:0 14px 2px 0;vertical-align:middle;"></span>
+                    <span style="font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;color:rgba(245,245,245,0.78);line-height:1.6;">SHA-256 signed audit report — UUID + timestamp UTC</span>
                   </td>
                 </tr>
                 <tr>
-                  <td style="padding:6px 0;">
-                    <span style="display:inline-block;width:6px;height:6px;background:#00FFC2;border-radius:50%;margin-right:10px;vertical-align:middle;"></span>
-                    <span style="font-size:13px;color:rgba(245,245,245,0.7);">Mean latency: 23.4ms</span>
+                  <td style="background:#0A0A0A;padding:6px 0;">
+                    <span style="display:inline-block;width:5px;height:5px;background:#00FFC2;border-radius:50%;margin:0 14px 2px 0;vertical-align:middle;"></span>
+                    <span style="font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;color:rgba(245,245,245,0.78);line-height:1.6;">Mean latency: 23.4ms</span>
                   </td>
                 </tr>
               </table>
@@ -162,13 +177,29 @@ async function sendWelcomeEmail(email, apiKey) {
 
           <!-- CTA -->
           <tr>
-            <td style="padding:32px 0 0;">
-              <p style="margin:0 0 16px;font-size:13px;color:rgba(245,245,245,0.5);line-height:1.6;">
-                Questions? Reply to this email or reach us at
-                <a href="mailto:core@zentricprotocol.com" style="color:#00FFC2;text-decoration:none;">core@zentricprotocol.com</a>
+            <td align="center" style="background:#0A0A0A;padding:36px 0 32px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
+                <tr>
+                  <td style="background:#00FFC2;border-radius:4px;">
+                    <a href="https://zentricprotocol.com/quickstart"
+                       style="display:inline-block;width:240px;background:#00FFC2;color:#0A0A0A;text-decoration:none;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;padding:15px 16px;border-radius:4px;text-align:center;">
+                      Quickstart Guide&nbsp;→
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- FOOTER -->
+          <tr>
+            <td style="background:#0A0A0A;padding:24px 0 0;border-top:1px solid rgba(245,245,245,0.08);">
+              <p style="margin:0 0 14px;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:13px;color:rgba(245,245,245,0.5);line-height:1.6;">
+                Questions? Reply to this email or reach
+                <a href="mailto:core@zentricprotocol.com" style="color:#00FFC2;text-decoration:none;">core@zentricprotocol.com</a>.
               </p>
-              <p style="margin:0;font-size:11px;color:rgba(245,245,245,0.3);font-family:monospace;letter-spacing:0.1em;">
-                ZENTRIC PROTOCOL · zentricprotocol.com · © ZP MMXXVI
+              <p style="margin:0;font-family:Menlo,Monaco,Consolas,'Courier New',Courier,monospace;font-size:10px;color:rgba(245,245,245,0.35);letter-spacing:0.18em;text-transform:uppercase;">
+                ZENTRIC&nbsp;PROTOCOL&nbsp;·&nbsp;zentricprotocol.com&nbsp;·&nbsp;© ZP MMXXVI
               </p>
             </td>
           </tr>
