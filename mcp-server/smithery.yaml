@@ -1,0 +1,20 @@
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    required:
+      - apiKey
+    properties:
+      apiKey:
+        type: string
+        title: Zentric API Key
+        description: >-
+          Your Zentric Protocol API key. Get a free key (2,000 requests/month,
+          no credit card) at https://zentricprotocol.com
+        x-secret: true
+  commandFunction: |-
+    (config) => ({
+      command: "npx",
+      args: ["-y", "zentric-protocol-mcp"],
+      env: { ZENTRIC_API_KEY: config.apiKey }
+    })
