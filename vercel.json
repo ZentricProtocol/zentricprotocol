@@ -13,7 +13,7 @@
         { "key": "X-XSS-Protection", "value": "1; mode=block" },
         { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
         { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" },
-        { "key": "Content-Security-Policy", "value": "default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src https://api.zentricprotocol.com; font-src 'self'; img-src 'self' data:; frame-ancestors 'none'" }
+        { "key": "Content-Security-Policy", "value": "default-src 'none'; script-src 'self' 'unsafe-inline' https://www.clarity.ms https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.zentricprotocol.com https://www.clarity.ms; font-src 'self'; img-src 'self' data:; frame-ancestors 'none'" }
       ]
     },
     {
