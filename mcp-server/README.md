@@ -1,6 +1,6 @@
 # zentric-protocol-mcp
 
-[![smithery badge](https://smithery.ai/badge/@abelor/zentric-protocol)](https://smithery.ai/server/@abelor/zentric-protocol)
+[![smithery badge](https://smithery.ai/badge/abelor/zentric-protocol)](https://smithery.ai/servers/abelor/zentric-protocol)
 [![npm version](https://img.shields.io/npm/v/zentric-protocol-mcp)](https://www.npmjs.com/package/zentric-protocol-mcp)
 [![npm downloads](https://img.shields.io/npm/dm/zentric-protocol-mcp)](https://www.npmjs.com/package/zentric-protocol-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -182,7 +182,7 @@ of the original.
 - Quickstart: <https://zentricprotocol.com/quickstart>
 - Use cases: <https://zentricprotocol.com/use-cases/llm-security-api>
 - Pricing: <https://zentricprotocol.com/#pricing>
-- Smithery: <https://smithery.ai/server/@abelor/zentric-protocol>
+- Smithery: <https://smithery.ai/servers/abelor/zentric-protocol>
 - Issues: <core@zentricprotocol.com>
 
 ## License

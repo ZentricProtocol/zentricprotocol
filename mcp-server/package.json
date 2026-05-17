@@ -1,6 +1,6 @@
 {
   "name": "zentric-protocol-mcp",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "mcpName": "io.github.ZentricProtocol/zentric-protocol-mcp",
   "description": "Prompt injection + PII detection MCP server for AI agents. 22 signatures, 7 languages, ~23ms latency. Signed GDPR Art.30 audit reports.",
   "type": "module",
