@@ -130,6 +130,21 @@ async function sendWelcomeEmail(email, apiKey) {
           <tr>
             <td style="background:#0A0A0A;padding:28px 0;border-bottom:1px solid rgba(245,245,245,0.08);">
               <p style="margin:0 0 10px;font-family:Menlo,Monaco,Consolas,'Courier New',Courier,monospace;font-size:10px;font-weight:600;letter-spacing:0.22em;color:rgba(245,245,245,0.4);text-transform:uppercase;">// Make your first call</p>
+              <p style="margin:0 0 8px;font-family:Menlo,Monaco,Consolas,'Courier New',Courier,monospace;font-size:10px;color:rgba(245,245,245,0.35);letter-spacing:0.12em;">// Option 1: Via MCP (recommended for Claude Desktop / Cursor)</p>
+              <div style="background:rgba(245,245,245,0.025);border:1px solid rgba(245,245,245,0.12);border-radius:6px;padding:16px 18px;margin-bottom:16px;">
+                <pre style="margin:0;font-family:Menlo,Monaco,Consolas,'Courier New',Courier,monospace;font-size:12px;color:rgba(245,245,245,0.85);line-height:1.7;white-space:pre-wrap;word-break:break-all;">// Add to your claude_desktop_config.json:
+
+{
+  "mcpServers": {
+    "zentric-protocol": {
+      "command": "npx",
+      "args": ["zentric-protocol-mcp"],
+      "env": { "ZENTRIC_API_KEY": "${apiKey}" }
+    }
+  }
+}</pre>
+              </div>
+              <p style="margin:0 0 8px;font-family:Menlo,Monaco,Consolas,'Courier New',Courier,monospace;font-size:10px;color:rgba(245,245,245,0.35);letter-spacing:0.12em;">// Option 2: Direct API</p>
               <div style="background:rgba(245,245,245,0.025);border:1px solid rgba(245,245,245,0.12);border-radius:6px;padding:16px 18px;">
                 <pre style="margin:0;font-family:Menlo,Monaco,Consolas,'Courier New',Courier,monospace;font-size:12px;color:rgba(245,245,245,0.85);line-height:1.7;white-space:pre-wrap;word-break:break-all;">curl -X POST https://api.zentricprotocol.com/v1/analyze \\
   -H "Authorization: Bearer ${apiKey}" \\

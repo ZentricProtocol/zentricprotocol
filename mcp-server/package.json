@@ -6,7 +6,8 @@
   "type": "module",
   "icon": "https://zentricprotocol.com/og.png",
   "bin": {
-    "zentric-mcp": "index.js"
+    "zentric-mcp": "index.js",
+    "zentric-protocol-mcp": "index.js"
   },
   "files": [
     "index.js",
