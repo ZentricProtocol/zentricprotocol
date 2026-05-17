@@ -31,10 +31,15 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const apiKey = (req.headers['authorization'] || '').replace(/^Bearer\s+/i, '').trim();
-  if (!apiKey) return res.status(401).json({ error: 'Missing Authorization header with your ZENTRIC_API_KEY' });
-
   const { method, params, id } = req.body || {};
+
+  // Accept: "Authorization: Bearer zp_live_xxx", "Authorization: zp_live_xxx", or "apikey: zp_live_xxx"
+  const apiKey = (
+    (req.headers['authorization'] || '').replace(/^Bearer\s+/i, '') ||
+    req.headers['apikey'] ||
+    req.headers['x-api-key'] ||
+    ''
+  ).trim();
 
   function rpcOk(result) { return res.json({ jsonrpc: '2.0', result, id: id ?? null }); }
   function rpcErr(code, message) { return res.status(200).json({ jsonrpc: '2.0', error: { code, message }, id: id ?? null }); }
@@ -65,6 +70,8 @@ export default async function handler(req, res) {
   }
 
   if (method === 'tools/call') {
+    // Auth required only for tool execution
+    if (!apiKey) return rpcErr(-32001, 'API key required. Get a free key at zentricprotocol.com');
     const { name, arguments: args } = params || {};
     if (name !== TOOL_NAME) return rpcErr(-32601, `Unknown tool: ${name}`);
     if (!args?.input || typeof args.input !== 'string') return rpcErr(-32602, 'input must be a non-empty string');
