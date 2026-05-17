@@ -1,6 +1,7 @@
 {
   "name": "zentric-protocol-mcp",
-  "version": "0.1.1",
+  "version": "0.1.2",
+  "mcpName": "io.github.ZentricProtocol/zentric-protocol-mcp",
   "description": "MCP server exposing Zentric Protocol's prompt injection + PII detection API as a native tool for MCP-compatible agents (Claude Desktop, Cursor, etc.).",
   "type": "module",
   "icon": "https://zentricprotocol.com/og.png",
