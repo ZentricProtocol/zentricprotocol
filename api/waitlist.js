@@ -240,7 +240,19 @@ export default async function handler(req, res) {
     const keyHash = hashKey(rawKey);
     const keyPrefix = rawKey.substring(0, 16); // "zp_live_a1b2c3xx"
 
-    // Store in Supabase
+    // Send welcome email FIRST — if Resend fails, we don't insert so the
+    // user can retry. A stored-but-never-emailed key is worse than a retry.
+    try {
+      await sendWelcomeEmail(normalizedEmail, rawKey);
+    } catch (emailError) {
+      console.error('Resend error (email not sent, no DB insert):', emailError?.message || emailError);
+      return res.status(500).json({
+        error: 'EMAIL_FAILED',
+        message: 'Could not send your API key by email. Please try again or contact core@zentricprotocol.com',
+      });
+    }
+
+    // Email sent — now persist the key
     const { error: insertError } = await supabase
       .from('free_api_keys')
       .insert({
@@ -251,10 +263,11 @@ export default async function handler(req, res) {
         month_bucket: getMonthBucket(),
       });
 
-    if (insertError) throw insertError;
-
-    // Send welcome email
-    await sendWelcomeEmail(normalizedEmail, rawKey);
+    if (insertError) {
+      // Edge case: email was sent but DB insert failed.
+      // Log it so we can manually add the record — don't surface to user.
+      console.error('DB insert failed after email sent:', insertError, 'email:', normalizedEmail, 'prefix:', keyPrefix);
+    }
 
     return res.status(200).json({
       success: true,
