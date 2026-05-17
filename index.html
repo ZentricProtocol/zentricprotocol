@@ -277,14 +277,47 @@
     .brand-text{display:flex;align-items:baseline;gap:10px}
     .brand-name{font-size:13px;font-weight:700;letter-spacing:0.22em;color:var(--paper)}
     .brand-sfx{font-size:9px;color:var(--ink-40);letter-spacing:0.2em;text-transform:uppercase;font-family:var(--mono)}
-    .nav-links{display:flex;gap:40px;align-items:center}
-    .nav-link{font-size:13px;color:var(--ink-60);text-decoration:none;letter-spacing:-0.005em;transition:color 0.25s;font-weight:400;cursor:pointer}
+    .nav-links{display:flex;gap:32px;align-items:center}
+    .nav-link{font-size:13px;color:var(--ink-60);text-decoration:none;letter-spacing:-0.005em;transition:color 0.25s;font-weight:400;cursor:pointer;background:none;border:none;font-family:var(--display);padding:0}
     .nav-link:hover{color:var(--paper)}
-    .nav-status{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:10px;letter-spacing:0.16em;color:var(--ink-60);text-transform:uppercase}
+    .nav-status{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:9px;letter-spacing:0.16em;color:var(--ink-40);text-transform:uppercase}
     .nav-dot{position:relative;width:6px;height:6px;border-radius:50%;background:var(--kinetic)}
     .nav-dot::after{content:'';position:absolute;inset:0;border-radius:50%;background:var(--kinetic);animation:ping 2.4s ease-out infinite}
-    @media(max-width:900px){.nav-links{display:none}}
-    @media(max-width:640px){.nav-status span{display:none}}
+
+    /* Docs dropdown — pure CSS hover/focus-within */
+    .nav-dropdown{position:relative;display:inline-flex;align-items:center}
+    .nav-dropdown-trigger{display:inline-flex;align-items:center;gap:5px}
+    .nav-dropdown-trigger::after{content:'↓';font-family:var(--mono);font-size:11px;color:var(--ink-40);transition:transform .2s,color .2s;line-height:1}
+    .nav-dropdown:hover .nav-dropdown-trigger,
+    .nav-dropdown:focus-within .nav-dropdown-trigger{color:var(--paper)}
+    .nav-dropdown:hover .nav-dropdown-trigger::after,
+    .nav-dropdown:focus-within .nav-dropdown-trigger::after{color:var(--kinetic);transform:translateY(2px)}
+    .nav-dropdown-menu{position:absolute;top:100%;left:-14px;margin-top:10px;display:none;flex-direction:column;gap:2px;min-width:180px;background:#0A0A0A;border:1px solid var(--rule);border-radius:6px;padding:8px 6px;box-shadow:0 12px 40px rgba(0,0,0,0.7);z-index:31}
+    .nav-dropdown:hover .nav-dropdown-menu,
+    .nav-dropdown:focus-within .nav-dropdown-menu{display:flex}
+    .nav-dropdown-menu .nav-link{display:block;padding:9px 14px;border-radius:4px;white-space:nowrap;font-size:13px}
+    .nav-dropdown-menu .nav-link:hover{background:rgba(245,245,245,0.05);color:var(--paper)}
+
+    /* Hamburger + mobile drawer */
+    .hamburger{display:none;appearance:none;cursor:pointer;background:transparent;border:1px solid var(--rule-strong);border-radius:6px;padding:8px 10px;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+    .hamburger span{display:block;width:18px;height:1.5px;background:var(--paper);transition:transform .25s,opacity .15s}
+    .hamburger[aria-expanded="true"] span:nth-child(1){transform:translateY(5.5px) rotate(45deg)}
+    .hamburger[aria-expanded="true"] span:nth-child(2){opacity:0}
+    .hamburger[aria-expanded="true"] span:nth-child(3){transform:translateY(-5.5px) rotate(-45deg)}
+    .nav-drawer{display:none;position:fixed;top:64px;left:0;right:0;background:rgba(10,10,10,0.98);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid var(--rule);padding:8px 0 24px;z-index:29;max-height:calc(100vh - 64px);overflow-y:auto}
+    .nav-drawer.open{display:flex;flex-direction:column}
+    .drawer-link{display:flex;align-items:center;padding:16px 36px;font-size:17px;font-weight:500;color:var(--paper);text-decoration:none;letter-spacing:-0.01em;border-bottom:1px solid var(--rule);transition:background .15s,color .15s}
+    .drawer-link:hover,.drawer-link:active{background:rgba(245,245,245,0.04);color:var(--kinetic)}
+    .drawer-link:last-child{border-bottom:none}
+    .drawer-sub{padding-left:54px;font-size:15px;color:var(--ink-90)}
+
+    @media(max-width:900px){.nav-links{gap:24px}}
+    @media(max-width:768px){
+      .nav-links{display:none}
+      .nav-status{display:none}
+      .hamburger{display:inline-flex}
+    }
+    @media(max-width:540px){.drawer-link{padding:14px 20px;font-size:16px}.drawer-sub{padding-left:36px}}
 
     /* HERO */
     .hero{position:relative;min-height:100vh;padding:160px 0 100px;display:flex;flex-direction:column;justify-content:space-between;overflow:visible}
@@ -564,24 +597,62 @@
     </a>
     <div class="nav-links">
       <a class="nav-link" href="#protocol">Protocol</a>
-      <a class="nav-link" href="#capabilities">Specification</a>
-      <a class="nav-link" href="#evidence">Research</a>
+      <div class="nav-dropdown">
+        <button class="nav-link nav-dropdown-trigger" type="button" aria-haspopup="true">Docs</button>
+        <div class="nav-dropdown-menu" role="menu">
+          <a class="nav-link" href="#capabilities" role="menuitem">Specification</a>
+          <a class="nav-link" href="#evidence" role="menuitem">Research</a>
+        </div>
+      </div>
       <a class="nav-link" href="#agents">Agents</a>
       <a class="nav-link" href="/integration">Integration</a>
       <a class="nav-link" href="/playground">Playground</a>
       <a class="nav-link" href="/quickstart">Quickstart</a>
       <a class="nav-link" href="#pricing">Pricing</a>
-      <a class="nav-link" href="https://github.com/ZentricProtocol/zentricprotocol" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:6px">
+      <a class="nav-link" href="https://github.com/ZentricProtocol/zentricprotocol" target="_blank" rel="noopener noreferrer" aria-label="GitHub" style="display:inline-flex;align-items:center;gap:6px">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
-        GitHub
       </a>
     </div>
+    <button class="hamburger" id="hamburger" type="button" aria-label="Menu" aria-controls="navDrawer" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
     <div class="nav-status">
       <div class="nav-dot"></div>
       <span>23.4MS SERVER-SIDE · OPERATIONAL</span>
     </div>
   </div>
 </nav>
+
+<!-- MOBILE DRAWER -->
+<div class="nav-drawer" id="navDrawer" aria-hidden="true" aria-label="Mobile menu">
+  <a class="drawer-link" href="#protocol">Protocol</a>
+  <a class="drawer-link drawer-sub" href="#capabilities">Specification</a>
+  <a class="drawer-link drawer-sub" href="#evidence">Research</a>
+  <a class="drawer-link" href="#agents">Agents</a>
+  <a class="drawer-link" href="/integration">Integration</a>
+  <a class="drawer-link" href="/playground">Playground</a>
+  <a class="drawer-link" href="/quickstart">Quickstart</a>
+  <a class="drawer-link" href="#pricing">Pricing</a>
+  <a class="drawer-link" href="https://github.com/ZentricProtocol/zentricprotocol" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+</div>
+<script>
+(function(){
+  var btn = document.getElementById('hamburger');
+  var drawer = document.getElementById('navDrawer');
+  if (!btn || !drawer) return;
+  function setOpen(open){
+    drawer.classList.toggle('open', open);
+    btn.setAttribute('aria-expanded', String(open));
+    drawer.setAttribute('aria-hidden', String(!open));
+    document.body.style.overflow = open ? 'hidden' : '';
+  }
+  btn.addEventListener('click', function(){ setOpen(!drawer.classList.contains('open')); });
+  drawer.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', function(){ setOpen(false); }); });
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && drawer.classList.contains('open')) { setOpen(false); btn.focus(); }
+  });
+})();
+</script>
 
 <!-- HERO -->
 <section class="hero" id="hero">
