@@ -4,6 +4,7 @@ import { getSupabase, hashApiKey, currentMonthKey } from '../../lib/supabase.js'
 
 const FREE_MONTHLY_LIMIT = 2000;
 const PLAN_LIMITS = {
+  indie: 10_000,
   growth: 100_000,
   enterprise: 999_999_999,
 };

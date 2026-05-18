@@ -15,6 +15,7 @@
  * Environment variables required:
  *   STRIPE_SECRET_KEY       — sk_live_...
  *   STRIPE_WEBHOOK_SECRET   — whsec_... (from Stripe Dashboard → Webhooks)
+ *   STRIPE_PRICE_INDIE      — Stripe Price ID for the Indie plan
  *   STRIPE_PRICE_GROWTH     — Stripe Price ID for the Growth plan
  *   STRIPE_PRICE_ENTERPRISE — Stripe Price ID for the Enterprise plan
  *   SUPABASE_URL
@@ -55,6 +56,7 @@ async function getRawBody(req) {
 // ---------------------------------------------------------------------------
 function getPlanFromPriceId(priceId) {
   const map = {
+    [process.env.STRIPE_PRICE_INDIE]:      'indie',
     [process.env.STRIPE_PRICE_GROWTH]:     'growth',
     [process.env.STRIPE_PRICE_ENTERPRISE]: 'enterprise',
   };
