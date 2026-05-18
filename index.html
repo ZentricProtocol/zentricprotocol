@@ -92,6 +92,19 @@
         "offers": [
           {
             "@type": "Offer",
+            "name": "Indie",
+            "price": "29",
+            "priceCurrency": "USD",
+            "priceSpecification": {
+              "@type": "UnitPriceSpecification",
+              "price": "29",
+              "priceCurrency": "USD",
+              "unitCode": "MON"
+            },
+            "description": "Prompt injection detection and PII scanning for indie developers and small teams. Up to 10,000 requests/month."
+          },
+          {
+            "@type": "Offer",
             "name": "Growth",
             "price": "499",
             "priceCurrency": "USD",
@@ -195,7 +208,7 @@
             "name": "Is there a free tier?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes — the free tier includes 2,000 requests per month with no credit card required and gives full access to the IntegrityGuard and PrivacyGuard modules. Growth raises the quota to 100,000 requests per month at $499; Enterprise removes the quota entirely at $2,500."
+              "text": "Yes — the free tier includes 2,000 requests per month with no credit card required and gives full access to the IntegrityGuard and PrivacyGuard modules. Indie raises the quota to 10,000 requests per month at $29; Growth raises it to 100,000 at $499; Enterprise removes the quota entirely at $2,500."
             }
           }
         ]
@@ -421,7 +434,7 @@
     .bento>div:hover{background:rgba(245,245,245,0.025)}
     .b-6{grid-column:span 6}.b-4{grid-column:span 4}.b-8{grid-column:span 8}.b-3{grid-column:span 3}.b-tall{grid-row:span 2}.b-full{grid-column:span 12}
     @media(max-width:900px){.bento{grid-template-columns:repeat(2,1fr)}.b-6,.b-4,.b-8,.b-3,.b-full{grid-column:span 2}}
-    @media(max-width:540px){.bento{grid-template-columns:1fr}.b-6,.b-4,.b-8,.b-3,.b-full{grid-column:span 1}}@media(max-width:720px){#pricing-grid{grid-template-columns:1fr!important}}
+    @media(max-width:540px){.bento{grid-template-columns:1fr}.b-6,.b-4,.b-8,.b-3,.b-full{grid-column:span 1}}@media(max-width:900px){#pricing-grid{grid-template-columns:1fr 1fr!important}}@media(max-width:600px){#pricing-grid{grid-template-columns:1fr!important}}
     .b-num{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:var(--ink-40);text-transform:uppercase;margin-bottom:18px}
     .b-title{font-size:22px;font-weight:700;letter-spacing:-0.02em;line-height:1.2;margin-bottom:14px}
     .b-body{font-size:13px;color:var(--ink-60);line-height:1.6;font-family:var(--mono);margin-bottom:auto}
@@ -708,7 +721,7 @@
               Read the Integrity Report
             </a>
           </div>
-          <p style="margin-top:14px;font-size:12px;color:var(--ink-40);letter-spacing:0.03em;">2,000 requests free · <strong style="color:var(--ink-60)">No credit card required</strong> · Growth from $499/mo</p>
+          <p style="margin-top:14px;font-size:12px;color:var(--ink-40);letter-spacing:0.03em;">2,000 requests free · <strong style="color:var(--ink-60)">No credit card required</strong> · Indie from $29/mo</p>
         </div>
 
         <div class="metrics">
@@ -1014,14 +1027,58 @@ curl -X POST https://api.zentricprotocol.com/v1/analyze \
     </div>
     <div class="section-head reveal">
       <h2 class="section-title">Infrastructure<br><em>pricing.</em></h2>
-      <p class="section-body">Two tiers. No hidden fees. Cancel anytime. Enterprise contracts available annually with EU data residency guarantee and dedicated SLA.</p>
+      <p class="section-body">Three tiers. No hidden fees. Cancel anytime. Enterprise contracts available annually with EU data residency guarantee and dedicated SLA.</p>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:8px;overflow:hidden" id="pricing-grid" class="reveal reveal-d1">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:8px;overflow:hidden" id="pricing-grid" class="reveal reveal-d1">
+
+      <!-- INDIE -->
+      <div style="background:#0A0A0A;padding:48px 40px;display:flex;flex-direction:column;gap:0">
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:var(--ink-40);text-transform:uppercase;margin-bottom:24px">INDIE</div>
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px">
+          <span style="font-family:var(--display);font-size:64px;font-weight:700;letter-spacing:-0.04em;line-height:1">$29</span>
+          <span style="font-family:var(--mono);font-size:13px;color:var(--ink-40)">/month</span>
+        </div>
+        <p style="font-size:13px;color:var(--ink-60);margin-bottom:40px;line-height:1.6">For indie developers and small teams building AI products in production.</p>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:14px;margin-bottom:48px">
+          <li style="display:flex;gap:12px;align-items:flex-start">
+            <span style="color:var(--kinetic);font-size:13px;margin-top:1px;flex-shrink:0">✓</span>
+            <span style="font-size:13px;color:var(--ink-60)">IntegrityGuard — prompt injection detection</span>
+          </li>
+          <li style="display:flex;gap:12px;align-items:flex-start">
+            <span style="color:var(--kinetic);font-size:13px;margin-top:1px;flex-shrink:0">✓</span>
+            <span style="font-size:13px;color:var(--ink-60)">PrivacyGuard — PII detection, 17 entity types</span>
+          </li>
+          <li style="display:flex;gap:12px;align-items:flex-start">
+            <span style="color:var(--kinetic);font-size:13px;margin-top:1px;flex-shrink:0">✓</span>
+            <span style="font-size:13px;color:var(--ink-60)">ZentricReport — UUID, SHA-256, audit-grade JSON</span>
+          </li>
+          <li style="display:flex;gap:12px;align-items:flex-start">
+            <span style="color:var(--kinetic);font-size:13px;margin-top:1px;flex-shrink:0">✓</span>
+            <span style="font-size:13px;color:var(--ink-60)">Up to 10,000 requests / month</span>
+          </li>
+          <li style="display:flex;gap:12px;align-items:flex-start">
+            <span style="color:var(--kinetic);font-size:13px;margin-top:1px;flex-shrink:0">✓</span>
+            <span style="font-size:13px;color:var(--ink-60)">REST API + MCP server access</span>
+          </li>
+          <li style="display:flex;gap:12px;align-items:flex-start">
+            <span style="color:var(--kinetic);font-size:13px;margin-top:1px;flex-shrink:0">✓</span>
+            <span style="font-size:13px;color:var(--ink-60)">GDPR-ready audit trail</span>
+          </li>
+        </ul>
+        <a href="https://buy.stripe.com/8x200k5oA5epg5u5vFco002" class="btn btn-primary" style="text-align:center;justify-content:center;margin-top:auto">
+          Start Indie — $29/mo
+        </a>
+        <p style="font-family:var(--mono);font-size:10px;color:var(--ink-40);letter-spacing:0.1em;text-align:center;margin-top:14px;text-transform:uppercase">
+          <svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M8 1l6 3v4c0 3-2.5 5.5-6 6-3.5-.5-6-3-6-6V4l6-3z"/></svg>
+          Secured by Stripe · Cancel anytime
+        </p>
+      </div>
 
       <!-- GROWTH -->
-      <div style="background:#0A0A0A;padding:48px 40px;display:flex;flex-direction:column;gap:0">
-        <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:var(--ink-40);text-transform:uppercase;margin-bottom:24px">GROWTH</div>
+      <div style="background:#0d0d0d;padding:48px 40px;display:flex;flex-direction:column;gap:0;position:relative">
+        <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--kinetic);box-shadow:0 0 12px var(--kinetic)"></div>
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:var(--kinetic);text-transform:uppercase;margin-bottom:24px">GROWTH</div>
         <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px">
           <span style="font-family:var(--display);font-size:64px;font-weight:700;letter-spacing:-0.04em;line-height:1">$499</span>
           <span style="font-family:var(--mono);font-size:13px;color:var(--ink-40)">/month</span>
@@ -1030,19 +1087,19 @@ curl -X POST https://api.zentricprotocol.com/v1/analyze \
         <ul style="list-style:none;display:flex;flex-direction:column;gap:14px;margin-bottom:48px">
           <li style="display:flex;gap:12px;align-items:flex-start">
             <span style="color:var(--kinetic);font-size:13px;margin-top:1px;flex-shrink:0">✓</span>
-            <span style="font-size:13px;color:var(--ink-60)">IntegrityGuard — 22 injection signatures, 7 languages</span>
+            <span style="font-size:13px;color:var(--ink-60)">Everything in Indie, 100,000 requests / month</span>
           </li>
           <li style="display:flex;gap:12px;align-items:flex-start">
             <span style="color:var(--kinetic);font-size:13px;margin-top:1px;flex-shrink:0">✓</span>
-            <span style="font-size:13px;color:var(--ink-60)">PrivacyGuard — 17 PII entity types, multilingual</span>
+            <span style="font-size:13px;color:var(--ink-60)">Multi-language support — 7 languages</span>
           </li>
           <li style="display:flex;gap:12px;align-items:flex-start">
             <span style="color:var(--kinetic);font-size:13px;margin-top:1px;flex-shrink:0">✓</span>
-            <span style="font-size:13px;color:var(--ink-60)">ZentricReport — UUID, SHA-256, audit-grade JSON</span>
+            <span style="font-size:13px;color:var(--ink-60)">Team API key management</span>
           </li>
           <li style="display:flex;gap:12px;align-items:flex-start">
             <span style="color:var(--kinetic);font-size:13px;margin-top:1px;flex-shrink:0">✓</span>
-            <span style="font-size:13px;color:var(--ink-60)">Up to 100,000 requests / month</span>
+            <span style="font-size:13px;color:var(--ink-60)">Priority email support</span>
           </li>
           <li style="display:flex;gap:12px;align-items:flex-start">
             <span style="color:var(--kinetic);font-size:13px;margin-top:1px;flex-shrink:0">✓</span>
@@ -1053,7 +1110,7 @@ curl -X POST https://api.zentricprotocol.com/v1/analyze \
             <span style="font-size:13px;color:var(--ink-60)">REST API + SDK documentation</span>
           </li>
         </ul>
-        <a href="https://buy.stripe.com/6oUeVebMY0Y94mM0blco000" class="btn btn-primary" style="text-align:center;justify-content:center;margin-top:auto">
+        <a href="https://buy.stripe.com/6oUeVebMY0Y94mM0blco000" class="btn btn-kinetic" style="text-align:center;justify-content:center;margin-top:auto">
           Start Growth — $499/mo
         </a>
         <p style="font-family:var(--mono);font-size:10px;color:var(--ink-40);letter-spacing:0.1em;text-align:center;margin-top:14px;text-transform:uppercase">
@@ -1063,9 +1120,8 @@ curl -X POST https://api.zentricprotocol.com/v1/analyze \
       </div>
 
       <!-- ENTERPRISE -->
-      <div style="background:#0d0d0d;padding:48px 40px;display:flex;flex-direction:column;gap:0;position:relative">
-        <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--kinetic);box-shadow:0 0 12px var(--kinetic)"></div>
-        <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:var(--kinetic);text-transform:uppercase;margin-bottom:24px">ENTERPRISE</div>
+      <div style="background:#0A0A0A;padding:48px 40px;display:flex;flex-direction:column;gap:0">
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:var(--ink-40);text-transform:uppercase;margin-bottom:24px">ENTERPRISE</div>
         <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px">
           <span style="font-family:var(--display);font-size:64px;font-weight:700;letter-spacing:-0.04em;line-height:1">$2,500</span>
           <span style="font-family:var(--mono);font-size:13px;color:var(--ink-40)">/month</span>
@@ -1090,16 +1146,19 @@ curl -X POST https://api.zentricprotocol.com/v1/analyze \
           </li>
           <li style="display:flex;gap:12px;align-items:flex-start">
             <span style="color:var(--kinetic);font-size:13px;margin-top:1px;flex-shrink:0">✓</span>
-            <span style="font-size:13px;color:var(--ink-60)">GDPR Art.30 records + DPA included</span>
+            <span style="font-size:13px;color:var(--ink-60)">GDPR-ready audit trail · DPA on request</span>
           </li>
           <li style="display:flex;gap:12px;align-items:flex-start">
             <span style="color:var(--kinetic);font-size:13px;margin-top:1px;flex-shrink:0">✓</span>
             <span style="font-size:13px;color:var(--ink-60)">Priority support + custom integrations</span>
           </li>
         </ul>
-        <a href="https://buy.stripe.com/cNiaEY5oAcGRaLa8HRco001" class="btn btn-kinetic" style="text-align:center;justify-content:center;margin-top:auto">
+        <a href="https://buy.stripe.com/cNiaEY5oAcGRaLa8HRco001" class="btn btn-primary" style="text-align:center;justify-content:center;margin-top:auto">
           Start Enterprise — $2,500/mo
         </a>
+        <p style="font-family:var(--mono);font-size:10px;color:var(--ink-40);letter-spacing:0.1em;text-align:center;margin-top:14px;text-transform:uppercase">
+          <a href="mailto:core@zentricprotocol.com" style="color:inherit;text-decoration:none">core@zentricprotocol.com</a>
+        </p>
       </div>
 
     </div>
