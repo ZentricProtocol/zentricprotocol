@@ -182,8 +182,7 @@ async function requireValidLicense(req, res, next) {
         return paymentRequired(
           res,
           'NO_ACTIVE_SUBSCRIPTION',
-          `Your free trial (${FREE_TIER_REQUEST_LIMIT} requests) has been used. ` +
-            'A Growth or Enterprise subscription is required to continue.'
+          'An active subscription is required. See plans at zentricprotocol.com/pricing'
         );
       }
 
