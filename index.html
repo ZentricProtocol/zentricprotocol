@@ -101,11 +101,24 @@
               "priceCurrency": "USD",
               "unitCode": "MON"
             },
-            "description": "Prompt injection detection and PII scanning for indie developers and small teams. Up to 10,000 requests/month."
+            "description": "Prompt injection detection and PII scanning for indie developers. Up to 25,000 requests/month."
           },
           {
             "@type": "Offer",
-            "name": "Growth",
+            "name": "Team",
+            "price": "99",
+            "priceCurrency": "USD",
+            "priceSpecification": {
+              "@type": "UnitPriceSpecification",
+              "price": "99",
+              "priceCurrency": "USD",
+              "unitCode": "MON"
+            },
+            "description": "For small teams building AI products in production. Up to 100,000 requests/month with team API key management."
+          },
+          {
+            "@type": "Offer",
+            "name": "Scale",
             "price": "499",
             "priceCurrency": "USD",
             "priceSpecification": {
@@ -208,7 +221,7 @@
             "name": "Is there a free tier?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes — the free tier includes 2,000 requests per month with no credit card required and gives full access to the IntegrityGuard and PrivacyGuard modules. Indie raises the quota to 10,000 requests per month at $29; Growth raises it to 100,000 at $499; Enterprise removes the quota entirely at $2,500."
+              "text": "Yes — the free tier includes 10,000 requests per month with no credit card required. Indie ($29/mo) raises that to 25,000; Team ($99/mo) to 100,000; Scale ($499/mo) to 500,000. Enterprise is custom pricing with unlimited requests, SLA, and DPA."
             }
           }
         ]
@@ -434,7 +447,7 @@
     .bento>div:hover{background:rgba(245,245,245,0.025)}
     .b-6{grid-column:span 6}.b-4{grid-column:span 4}.b-8{grid-column:span 8}.b-3{grid-column:span 3}.b-tall{grid-row:span 2}.b-full{grid-column:span 12}
     @media(max-width:900px){.bento{grid-template-columns:repeat(2,1fr)}.b-6,.b-4,.b-8,.b-3,.b-full{grid-column:span 2}}
-    @media(max-width:540px){.bento{grid-template-columns:1fr}.b-6,.b-4,.b-8,.b-3,.b-full{grid-column:span 1}}@media(max-width:900px){#pricing-grid{grid-template-columns:1fr 1fr!important}}@media(max-width:600px){#pricing-grid{grid-template-columns:1fr!important}}
+    @media(max-width:540px){.bento{grid-template-columns:1fr}.b-6,.b-4,.b-8,.b-3,.b-full{grid-column:span 1}}@media(max-width:1100px){#pricing-grid{grid-template-columns:1fr 1fr!important}}@media(max-width:600px){#pricing-grid{grid-template-columns:1fr!important}}
     .b-num{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:var(--ink-40);text-transform:uppercase;margin-bottom:18px}
     .b-title{font-size:22px;font-weight:700;letter-spacing:-0.02em;line-height:1.2;margin-bottom:14px}
     .b-body{font-size:13px;color:var(--ink-60);line-height:1.6;font-family:var(--mono);margin-bottom:auto}
@@ -721,7 +734,7 @@
               Read the Integrity Report
             </a>
           </div>
-          <p style="margin-top:14px;font-size:12px;color:var(--ink-40);letter-spacing:0.03em;">2,000 requests free · <strong style="color:var(--ink-60)">No credit card required</strong> · Indie from $29/mo</p>
+          <p style="margin-top:14px;font-size:12px;color:var(--ink-40);letter-spacing:0.03em;">10,000 requests free · <strong style="color:var(--ink-60)">No credit card required</strong> · Team plans from $29/mo</p>
         </div>
 
         <div class="metrics">
@@ -1027,138 +1040,153 @@ curl -X POST https://api.zentricprotocol.com/v1/analyze \
     </div>
     <div class="section-head reveal">
       <h2 class="section-title">Infrastructure<br><em>pricing.</em></h2>
-      <p class="section-body">Three tiers. No hidden fees. Cancel anytime. Enterprise contracts available annually with EU data residency guarantee and dedicated SLA.</p>
+      <p class="section-body">Four tiers. No hidden fees. Cancel anytime. Each tier sized for agents, not just human users. High volume? We'll build a plan around your pipeline.</p>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:8px;overflow:hidden" id="pricing-grid" class="reveal reveal-d1">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:8px;overflow:hidden" id="pricing-grid" class="reveal reveal-d1">
 
       <!-- INDIE -->
-      <div style="background:#0A0A0A;padding:48px 40px;display:flex;flex-direction:column;gap:0">
-        <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:var(--ink-40);text-transform:uppercase;margin-bottom:24px">INDIE</div>
-        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px">
-          <span style="font-family:var(--display);font-size:64px;font-weight:700;letter-spacing:-0.04em;line-height:1">$29</span>
-          <span style="font-family:var(--mono);font-size:13px;color:var(--ink-40)">/month</span>
+      <div style="background:#0A0A0A;padding:40px 32px;display:flex;flex-direction:column;gap:0">
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:var(--ink-40);text-transform:uppercase;margin-bottom:20px">INDIE</div>
+        <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:8px">
+          <span style="font-family:var(--display);font-size:52px;font-weight:700;letter-spacing:-0.04em;line-height:1">$29</span>
+          <span style="font-family:var(--mono);font-size:12px;color:var(--ink-40)">/mo</span>
         </div>
-        <p style="font-size:13px;color:var(--ink-60);margin-bottom:40px;line-height:1.6">For indie developers and small teams building AI products in production.</p>
-        <ul style="list-style:none;display:flex;flex-direction:column;gap:14px;margin-bottom:48px">
-          <li style="display:flex;gap:12px;align-items:flex-start">
-            <span style="color:var(--kinetic);font-size:13px;margin-top:1px;flex-shrink:0">✓</span>
-            <span style="font-size:13px;color:var(--ink-60)">IntegrityGuard — prompt injection detection</span>
+        <p style="font-size:12px;color:var(--ink-60);margin-bottom:32px;line-height:1.6">Solo developer or side project with real production traffic.</p>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:12px;margin-bottom:40px">
+          <li style="display:flex;gap:10px;align-items:flex-start">
+            <span style="color:var(--kinetic);font-size:12px;margin-top:1px;flex-shrink:0">✓</span>
+            <span style="font-size:12px;color:var(--ink-60)">IntegrityGuard + PrivacyGuard</span>
           </li>
-          <li style="display:flex;gap:12px;align-items:flex-start">
-            <span style="color:var(--kinetic);font-size:13px;margin-top:1px;flex-shrink:0">✓</span>
-            <span style="font-size:13px;color:var(--ink-60)">PrivacyGuard — PII detection, 17 entity types</span>
+          <li style="display:flex;gap:10px;align-items:flex-start">
+            <span style="color:var(--kinetic);font-size:12px;margin-top:1px;flex-shrink:0">✓</span>
+            <span style="font-size:12px;color:var(--ink-60)">ZentricReport — audit-grade JSON</span>
           </li>
-          <li style="display:flex;gap:12px;align-items:flex-start">
-            <span style="color:var(--kinetic);font-size:13px;margin-top:1px;flex-shrink:0">✓</span>
-            <span style="font-size:13px;color:var(--ink-60)">ZentricReport — UUID, SHA-256, audit-grade JSON</span>
+          <li style="display:flex;gap:10px;align-items:flex-start">
+            <span style="color:var(--kinetic);font-size:12px;margin-top:1px;flex-shrink:0">✓</span>
+            <span style="font-size:12px;color:var(--ink-60)"><strong style="color:var(--ink-80)">25,000 requests / month</strong></span>
           </li>
-          <li style="display:flex;gap:12px;align-items:flex-start">
-            <span style="color:var(--kinetic);font-size:13px;margin-top:1px;flex-shrink:0">✓</span>
-            <span style="font-size:13px;color:var(--ink-60)">Up to 10,000 requests / month</span>
+          <li style="display:flex;gap:10px;align-items:flex-start">
+            <span style="color:var(--kinetic);font-size:12px;margin-top:1px;flex-shrink:0">✓</span>
+            <span style="font-size:12px;color:var(--ink-60)">REST API + MCP server</span>
           </li>
-          <li style="display:flex;gap:12px;align-items:flex-start">
-            <span style="color:var(--kinetic);font-size:13px;margin-top:1px;flex-shrink:0">✓</span>
-            <span style="font-size:13px;color:var(--ink-60)">REST API + MCP server access</span>
-          </li>
-          <li style="display:flex;gap:12px;align-items:flex-start">
-            <span style="color:var(--kinetic);font-size:13px;margin-top:1px;flex-shrink:0">✓</span>
-            <span style="font-size:13px;color:var(--ink-60)">GDPR-ready audit trail</span>
+          <li style="display:flex;gap:10px;align-items:flex-start">
+            <span style="color:var(--kinetic);font-size:12px;margin-top:1px;flex-shrink:0">✓</span>
+            <span style="font-size:12px;color:var(--ink-60)">GDPR-ready audit trail</span>
           </li>
         </ul>
-        <a href="https://buy.stripe.com/8x200k5oA5epg5u5vFco002" class="btn btn-primary" style="text-align:center;justify-content:center;margin-top:auto">
+        <a href="https://buy.stripe.com/8x200k5oA5epg5u5vFco002" class="btn btn-primary" style="text-align:center;justify-content:center;margin-top:auto;font-size:13px;padding:12px 16px">
           Start Indie — $29/mo
         </a>
-        <p style="font-family:var(--mono);font-size:10px;color:var(--ink-40);letter-spacing:0.1em;text-align:center;margin-top:14px;text-transform:uppercase">
-          <svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M8 1l6 3v4c0 3-2.5 5.5-6 6-3.5-.5-6-3-6-6V4l6-3z"/></svg>
-          Secured by Stripe · Cancel anytime
-        </p>
+        <p style="font-family:var(--mono);font-size:9px;color:var(--ink-40);letter-spacing:0.08em;text-align:center;margin-top:12px;text-transform:uppercase">Cancel anytime</p>
       </div>
 
-      <!-- GROWTH -->
-      <div style="background:#0d0d0d;padding:48px 40px;display:flex;flex-direction:column;gap:0;position:relative">
+      <!-- TEAM -->
+      <div style="background:#0d0d0d;padding:40px 32px;display:flex;flex-direction:column;gap:0;position:relative">
         <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--kinetic);box-shadow:0 0 12px var(--kinetic)"></div>
-        <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:var(--kinetic);text-transform:uppercase;margin-bottom:24px">GROWTH</div>
-        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px">
-          <span style="font-family:var(--display);font-size:64px;font-weight:700;letter-spacing:-0.04em;line-height:1">$499</span>
-          <span style="font-family:var(--mono);font-size:13px;color:var(--ink-40)">/month</span>
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:var(--kinetic);text-transform:uppercase;margin-bottom:20px">TEAM</div>
+        <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:8px">
+          <span style="font-family:var(--display);font-size:52px;font-weight:700;letter-spacing:-0.04em;line-height:1">$99</span>
+          <span style="font-family:var(--mono);font-size:12px;color:var(--ink-40)">/mo</span>
         </div>
-        <p style="font-size:13px;color:var(--ink-60);margin-bottom:40px;line-height:1.6">For AI-forward companies deploying LLMs in production with real user data.</p>
-        <ul style="list-style:none;display:flex;flex-direction:column;gap:14px;margin-bottom:48px">
-          <li style="display:flex;gap:12px;align-items:flex-start">
-            <span style="color:var(--kinetic);font-size:13px;margin-top:1px;flex-shrink:0">✓</span>
-            <span style="font-size:13px;color:var(--ink-60)">Everything in Indie, 100,000 requests / month</span>
+        <p style="font-size:12px;color:var(--ink-60);margin-bottom:32px;line-height:1.6">Small team shipping AI products with real agent pipelines in prod.</p>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:12px;margin-bottom:40px">
+          <li style="display:flex;gap:10px;align-items:flex-start">
+            <span style="color:var(--kinetic);font-size:12px;margin-top:1px;flex-shrink:0">✓</span>
+            <span style="font-size:12px;color:var(--ink-60)">Everything in Indie</span>
           </li>
-          <li style="display:flex;gap:12px;align-items:flex-start">
-            <span style="color:var(--kinetic);font-size:13px;margin-top:1px;flex-shrink:0">✓</span>
-            <span style="font-size:13px;color:var(--ink-60)">Multi-language support — 7 languages</span>
+          <li style="display:flex;gap:10px;align-items:flex-start">
+            <span style="color:var(--kinetic);font-size:12px;margin-top:1px;flex-shrink:0">✓</span>
+            <span style="font-size:12px;color:var(--ink-60)"><strong style="color:var(--ink-80)">100,000 requests / month</strong></span>
           </li>
-          <li style="display:flex;gap:12px;align-items:flex-start">
-            <span style="color:var(--kinetic);font-size:13px;margin-top:1px;flex-shrink:0">✓</span>
-            <span style="font-size:13px;color:var(--ink-60)">Team API key management</span>
+          <li style="display:flex;gap:10px;align-items:flex-start">
+            <span style="color:var(--kinetic);font-size:12px;margin-top:1px;flex-shrink:0">✓</span>
+            <span style="font-size:12px;color:var(--ink-60)">Team API key management</span>
           </li>
-          <li style="display:flex;gap:12px;align-items:flex-start">
-            <span style="color:var(--kinetic);font-size:13px;margin-top:1px;flex-shrink:0">✓</span>
-            <span style="font-size:13px;color:var(--ink-60)">Priority email support</span>
+          <li style="display:flex;gap:10px;align-items:flex-start">
+            <span style="color:var(--kinetic);font-size:12px;margin-top:1px;flex-shrink:0">✓</span>
+            <span style="font-size:12px;color:var(--ink-60)">Priority email support</span>
           </li>
-          <li style="display:flex;gap:12px;align-items:flex-start">
-            <span style="color:var(--kinetic);font-size:13px;margin-top:1px;flex-shrink:0">✓</span>
-            <span style="font-size:13px;color:var(--ink-60)">GDPR · CCPA · EU AI Act compliant</span>
-          </li>
-          <li style="display:flex;gap:12px;align-items:flex-start">
-            <span style="color:var(--kinetic);font-size:13px;margin-top:1px;flex-shrink:0">✓</span>
-            <span style="font-size:13px;color:var(--ink-60)">REST API + SDK documentation</span>
+          <li style="display:flex;gap:10px;align-items:flex-start">
+            <span style="color:var(--kinetic);font-size:12px;margin-top:1px;flex-shrink:0">✓</span>
+            <span style="font-size:12px;color:var(--ink-60)">GDPR · CCPA · EU AI Act</span>
           </li>
         </ul>
-        <a href="https://buy.stripe.com/6oUeVebMY0Y94mM0blco000" class="btn btn-kinetic" style="text-align:center;justify-content:center;margin-top:auto">
-          Start Growth — $499/mo
+        <a href="https://buy.stripe.com/6oUeVebMY0Y9dXm9LVco003" class="btn btn-kinetic" style="text-align:center;justify-content:center;margin-top:auto;font-size:13px;padding:12px 16px">
+          Start Team — $99/mo
         </a>
-        <p style="font-family:var(--mono);font-size:10px;color:var(--ink-40);letter-spacing:0.1em;text-align:center;margin-top:14px;text-transform:uppercase">
-          <svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M8 1l6 3v4c0 3-2.5 5.5-6 6-3.5-.5-6-3-6-6V4l6-3z"/></svg>
-          Secured by Stripe · Cancel anytime
-        </p>
+        <p style="font-family:var(--mono);font-size:9px;color:var(--ink-40);letter-spacing:0.08em;text-align:center;margin-top:12px;text-transform:uppercase">Cancel anytime</p>
+      </div>
+
+      <!-- SCALE -->
+      <div style="background:#0A0A0A;padding:40px 32px;display:flex;flex-direction:column;gap:0">
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:var(--ink-40);text-transform:uppercase;margin-bottom:20px">SCALE</div>
+        <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:8px">
+          <span style="font-family:var(--display);font-size:52px;font-weight:700;letter-spacing:-0.04em;line-height:1">$499</span>
+          <span style="font-family:var(--mono);font-size:12px;color:var(--ink-40)">/mo</span>
+        </div>
+        <p style="font-size:12px;color:var(--ink-60);margin-bottom:32px;line-height:1.6">Production-scale AI deployments with real user traffic and compliance requirements.</p>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:12px;margin-bottom:40px">
+          <li style="display:flex;gap:10px;align-items:flex-start">
+            <span style="color:var(--kinetic);font-size:12px;margin-top:1px;flex-shrink:0">✓</span>
+            <span style="font-size:12px;color:var(--ink-60)">Everything in Team</span>
+          </li>
+          <li style="display:flex;gap:10px;align-items:flex-start">
+            <span style="color:var(--kinetic);font-size:12px;margin-top:1px;flex-shrink:0">✓</span>
+            <span style="font-size:12px;color:var(--ink-60)"><strong style="color:var(--ink-80)">500,000 requests / month</strong></span>
+          </li>
+          <li style="display:flex;gap:10px;align-items:flex-start">
+            <span style="color:var(--kinetic);font-size:12px;margin-top:1px;flex-shrink:0">✓</span>
+            <span style="font-size:12px;color:var(--ink-60)">Multi-language, 7 languages</span>
+          </li>
+          <li style="display:flex;gap:10px;align-items:flex-start">
+            <span style="color:var(--kinetic);font-size:12px;margin-top:1px;flex-shrink:0">✓</span>
+            <span style="font-size:12px;color:var(--ink-60)">Dedicated support channel</span>
+          </li>
+          <li style="display:flex;gap:10px;align-items:flex-start">
+            <span style="color:var(--kinetic);font-size:12px;margin-top:1px;flex-shrink:0">✓</span>
+            <span style="font-size:12px;color:var(--ink-60)">Full REST API + SDK docs</span>
+          </li>
+        </ul>
+        <a href="https://buy.stripe.com/6oUeVebMY0Y94mM0blco000" class="btn btn-primary" style="text-align:center;justify-content:center;margin-top:auto;font-size:13px;padding:12px 16px">
+          Start Scale — $499/mo
+        </a>
+        <p style="font-family:var(--mono);font-size:9px;color:var(--ink-40);letter-spacing:0.08em;text-align:center;margin-top:12px;text-transform:uppercase">Cancel anytime</p>
       </div>
 
       <!-- ENTERPRISE -->
-      <div style="background:#0A0A0A;padding:48px 40px;display:flex;flex-direction:column;gap:0">
-        <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:var(--ink-40);text-transform:uppercase;margin-bottom:24px">ENTERPRISE</div>
-        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px">
-          <span style="font-family:var(--display);font-size:64px;font-weight:700;letter-spacing:-0.04em;line-height:1">$2,500</span>
-          <span style="font-family:var(--mono);font-size:13px;color:var(--ink-40)">/month</span>
+      <div style="background:#0d0d0d;padding:40px 32px;display:flex;flex-direction:column;gap:0;position:relative">
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:var(--ink-40);text-transform:uppercase;margin-bottom:20px">ENTERPRISE</div>
+        <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:8px">
+          <span style="font-family:var(--display);font-size:36px;font-weight:700;letter-spacing:-0.03em;line-height:1.2;color:var(--ink-60)">Custom</span>
         </div>
-        <p style="font-size:13px;color:var(--ink-60);margin-bottom:40px;line-height:1.6">For regulated industries and enterprise deployments requiring audit-grade guarantees.</p>
-        <ul style="list-style:none;display:flex;flex-direction:column;gap:14px;margin-bottom:48px">
-          <li style="display:flex;gap:12px;align-items:flex-start">
-            <span style="color:var(--kinetic);font-size:13px;margin-top:1px;flex-shrink:0">✓</span>
-            <span style="font-size:13px;color:var(--ink-60)">Everything in Growth, unlimited requests</span>
+        <p style="font-size:12px;color:var(--ink-60);margin-bottom:32px;line-height:1.6">Regulated industries requiring audit-grade guarantees, EU data residency, and compliance documentation.</p>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:12px;margin-bottom:40px">
+          <li style="display:flex;gap:10px;align-items:flex-start">
+            <span style="color:var(--kinetic);font-size:12px;margin-top:1px;flex-shrink:0">✓</span>
+            <span style="font-size:12px;color:var(--ink-60)">Unlimited requests + SLA</span>
           </li>
-          <li style="display:flex;gap:12px;align-items:flex-start">
-            <span style="color:var(--kinetic);font-size:13px;margin-top:1px;flex-shrink:0">✓</span>
-            <span style="font-size:13px;color:var(--ink-60)">EU data residency — zero cross-border transfer</span>
+          <li style="display:flex;gap:10px;align-items:flex-start">
+            <span style="color:var(--kinetic);font-size:12px;margin-top:1px;flex-shrink:0">✓</span>
+            <span style="font-size:12px;color:var(--ink-60)">EU data residency</span>
           </li>
-          <li style="display:flex;gap:12px;align-items:flex-start">
-            <span style="color:var(--kinetic);font-size:13px;margin-top:1px;flex-shrink:0">✓</span>
-            <span style="font-size:13px;color:var(--ink-60)">Integrity Certificate generation (PDF, signed)</span>
+          <li style="display:flex;gap:10px;align-items:flex-start">
+            <span style="color:var(--kinetic);font-size:12px;margin-top:1px;flex-shrink:0">✓</span>
+            <span style="font-size:12px;color:var(--ink-60)">DPA + audit certificate</span>
           </li>
-          <li style="display:flex;gap:12px;align-items:flex-start">
-            <span style="color:var(--kinetic);font-size:13px;margin-top:1px;flex-shrink:0">✓</span>
-            <span style="font-size:13px;color:var(--ink-60)">Dedicated SLA — sub-100ms P99 guaranteed</span>
+          <li style="display:flex;gap:10px;align-items:flex-start">
+            <span style="color:var(--kinetic);font-size:12px;margin-top:1px;flex-shrink:0">✓</span>
+            <span style="font-size:12px;color:var(--ink-60)">Sub-100ms P99 SLA</span>
           </li>
-          <li style="display:flex;gap:12px;align-items:flex-start">
-            <span style="color:var(--kinetic);font-size:13px;margin-top:1px;flex-shrink:0">✓</span>
-            <span style="font-size:13px;color:var(--ink-60)">GDPR-ready audit trail · DPA on request</span>
-          </li>
-          <li style="display:flex;gap:12px;align-items:flex-start">
-            <span style="color:var(--kinetic);font-size:13px;margin-top:1px;flex-shrink:0">✓</span>
-            <span style="font-size:13px;color:var(--ink-60)">Priority support + custom integrations</span>
+          <li style="display:flex;gap:10px;align-items:flex-start">
+            <span style="color:var(--kinetic);font-size:12px;margin-top:1px;flex-shrink:0">✓</span>
+            <span style="font-size:12px;color:var(--ink-60)">Custom integrations</span>
           </li>
         </ul>
-        <a href="https://buy.stripe.com/cNiaEY5oAcGRaLa8HRco001" class="btn btn-primary" style="text-align:center;justify-content:center;margin-top:auto">
-          Start Enterprise — $2,500/mo
+        <a href="mailto:core@zentricprotocol.com?subject=Enterprise%20inquiry" class="btn btn-primary" style="text-align:center;justify-content:center;margin-top:auto;font-size:13px;padding:12px 16px">
+          Contact us
         </a>
-        <p style="font-family:var(--mono);font-size:10px;color:var(--ink-40);letter-spacing:0.1em;text-align:center;margin-top:14px;text-transform:uppercase">
-          <a href="mailto:core@zentricprotocol.com" style="color:inherit;text-decoration:none">core@zentricprotocol.com</a>
-        </p>
+        <p style="font-family:var(--mono);font-size:9px;color:var(--ink-40);letter-spacing:0.08em;text-align:center;margin-top:12px;text-transform:uppercase">Annual contracts available</p>
       </div>
 
     </div>

@@ -57,6 +57,7 @@ async function getRawBody(req) {
 function getPlanFromPriceId(priceId) {
   const map = {
     [process.env.STRIPE_PRICE_INDIE]:      'indie',
+    [process.env.STRIPE_PRICE_TEAM]:       'team',
     [process.env.STRIPE_PRICE_GROWTH]:     'growth',
     [process.env.STRIPE_PRICE_ENTERPRISE]: 'enterprise',
   };

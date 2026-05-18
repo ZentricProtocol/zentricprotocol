@@ -2,10 +2,11 @@ import crypto from 'node:crypto';
 import { analyze } from '../../lib/detect.js';
 import { getSupabase, hashApiKey, currentMonthKey } from '../../lib/supabase.js';
 
-const FREE_MONTHLY_LIMIT = 2000;
+const FREE_MONTHLY_LIMIT = 10_000;
 const PLAN_LIMITS = {
-  indie: 10_000,
-  growth: 100_000,
+  indie:      25_000,
+  team:       100_000,
+  growth:     500_000,
   enterprise: 999_999_999,
 };
 const ACTIVE_SUB_STATUSES = new Set(['active', 'trialing']);
