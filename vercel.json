@@ -5,6 +5,9 @@
     { "source": "/v1/:path*", "destination": "/api/v1/:path*" },
     { "source": "/mcp", "destination": "/api/mcp" }
   ],
+  "crons": [
+    { "path": "/api/cron/reset-monthly", "schedule": "5 0 1 * *" }
+  ],
   "headers": [
     {
       "source": "/(.*)",
