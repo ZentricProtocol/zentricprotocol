@@ -25,7 +25,7 @@ Indirect prompt injection is the dominant attack surface for AI agents in produc
 
 ### 1. Get an API key
 
-Free tier — **2,000 requests/month, no credit card**.
+Free tier — **10,000 requests/month, no credit card**.
 
 Sign up at [zentricprotocol.com](https://zentricprotocol.com). Your key arrives by email and looks like `zp_live_...`.
 

@@ -41,7 +41,7 @@ const TIER_LIMITS = {
   growth: {
     monthly:    100_000,
     perMinute:  60,
-    label:      'Growth',
+    label:      'scale',
   },
   enterprise: {
     monthly:    Infinity,
@@ -113,12 +113,7 @@ async function enforceRateLimit(req, res, next) {
 
       return res.status(429).json({
         error: 'MONTHLY_LIMIT_EXCEEDED',
-        message:
-          `You have used all ${limits.monthly.toLocaleString()} requests included in your ` +
-          `${limits.label} plan for this month. ` +
-          (tier === 'free'
-            ? 'Upgrade to Growth for 100,000 requests/month.'
-            : 'Contact core@zentricprotocol.com to discuss Enterprise.'),
+        message: 'Monthly quota reached. Upgrade at zentricprotocol.com/pricing',
         upgrade: 'https://zentricprotocol.com#pricing',
         used:    requestsThisMonth,
         limit:   limits.monthly,

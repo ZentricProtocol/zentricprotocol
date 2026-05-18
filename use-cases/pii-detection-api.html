@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Real-Time PII Detection API · Zentric Protocol</title>
-  <meta name="description" content="Detect and redact 17 PII entity types — emails, IBANs, SSNs, NIF, CPF, CURP — before prompts reach your LLM. 23.4ms mean latency, 2,000 free requests, signed audit reports.">
+  <meta name="description" content="Detect and redact 17 PII entity types — emails, IBANs, SSNs, NIF, CPF, CURP — before prompts reach your LLM. 23.4ms mean latency, 10,000 free requests, signed audit reports.">
   <meta name="author" content="Zentric Protocol">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
 
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://zentricprotocol.com/use-cases/pii-detection-api">
   <meta property="og:title" content="Real-Time PII Detection API for AI Applications">
-  <meta property="og:description" content="Detect and redact 17 PII entity types — emails, IBANs, SSNs, NIF, CPF, CURP — before prompts reach your LLM. 23.4ms mean latency, 2,000 free requests, signed audit reports.">
+  <meta property="og:description" content="Detect and redact 17 PII entity types — emails, IBANs, SSNs, NIF, CPF, CURP — before prompts reach your LLM. 23.4ms mean latency, 10,000 free requests, signed audit reports.">
   <meta property="og:image" content="https://zentricprotocol.com/og.png?v=prelaunch">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -21,7 +21,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:site" content="@ZentricProtocol">
   <meta name="twitter:title" content="Real-Time PII Detection API for AI Applications">
-  <meta name="twitter:description" content="Detect and redact 17 PII entity types — emails, IBANs, SSNs, NIF, CPF, CURP — before prompts reach your LLM. 23.4ms mean latency, 2,000 free requests, signed audit reports.">
+  <meta name="twitter:description" content="Detect and redact 17 PII entity types — emails, IBANs, SSNs, NIF, CPF, CURP — before prompts reach your LLM. 23.4ms mean latency, 10,000 free requests, signed audit reports.">
   <meta name="twitter:image" content="https://zentricprotocol.com/og.png?v=prelaunch">
 
   <link rel="canonical" href="https://zentricprotocol.com/use-cases/pii-detection-api">
@@ -170,7 +170,7 @@ a.inline:hover{border-bottom-color:var(--kinetic)}
       "@id": "https://zentricprotocol.com/use-cases/pii-detection-api#webpage",
       "url": "https://zentricprotocol.com/use-cases/pii-detection-api",
       "name": "Real-Time PII Detection API for AI Applications",
-      "description": "Detect and redact 17 PII entity types \u2014 emails, IBANs, SSNs, NIF, CPF, CURP \u2014 before prompts reach your LLM. 23.4ms mean latency, 2,000 free requests, signed audit reports.",
+      "description": "Detect and redact 17 PII entity types \u2014 emails, IBANs, SSNs, NIF, CPF, CURP \u2014 before prompts reach your LLM. 23.4ms mean latency, 10,000 free requests, signed audit reports.",
       "inLanguage": "en-US",
       "isPartOf": {
         "@type": "WebSite",
@@ -300,13 +300,13 @@ curl -X POST <span class="k">https://api.zentricprotocol.com/v1/analyze</span> \
       <p>PrivacyGuard's structured output — typed entity records with position offsets, a SHA-256 hash on the full report, and a UTC timestamp — gives a compliance team a defensible answer to "what personal data did this LLM see, when, and how was it minimized?" Combined with retention-window controls on your side, this is the foundation of GDPR-style data-minimization for AI applications.</p>
 
       <h2>Performance and pricing</h2>
-      <p>Mean server-side latency is 23.4 milliseconds with P99 under 100 milliseconds, measured across one million simulated requests. The Free tier covers 2,000 PII analyses per month with no credit card. Growth at $499 per month raises the quota to 100,000 analyses. Enterprise at $2,500 per month removes the quota and adds EU data residency, dedicated SLA, and signed PDF integrity certificates suitable for vendor due-diligence packages.</p>
+      <p>Mean server-side latency is 23.4 milliseconds with P99 under 100 milliseconds, measured across one million simulated requests. The Free tier covers 10,000 PII analyses/month with no credit card. Indie at $29/month raises the quota to 25,000 analyses; Team at $99/month to 100,000; Scale at $499/month to 500,000. Enterprise is custom pricing — unlimited analyses with EU data residency, dedicated SLA, and signed PDF integrity certificates suitable for vendor due-diligence packages.</p>
 
       <div class="cta-box">
         <h2>Redact PII before it reaches your model</h2>
-        <p>Start with 2,000 free PII analyses per month, no credit card. Same module, same precision, same signed audit report as paid tiers.</p>
+        <p>Start with 10,000 free PII analyses per month, no credit card. Same module, same precision, same signed audit report as paid tiers.</p>
         <div class="cta-actions">
-          <a href="/#api-access" class="btn btn-primary">Get API key — 2,000 free</a>
+          <a href="/#api-access" class="btn btn-primary">Get API key — 10,000 free</a>
           <a href="/#pricing" class="btn btn-kinetic">View pricing</a>
         </div>
       </div>

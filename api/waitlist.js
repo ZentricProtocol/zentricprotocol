@@ -68,7 +68,7 @@ async function sendWelcomeEmail(email, apiKey) {
     body: JSON.stringify({
       from: 'Zentric Protocol <core@zentricprotocol.com>',
       to: email,
-      subject: 'Your Zentric Protocol API key — 2,000 free requests',
+      subject: 'Your Zentric Protocol API key — 10,000 free requests',
       html: `
 <!DOCTYPE html>
 <html lang="en">
@@ -111,7 +111,7 @@ async function sendWelcomeEmail(email, apiKey) {
                 Your API key is ready.
               </h1>
               <p style="margin:0;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:15px;color:rgba(245,245,245,0.6);line-height:1.6;">
-                2,000 free requests. No credit card. Save this key — it won't be shown again.
+                10,000 free requests. No credit card. Save this key — it won't be shown again.
               </p>
             </td>
           </tr>

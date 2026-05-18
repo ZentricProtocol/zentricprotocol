@@ -106,7 +106,7 @@ function requireApiKey() {
   if (!key || !key.trim()) {
     throw new Error(
       'ZENTRIC_API_KEY environment variable is not set. ' +
-        'Get a free key (2,000 requests / month, no credit card) at https://zentricprotocol.com',
+        'Get a free key (10,000 requests / month, no credit card) at https://zentricprotocol.com',
     );
   }
   return key.trim();

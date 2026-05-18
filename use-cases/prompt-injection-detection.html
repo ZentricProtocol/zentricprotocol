@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Prompt Injection Detection API · Zentric Protocol</title>
-  <meta name="description" content="Detect prompt injection across 22 signatures and 7 languages with Zentric Protocol. Deterministic API, 99.62% precision, 23.4ms mean latency, 2,000 free requests.">
+  <meta name="description" content="Detect prompt injection across 22 signatures and 7 languages with Zentric Protocol. Deterministic API, 99.62% precision, 23.4ms mean latency, 10,000 free requests.">
   <meta name="author" content="Zentric Protocol">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
 
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://zentricprotocol.com/use-cases/prompt-injection-detection">
   <meta property="og:title" content="Prompt Injection Detection API for LLM Applications">
-  <meta property="og:description" content="Detect prompt injection across 22 signatures and 7 languages with Zentric Protocol. Deterministic API, 99.62% precision, 23.4ms mean latency, 2,000 free requests.">
+  <meta property="og:description" content="Detect prompt injection across 22 signatures and 7 languages with Zentric Protocol. Deterministic API, 99.62% precision, 23.4ms mean latency, 10,000 free requests.">
   <meta property="og:image" content="https://zentricprotocol.com/og.png?v=prelaunch">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -21,7 +21,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:site" content="@ZentricProtocol">
   <meta name="twitter:title" content="Prompt Injection Detection API for LLM Applications">
-  <meta name="twitter:description" content="Detect prompt injection across 22 signatures and 7 languages with Zentric Protocol. Deterministic API, 99.62% precision, 23.4ms mean latency, 2,000 free requests.">
+  <meta name="twitter:description" content="Detect prompt injection across 22 signatures and 7 languages with Zentric Protocol. Deterministic API, 99.62% precision, 23.4ms mean latency, 10,000 free requests.">
   <meta name="twitter:image" content="https://zentricprotocol.com/og.png?v=prelaunch">
 
   <link rel="canonical" href="https://zentricprotocol.com/use-cases/prompt-injection-detection">
@@ -170,7 +170,7 @@ a.inline:hover{border-bottom-color:var(--kinetic)}
       "@id": "https://zentricprotocol.com/use-cases/prompt-injection-detection#webpage",
       "url": "https://zentricprotocol.com/use-cases/prompt-injection-detection",
       "name": "Prompt Injection Detection API for LLM Applications",
-      "description": "Detect prompt injection across 22 signatures and 7 languages with Zentric Protocol. Deterministic API, 99.62% precision, 23.4ms mean latency, 2,000 free requests.",
+      "description": "Detect prompt injection across 22 signatures and 7 languages with Zentric Protocol. Deterministic API, 99.62% precision, 23.4ms mean latency, 10,000 free requests.",
       "inLanguage": "en-US",
       "isPartOf": {
         "@type": "WebSite",
@@ -291,16 +291,16 @@ curl -X POST <span class="k">https://api.zentricprotocol.com/v1/analyze</span> \
       <p>There are three common patterns for wiring Zentric Protocol into an existing LLM pipeline.</p>
       <p><strong>Synchronous gate.</strong> Every prompt is sent to <code class="inline">/v1/analyze</code> before the model is invoked, and a BLOCKED verdict short-circuits the request with a 4xx response to the caller. This pattern adds 23.4 millisecond mean latency in exchange for end-to-end injection prevention.</p>
       <p><strong>Asynchronous audit.</strong> Prompts are forwarded to the model in parallel with the analysis call, and BLOCKED verdicts are recorded for post-mortem review without blocking real-time traffic. This is the right pattern when the latency budget is tight and the application can tolerate after-the-fact remediation.</p>
-      <p><strong>Hybrid.</strong> A fast first-pass blocks obvious attacks synchronously, while the full analysis runs asynchronously to enrich the audit log. Each tier of Zentric Protocol — Free, Growth, and Enterprise — supports all three integration patterns.</p>
+      <p><strong>Hybrid.</strong> A fast first-pass blocks obvious attacks synchronously, while the full analysis runs asynchronously to enrich the audit log. Every tier — Free, Indie, Team, Scale, Enterprise — supports all three integration patterns.</p>
 
       <h2>Performance and pricing</h2>
-      <p>Across one million simulated requests, IntegrityGuard reports 99.62% overall precision, a 23.4 millisecond mean server-side latency, and a P99 under 100 milliseconds. The Free tier covers 2,000 requests per month with no credit card and exercises the full module. Growth at $499 per month raises the quota to 100,000 requests. Enterprise at $2,500 per month removes the cap and adds EU data residency, dedicated SLA, signed PDF integrity certificates, and priority support.</p>
+      <p>Across one million simulated requests, IntegrityGuard reports 99.62% overall precision, a 23.4 millisecond mean server-side latency, and a P99 under 100 milliseconds. The Free tier covers 10,000 requests/month with no credit card and exercises the full module. Indie at $29/month raises the quota to 25,000; Team at $99/month to 100,000; Scale at $499/month to 500,000. Enterprise is custom pricing — unlimited requests with EU data residency, dedicated SLA, signed PDF integrity certificates, and priority support.</p>
 
       <div class="cta-box">
         <h2>Start blocking injection in minutes</h2>
-        <p>Get an API key in seconds. The free tier covers 2,000 requests per month with no credit card and exercises the full IntegrityGuard module — same precision, same audit envelope.</p>
+        <p>Get an API key in seconds. The free tier covers 10,000 requests per month with no credit card and exercises the full IntegrityGuard module — same precision, same audit envelope.</p>
         <div class="cta-actions">
-          <a href="/#api-access" class="btn btn-primary">Get API key — 2,000 free</a>
+          <a href="/#api-access" class="btn btn-primary">Get API key — 10,000 free</a>
           <a href="/#pricing" class="btn btn-kinetic">View pricing</a>
         </div>
       </div>
