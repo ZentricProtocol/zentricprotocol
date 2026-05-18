@@ -1,6 +1,9 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
+  "redirects": [
+    { "source": "/pricing", "destination": "/#pricing", "permanent": false }
+  ],
   "rewrites": [
     { "source": "/v1/:path*", "destination": "/api/v1/:path*" },
     { "source": "/mcp", "destination": "/api/mcp" }
