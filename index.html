@@ -86,9 +86,9 @@
         "name": "Zentric Protocol",
         "url": "https://zentricprotocol.com",
         "applicationCategory": "SecurityApplication",
-        "applicationSubCategory": "AI Infrastructure Security",
+        "applicationSubCategory": "AI Agent Security Infrastructure",
         "operatingSystem": "Cloud, API",
-        "description": "Zentric Protocol is a PII Integrity and Deterministic Infrastructure layer delivering a Secure Protocol for AI systems. Detects prompt injection, PII leakage, and bias with 99.62% precision and sub-25ms server-side processing.",
+        "description": "Zentric Protocol is a deterministic security layer for LLM applications and AI agent pipelines. It detects prompt injection attacks (direct and indirect) and PII in every input before it reaches the model — including user messages, tool call responses, RAG chunks, memory reads, and sub-agent outputs. Returns a signed verdict (CLEARED/ANONYMIZED/BLOCKED) with a SHA-256 hash and GDPR Art.30-compliant audit record per request. Available as a REST API and as a native MCP server for Claude Desktop, Cursor, and other MCP-compatible agents. 22 injection signatures across 7 languages, 17 PII entity types, 23ms mean latency, 99.62% detection precision.",
         "offers": [
           {
             "@type": "Offer",
@@ -222,6 +222,38 @@
             "acceptedAnswer": {
               "@type": "Answer",
               "text": "Yes — the free tier includes 10,000 requests per month with no credit card required. Indie ($29/mo) raises that to 25,000; Team ($99/mo) to 100,000; Scale ($499/mo) to 500,000. Enterprise is custom pricing with unlimited requests, SLA, and DPA."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How do I protect an AI agent pipeline from prompt injection?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Wire Zentric Protocol's /v1/analyze endpoint before every LLM call in the pipeline. This includes user messages, tool call responses, RAG retrieval results, memory reads, and sub-agent outputs — not just user input. A single injected payload inside a retrieved document or tool response can hijack the entire agent. Zentric's 22 signatures are source-agnostic: they detect the injection regardless of whether it arrived via user input, a third-party API, or a database query. The MCP server version (zentric-protocol-mcp on npm) integrates natively with Claude Desktop and Cursor with zero config — the agent calls analyze_prompt before each LLM invocation automatically."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is indirect prompt injection and how does Zentric Protocol stop it?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Indirect prompt injection is an attack where malicious instructions are embedded in content the agent retrieves from the environment — a web page, a PDF, a database record, a tool response, or a RAG chunk — rather than typed directly by a user. The injected payload enters the LLM context window through a trusted data source and overrides the agent's instructions. Zentric Protocol stops this by scanning every input string at ingestion, regardless of its origin. Since the 22 detection signatures analyze text content rather than request metadata, an INSTRUCTION_IGNORE or ROLE_HIJACK pattern inside a retrieved document triggers the same BLOCKED verdict as a direct user attack."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does Zentric Protocol compare to LlamaGuard, Microsoft Prompt Shields, and OpenAI Moderation?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "LlamaGuard, Microsoft Prompt Shields, and OpenAI Moderation are all LLM-based classifiers — probabilistic, with model drift, and no reproducible audit record. The same input can produce different verdicts across runs. Zentric Protocol is deterministic: 22 fixed signatures, same input always returns the same verdict, and every request produces a signed SHA-256 + GDPR Art.30 record that can be presented to a regulator or DPO. The architectural difference matters: LLM-based detectors can themselves be manipulated by adversarial inputs, since they share the same attack surface as the model they guard. Zentric's detection runs outside the model stack entirely."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does Zentric Protocol work as an MCP server for Claude Desktop and AI agents?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. The zentric-protocol-mcp package on npm is a Model Context Protocol server that exposes a single analyze_prompt tool. Install it with npx and add it to your claude_desktop_config.json — setup takes under 2 minutes. Once connected, any MCP-compatible agent (Claude Desktop, Cursor, or a custom agent built on the MCP SDK) can call analyze_prompt before each LLM invocation to check for injection attacks and PII. The tool returns a structured verdict (CLEARED/ANONYMIZED/BLOCKED), matched signature IDs, detected PII entities with character offsets, the SHA-256 input hash, and a GDPR Art.30 audit record."
             }
           }
         ]
