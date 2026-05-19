@@ -212,7 +212,19 @@
     .footer-grid a:hover{color:var(--paper)}
 
     @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms !important;transition-duration:0.01ms !important}}
-  </style>
+  
+    /* Docs dropdown */
+    .nav-dropdown{position:relative;display:inline-flex;align-items:center}
+    .nav-dropdown-trigger{display:inline-flex;align-items:center;gap:5px}
+    .nav-dropdown-trigger::after{content:'↓';font-family:var(--mono);font-size:11px;color:var(--ink-40);transition:transform .2s,color .2s;line-height:1}
+    .nav-dropdown:hover .nav-dropdown-trigger,.nav-dropdown:focus-within .nav-dropdown-trigger{color:var(--paper)}
+    .nav-dropdown:hover .nav-dropdown-trigger::after,.nav-dropdown:focus-within .nav-dropdown-trigger::after{color:var(--kinetic);transform:translateY(2px)}
+    .nav-dropdown-menu::before{content:'';position:absolute;top:-10px;left:0;right:0;height:10px;}
+    .nav-dropdown-menu{position:absolute;top:100%;left:-14px;margin-top:10px;display:none;flex-direction:column;gap:2px;min-width:180px;background:#0A0A0A;border:1px solid var(--rule);border-radius:6px;padding:8px 6px;box-shadow:0 12px 40px rgba(0,0,0,0.7);z-index:31}
+    .nav-dropdown:hover .nav-dropdown-menu,.nav-dropdown:focus-within .nav-dropdown-menu{display:flex}
+    .nav-dropdown-menu .nav-link{display:block;padding:9px 14px;border-radius:4px;white-space:nowrap;font-size:13px}
+    .nav-dropdown-menu .nav-link:hover{background:rgba(245,245,245,0.05);color:var(--paper)}
+    </style>
 </head>
 <body>
 
