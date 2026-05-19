@@ -54,17 +54,11 @@ We accept contributions to the middleware, webhook handler, and Supabase schema.
 
 | Tier | Price | Requests | Start |
 |---|---|---|---|
-<<<<<<< Updated upstream
 | **Free** | Free | 10,000/mo | [Get API key →](https://zentricprotocol.com#api-access) |
 | **Indie** | $29/mo | 25,000/mo | [See pricing →](https://zentricprotocol.com#pricing) |
 | **Team** | $99/mo | 100,000/mo | [See pricing →](https://zentricprotocol.com#pricing) |
 | **Scale** | $499/mo | 500,000/mo | [See pricing →](https://zentricprotocol.com#pricing) |
 | **Enterprise** | Custom | Unlimited | [Contact →](mailto:core@zentricprotocol.com) |
-=======
-| **Free Trial** | Free | 2,000 requests | [Get API key →](https://zentricprotocol.com#api-access) |
-| **Growth** | $499/mo | 100,000 req/mo | [Start Growth →](https://buy.stripe.com/6oUeVebMY0Y94mM0blco000) |
-| **Enterprise** | $2,500/mo | Unlimited | [Start Enterprise →](https://buy.stripe.com/cNiaEY5oAcGRaLa8HRco001) |
->>>>>>> Stashed changes
 
 ---
 
