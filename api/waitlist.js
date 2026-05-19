@@ -157,6 +157,28 @@ async function sendWelcomeEmail(email, apiKey) {
             </td>
           </tr>
 
+          <!-- PYTHON RAG PATTERN -->
+          <tr>
+            <td style="background:#0A0A0A;padding:28px 0;border-bottom:1px solid rgba(245,245,245,0.08);">
+              <p style="margin:0 0 8px;font-family:Menlo,Monaco,Consolas,'Courier New',Courier,monospace;font-size:10px;font-weight:600;letter-spacing:0.22em;color:rgba(245,245,245,0.4);text-transform:uppercase;">// Using LangChain or a RAG pipeline?</p>
+              <p style="margin:0 0 14px;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;color:rgba(245,245,245,0.6);line-height:1.6;">Scan retrieved chunks <em>before</em> they reach the LLM — a poisoned document can't hijack your model if it never gets in.</p>
+              <div style="background:rgba(245,245,245,0.025);border:1px solid rgba(245,245,245,0.12);border-radius:6px;padding:16px 18px;">
+                <pre style="margin:0;font-family:Menlo,Monaco,Consolas,'Courier New',Courier,monospace;font-size:11px;color:rgba(245,245,245,0.85);line-height:1.75;white-space:pre-wrap;word-break:break-all;">def safe_rag_query(query, retriever, llm):
+    docs = retriever.get_relevant_documents(query)
+    safe_docs = []
+    for doc in docs:
+        result = zentric_scan(doc.page_content)  # POST /v1/analyze
+        if result["verdict"] == "BLOCKED":
+            continue  # poisoned chunk — skip it
+        if result["verdict"] == "ANONYMIZED":
+            doc.page_content = result["anonymized_input"]
+        safe_docs.append(doc)
+    return llm.call(build_prompt(query, safe_docs))</pre>
+              </div>
+              <p style="margin:12px 0 0;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:13px;color:rgba(245,245,245,0.4);line-height:1.6;">Full Python + JavaScript examples in the quickstart →</p>
+            </td>
+          </tr>
+
           <!-- WHAT EACH REQUEST RETURNS -->
           <tr>
             <td style="background:#0A0A0A;padding:28px 0;border-bottom:1px solid rgba(245,245,245,0.08);">
