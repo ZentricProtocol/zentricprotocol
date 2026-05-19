@@ -33,7 +33,12 @@ const supabase = createClient(
 // Constants
 // ---------------------------------------------------------------------------
 // NOTE: This middleware is not used by /api/v1/analyze.js which has its own
+<<<<<<< Updated upstream
 // inline auth for the free_api_keys PLG flow. Keep in sync.
+=======
+// inline auth for the free_api_keys PLG flow. This file is the foundation for
+// the paid-tier auth layer (api_keys + subscriptions tables). Keep in sync.
+>>>>>>> Stashed changes
 const FREE_TIER_REQUEST_LIMIT = 2000;
 const VALID_KEY_PREFIXES = ['zp_live_', 'zp_test_'];
 
