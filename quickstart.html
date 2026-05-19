@@ -266,9 +266,9 @@
         <span class="eyebrow-line"></span>
         <span>Quickstart</span>
       </div>
-      <h1>Your first API call in 60 seconds</h1>
-      <p class="lede">You have an API key in your inbox. Paste two snippets, see a signed verdict come back. That's it.</p>
-      <p class="meta-line"><span class="kinetic">◆</span> Time to first call · ~60 seconds &nbsp;·&nbsp; Cost · 1 free request</p>
+      <h1>Wire injection detection into your pipeline in 5 minutes</h1>
+      <p class="lede">Get your API key, make your first call, then drop it into your RAG pipeline so retrieved chunks never reach your LLM unvalidated.</p>
+      <p class="meta-line"><span class="kinetic">◆</span> Time to first call · ~60 seconds &nbsp;·&nbsp; Time to production integration · ~5 minutes &nbsp;·&nbsp; 10,000 free requests</p>
 
       <section class="step">
         <div class="step-num">Step 01</div>
@@ -330,30 +330,93 @@ export ZENTRIC_KEY=<span class="k">"zp_live_your_key_here"</span></pre>
 
       <section class="step">
         <div class="step-num">Step 04</div>
-        <h2>Use it in your agent pipeline</h2>
-        <p>Drop the same call into any agent framework — wrap it as a tool the model can invoke before it acts on external content (RAG retrievals, tool outputs, user-uploaded files, sub-agent answers). The example below registers Zentric as a LangChain <code class="inline-code">DynamicTool</code>:</p>
+        <h2>Drop it into your RAG pipeline — Python</h2>
+        <p>The right pattern is <strong>middleware in your pipeline code</strong>, not a tool the LLM decides to call. Scan retrieved chunks before they enter the context window — a poisoned document can't hijack your model if it never gets in.</p>
         <div class="codeblock">
-          <div class="codeblock-head"><span>SDK · LangChain (JavaScript)</span><span class="badge">◆ AGENT TOOL</span></div>
-<pre><span class="c">// As a LangChain tool</span>
-<span class="k">import</span> { DynamicTool } <span class="k">from</span> <span class="k">"langchain/tools"</span>;
+          <div class="codeblock-head"><span>PYTHON · LangChain RAG pipeline</span><span class="badge">◆ PRODUCTION PATTERN</span></div>
+<pre><span class="k">import</span> os, requests
+<span class="k">from</span> langchain.chains <span class="k">import</span> RetrievalQA
+<span class="k">from</span> langchain.chat_models <span class="k">import</span> ChatOpenAI
+<span class="k">from</span> langchain.vectorstores <span class="k">import</span> Chroma
 
-<span class="k">const</span> zentricGuard = <span class="k">new</span> <span class="n">DynamicTool</span>({
-  name: <span class="k">"zentric_guard"</span>,
-  description: <span class="k">"Validates a prompt for injection attacks and PII before sending to an LLM. Always call this before processing user input."</span>,
-  func: <span class="k">async</span> (input) =&gt; {
-    <span class="k">const</span> res = <span class="k">await</span> fetch(<span class="k">"https://api.zentricprotocol.com/v1/analyze"</span>, {
-      method: <span class="k">"POST"</span>,
-      headers: {
-        <span class="k">"Authorization"</span>: <span class="k">`Bearer ${process.env.ZENTRIC_API_KEY}`</span>,
-        <span class="k">"Content-Type"</span>: <span class="k">"application/json"</span>
-      },
-      body: JSON.stringify({ input, modules: [<span class="k">"integrity"</span>, <span class="k">"privacy"</span>] })
-    });
-    <span class="k">return await</span> res.json();
-  }
-});</pre>
+ZENTRIC_KEY = os.environ[<span class="k">"ZENTRIC_KEY"</span>]
+
+<span class="k">def</span> <span class="n">zentric_scan</span>(text: str) -> dict:
+    <span class="k">return</span> requests.post(
+        <span class="k">"https://api.zentricprotocol.com/v1/analyze"</span>,
+        headers={<span class="k">"Authorization"</span>: <span class="k">f"Bearer {ZENTRIC_KEY}"</span>},
+        json={<span class="k">"input"</span>: text, <span class="k">"modules"</span>: [<span class="k">"integrity"</span>, <span class="k">"privacy"</span>]},
+        timeout=<span class="n">2</span>
+    ).json()
+
+<span class="k">def</span> <span class="n">safe_rag_query</span>(query: str, retriever, llm):
+    <span class="c"># 1. Scan the user query first</span>
+    scan = zentric_scan(query)
+    <span class="k">if</span> scan[<span class="k">"verdict"</span>] == <span class="k">"BLOCKED"</span>:
+        <span class="k">raise</span> ValueError(<span class="k">f"Query blocked: {scan['report']['integrity']['signatures_matched']}"</span>)
+
+    <span class="c"># 2. Retrieve chunks</span>
+    docs = retriever.get_relevant_documents(query)
+
+    <span class="c"># 3. Scan each retrieved chunk — indirect injection surface</span>
+    safe_docs = []
+    <span class="k">for</span> doc <span class="k">in</span> docs:
+        result = zentric_scan(doc.page_content)
+        <span class="k">if</span> result[<span class="k">"verdict"</span>] == <span class="k">"BLOCKED"</span>:
+            <span class="c"># Log and skip the poisoned chunk</span>
+            print(<span class="k">f"⚠ Blocked chunk: {result['report']['report_id']}"</span>)
+            <span class="k">continue</span>
+        <span class="k">if</span> result[<span class="k">"verdict"</span>] == <span class="k">"ANONYMIZED"</span>:
+            <span class="c"># Use the redacted version instead</span>
+            doc.page_content = result[<span class="k">"anonymized_input"</span>]
+        safe_docs.append(doc)
+
+    <span class="c"># 4. Only safe chunks reach the LLM</span>
+    chain = RetrievalQA.from_documents(llm=llm, documents=safe_docs)
+    <span class="k">return</span> chain.run(query)</pre>
         </div>
-        <p><strong>Or use the native MCP server</strong> — add Zentric Protocol to Claude Desktop or any MCP-compatible agent in 2 minutes. See <a href="https://www.npmjs.com/package/zentric-protocol-mcp" style="color:var(--kinetic);text-decoration:underline">zentric-protocol-mcp</a> on npm, or copy the Claude Desktop config block from the <a href="/#agents" style="color:var(--kinetic);text-decoration:underline">Agents section</a> on the homepage.</p>
+        <p>This pattern works with any retriever — Chroma, Pinecone, pgvector, Weaviate. The scan adds ~23ms per chunk. A typical RAG call with 4 chunks adds under 100ms total.</p>
+      </section>
+
+      <section class="step">
+        <div class="step-num">Step 05</div>
+        <h2>JavaScript / Node.js pipeline</h2>
+        <p>Same pattern for Node — scan query and retrieved documents before they reach the LLM. Use as middleware, not as an LLM tool.</p>
+        <div class="codeblock">
+          <div class="codeblock-head"><span>JAVASCRIPT · Node.js RAG pipeline</span><span class="badge">◆ PRODUCTION PATTERN</span></div>
+<pre><span class="k">const</span> zentricScan = <span class="k">async</span> (text) => {
+  <span class="k">const</span> res = <span class="k">await</span> fetch(<span class="k">"https://api.zentricprotocol.com/v1/analyze"</span>, {
+    method: <span class="k">"POST"</span>,
+    headers: {
+      <span class="k">"Authorization"</span>: <span class="k">`Bearer ${process.env.ZENTRIC_KEY}`</span>,
+      <span class="k">"Content-Type"</span>: <span class="k">"application/json"</span>
+    },
+    body: JSON.stringify({ input: text, modules: [<span class="k">"integrity"</span>, <span class="k">"privacy"</span>] })
+  });
+  <span class="k">return</span> res.json();
+};
+
+<span class="k">async function</span> <span class="n">safeRagQuery</span>(query, retriever, llm) {
+  <span class="c">// 1. Scan user query</span>
+  <span class="k">const</span> queryScan = <span class="k">await</span> zentricScan(query);
+  <span class="k">if</span> (queryScan.verdict === <span class="k">"BLOCKED"</span>) <span class="k">throw new</span> Error(<span class="k">"Query blocked"</span>);
+
+  <span class="c">// 2. Retrieve + scan each chunk</span>
+  <span class="k">const</span> docs = <span class="k">await</span> retriever.getRelevantDocuments(query);
+  <span class="k">const</span> safeDocs = (<span class="k">await</span> Promise.all(
+    docs.map(<span class="k">async</span> (doc) => {
+      <span class="k">const</span> scan = <span class="k">await</span> zentricScan(doc.pageContent);
+      <span class="k">if</span> (scan.verdict === <span class="k">"BLOCKED"</span>) <span class="k">return null</span>;
+      <span class="k">if</span> (scan.verdict === <span class="k">"ANONYMIZED"</span>) doc.pageContent = scan.anonymized_input;
+      <span class="k">return</span> doc;
+    })
+  )).filter(Boolean);
+
+  <span class="c">// 3. Only safe chunks reach the LLM</span>
+  <span class="k">return</span> llm.call(buildPrompt(query, safeDocs));
+}</pre>
+        </div>
+        <p><strong>Or use the native MCP server</strong> — add Zentric Protocol to Claude Desktop or any MCP-compatible agent in 2 minutes. See <a href="https://www.npmjs.com/package/zentric-protocol-mcp" style="color:var(--kinetic);text-decoration:underline">zentric-protocol-mcp</a> on npm.</p>
       </section>
 
       <div class="next-steps">
