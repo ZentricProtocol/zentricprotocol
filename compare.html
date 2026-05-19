@@ -86,13 +86,44 @@
     @media(max-width:540px){.nav-inner{padding:0 20px}}
     .brand{display:flex;align-items:center;gap:14px;text-decoration:none}
     .brand-logo{width:28px;height:28px;flex-shrink:0}
-    .brand-name{font-size:13px;font-weight:700;letter-spacing:0.22em;color:var(--paper);font-family:var(--mono)}
-    .nav-links{display:flex;gap:32px;align-items:center}
-    .nav-link{font-size:13px;color:var(--ink-60);text-decoration:none;letter-spacing:-0.005em;transition:color 0.25s}
+    .brand-text{display:flex;align-items:baseline;gap:10px}
+    .brand-name{font-size:13px;font-weight:700;letter-spacing:0.22em;color:var(--paper)}
+    .brand-sfx{font-size:9px;color:var(--ink-40);letter-spacing:0.2em;text-transform:uppercase;font-family:var(--mono)}
+    .nav-links{display:flex;gap:28px;align-items:center}
+    .nav-link{font-size:13px;color:var(--ink-60);text-decoration:none;letter-spacing:-0.005em;transition:color 0.25s;font-weight:400;cursor:pointer;background:none;border:none;font-family:var(--display);padding:0}
     .nav-link:hover{color:var(--paper)}
     .nav-cta{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-family:var(--mono);letter-spacing:0.1em;text-transform:uppercase;color:#0A0A0A;background:var(--kinetic);border:none;border-radius:4px;padding:9px 16px;cursor:pointer;text-decoration:none;transition:opacity .2s,transform .1s;font-weight:700;white-space:nowrap}
     .nav-cta:hover{opacity:0.88;transform:translateY(-1px)}
-    @media(max-width:768px){.nav-links{display:none}}
+    .nav-status{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:9px;letter-spacing:0.16em;color:var(--ink-40);text-transform:uppercase}
+    .nav-dot{position:relative;width:6px;height:6px;border-radius:50%;background:var(--kinetic)}
+    .nav-dot::after{content:'';position:absolute;inset:0;border-radius:50%;background:var(--kinetic);animation:ping 2.4s ease-out infinite}
+    @keyframes ping{0%{transform:scale(1);opacity:.6}80%,100%{transform:scale(2.8);opacity:0}}
+    /* Docs dropdown — pure CSS hover/focus-within */
+    .nav-dropdown{position:relative;display:inline-flex;align-items:center}
+    .nav-dropdown-trigger{display:inline-flex;align-items:center;gap:5px}
+    .nav-dropdown-trigger::after{content:'↓';font-family:var(--mono);font-size:11px;color:var(--ink-40);transition:transform .2s,color .2s;line-height:1}
+    .nav-dropdown:hover .nav-dropdown-trigger,.nav-dropdown:focus-within .nav-dropdown-trigger{color:var(--paper)}
+    .nav-dropdown:hover .nav-dropdown-trigger::after,.nav-dropdown:focus-within .nav-dropdown-trigger::after{color:var(--kinetic);transform:translateY(2px)}
+    .nav-dropdown::after{content:'';position:absolute;top:100%;left:0;right:0;height:10px;}
+    .nav-dropdown-menu{position:absolute;top:calc(100% + 10px);left:-14px;margin-top:0;display:none;flex-direction:column;gap:2px;min-width:180px;background:#0A0A0A;border:1px solid var(--rule);border-radius:6px;padding:8px 6px;box-shadow:0 12px 40px rgba(0,0,0,0.7);z-index:31}
+    .nav-dropdown:hover .nav-dropdown-menu,.nav-dropdown:focus-within .nav-dropdown-menu{display:flex}
+    .nav-dropdown-menu .nav-link{display:block;padding:9px 14px;border-radius:4px;white-space:nowrap;font-size:13px}
+    .nav-dropdown-menu .nav-link:hover{background:rgba(245,245,245,0.05);color:var(--paper)}
+    /* Hamburger + mobile drawer */
+    .hamburger{display:none;appearance:none;cursor:pointer;background:transparent;border:1px solid var(--rule-strong);border-radius:6px;padding:8px 10px;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+    .hamburger span{display:block;width:18px;height:1.5px;background:var(--paper);transition:transform .25s,opacity .15s}
+    .hamburger[aria-expanded="true"] span:nth-child(1){transform:translateY(5.5px) rotate(45deg)}
+    .hamburger[aria-expanded="true"] span:nth-child(2){opacity:0}
+    .hamburger[aria-expanded="true"] span:nth-child(3){transform:translateY(-5.5px) rotate(-45deg)}
+    .nav-drawer{display:none;position:fixed;top:64px;left:0;right:0;background:rgba(10,10,10,0.98);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid var(--rule);padding:8px 0 24px;z-index:29;max-height:calc(100vh - 64px);overflow-y:auto}
+    .nav-drawer.open{display:flex;flex-direction:column}
+    .drawer-link{display:flex;align-items:center;padding:16px 36px;font-size:17px;font-weight:500;color:var(--paper);text-decoration:none;letter-spacing:-0.01em;border-bottom:1px solid var(--rule);transition:background .15s,color .15s}
+    .drawer-link:hover,.drawer-link:active{background:rgba(245,245,245,0.04);color:var(--kinetic)}
+    .drawer-link:last-child{border-bottom:none}
+    .drawer-sub{padding-left:54px;font-size:15px;color:var(--ink-90)}
+    @media(max-width:900px){.nav-links{gap:24px}}
+    @media(max-width:768px){.nav-links{display:none}.nav-status{display:none}.hamburger{display:inline-flex}}
+    @media(max-width:540px){.drawer-link{padding:14px 20px;font-size:16px}.drawer-sub{padding-left:36px}}
 
     /* MAIN */
     main{padding-top:140px;padding-bottom:120px}
