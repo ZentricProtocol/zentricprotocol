@@ -4,7 +4,6 @@
  * Keeps the Supabase `subscriptions` table in sync with Stripe in real time.
  * This is the single source of truth for subscription status.
  *
-<<<<<<< Updated upstream
  * Handles:
  *   customer.subscription.created/updated/deleted
  *   invoice.paid / invoice.payment_failed
@@ -12,22 +11,6 @@
  * IMPORTANT: bodyParser is disabled (export const config below) so Vercel
  * passes the raw request stream through. stripe.webhooks.constructEvent()
  * requires the raw Buffer — a parsed JS object always fails HMAC verification.
-=======
- * Handles the following Stripe events:
- *   customer.subscription.created   → upsert subscription as active/trialing
- *   customer.subscription.updated   → sync status and plan changes
- *   customer.subscription.deleted   → mark as canceled
- *   invoice.paid                    → mark as active (after renewal)
- *   invoice.payment_failed          → mark as past_due
- *
- * Deploy this as a Vercel Serverless Function:
- *   Vercel route:  /api/webhooks/stripe
- *   Stripe config: Dashboard → Webhooks → Add endpoint
- *
- * IMPORTANT: bodyParser is disabled so Vercel passes the raw stream through.
- * stripe.webhooks.constructEvent() requires the raw Buffer for HMAC-SHA256
- * signature verification — a parsed JS object will always fail.
->>>>>>> Stashed changes
  *
  * Environment variables required:
  *   STRIPE_SECRET_KEY       — sk_live_...
@@ -42,12 +25,7 @@
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 
-<<<<<<< Updated upstream
 // Disable Vercel's automatic body parsing — required for Stripe signature verification
-=======
-// Disable Vercel's automatic body parsing — Stripe signature verification
-// requires the raw request body bytes, not a parsed JS object.
->>>>>>> Stashed changes
 export const config = {
   api: {
     bodyParser: false,
@@ -64,10 +42,6 @@ const supabase = createClient(
 
 // ---------------------------------------------------------------------------
 // Raw body collector — reads the Node.js IncomingMessage stream into a Buffer
-<<<<<<< Updated upstream
-=======
-// Must run before any JSON parsing happens.
->>>>>>> Stashed changes
 // ---------------------------------------------------------------------------
 async function getRawBody(req) {
   const chunks = [];
@@ -82,11 +56,8 @@ async function getRawBody(req) {
 // ---------------------------------------------------------------------------
 function getPlanFromPriceId(priceId) {
   const map = {
-<<<<<<< Updated upstream
     [process.env.STRIPE_PRICE_INDIE]:      'indie',
     [process.env.STRIPE_PRICE_TEAM]:       'team',
-=======
->>>>>>> Stashed changes
     [process.env.STRIPE_PRICE_GROWTH]:     'growth',
     [process.env.STRIPE_PRICE_ENTERPRISE]: 'enterprise',
   };
@@ -118,13 +89,6 @@ async function updateSubscriptionByStripeId(stripeSubscriptionId, updates) {
   }
 }
 
-<<<<<<< Updated upstream
-=======
-/**
- * Resolve Supabase user_id from Stripe customer metadata.
- * When creating a Stripe customer, set metadata.supabase_user_id.
- */
->>>>>>> Stashed changes
 async function resolveUserId(stripeCustomerId) {
   try {
     const customer = await stripe.customers.retrieve(stripeCustomerId);
@@ -132,10 +96,6 @@ async function resolveUserId(stripeCustomerId) {
   } catch (err) {
     console.warn('[stripe-webhook] Could not retrieve Stripe customer:', err.message);
   }
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
   const { data } = await supabase
     .from('subscriptions')
     .select('user_id')
@@ -179,38 +139,25 @@ async function handleSubscriptionUpdated(subscription) {
 
 async function handleSubscriptionDeleted(subscription) {
   await updateSubscriptionByStripeId(subscription.id, { status: 'canceled' });
-<<<<<<< Updated upstream
   console.log(`[stripe-webhook] canceled: ${subscription.id}`);
-=======
-  console.log(`[stripe-webhook] Subscription canceled: ${subscription.id}`);
->>>>>>> Stashed changes
 }
 
 async function handleInvoicePaid(invoice) {
   if (!invoice.subscription) return;
   await updateSubscriptionByStripeId(invoice.subscription, { status: 'active' });
-<<<<<<< Updated upstream
   console.log(`[stripe-webhook] invoice paid → active: ${invoice.subscription}`);
-=======
-  console.log(`[stripe-webhook] Invoice paid → subscription active: ${invoice.subscription}`);
->>>>>>> Stashed changes
 }
 
 async function handleInvoicePaymentFailed(invoice) {
   if (!invoice.subscription) return;
   await updateSubscriptionByStripeId(invoice.subscription, { status: 'past_due' });
-<<<<<<< Updated upstream
   console.log(`[stripe-webhook] payment failed → past_due: ${invoice.subscription}`);
-=======
-  console.log(`[stripe-webhook] Invoice payment failed → past_due: ${invoice.subscription}`);
->>>>>>> Stashed changes
 }
 
 // ---------------------------------------------------------------------------
 // Handler
 // ---------------------------------------------------------------------------
 export default async function handler(req, res) {
-<<<<<<< Updated upstream
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const sig = req.headers['stripe-signature'];
@@ -227,34 +174,6 @@ export default async function handler(req, res) {
   let event;
   try {
     event = stripe.webhooks.constructEvent(rawBody, sig, process.env.STRIPE_WEBHOOK_SECRET);
-=======
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
-  const sig = req.headers['stripe-signature'];
-  if (!sig) {
-    return res.status(400).json({ error: 'Missing stripe-signature header' });
-  }
-
-  // Collect raw body before any JSON parsing — required for HMAC verification
-  let rawBody;
-  try {
-    rawBody = await getRawBody(req);
-  } catch (err) {
-    console.error('[stripe-webhook] Failed to read request body:', err.message);
-    return res.status(400).json({ error: 'Could not read request body' });
-  }
-
-  // Verify Stripe HMAC-SHA256 signature — rejects any forged/unsigned requests
-  let event;
-  try {
-    event = stripe.webhooks.constructEvent(
-      rawBody,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET
-    );
->>>>>>> Stashed changes
   } catch (err) {
     console.error('[stripe-webhook] Signature verification failed:', err.message);
     return res.status(400).json({ error: `Webhook signature error: ${err.message}` });
@@ -264,32 +183,12 @@ export default async function handler(req, res) {
 
   try {
     switch (event.type) {
-<<<<<<< Updated upstream
       case 'customer.subscription.created':  await handleSubscriptionCreated(event.data.object); break;
       case 'customer.subscription.updated':  await handleSubscriptionUpdated(event.data.object); break;
       case 'customer.subscription.deleted':  await handleSubscriptionDeleted(event.data.object); break;
       case 'invoice.paid':                   await handleInvoicePaid(event.data.object);          break;
       case 'invoice.payment_failed':         await handleInvoicePaymentFailed(event.data.object); break;
       default: console.log(`[stripe-webhook] Unhandled event: ${event.type}`);
-=======
-      case 'customer.subscription.created':
-        await handleSubscriptionCreated(event.data.object);
-        break;
-      case 'customer.subscription.updated':
-        await handleSubscriptionUpdated(event.data.object);
-        break;
-      case 'customer.subscription.deleted':
-        await handleSubscriptionDeleted(event.data.object);
-        break;
-      case 'invoice.paid':
-        await handleInvoicePaid(event.data.object);
-        break;
-      case 'invoice.payment_failed':
-        await handleInvoicePaymentFailed(event.data.object);
-        break;
-      default:
-        console.log(`[stripe-webhook] Unhandled event type: ${event.type}`);
->>>>>>> Stashed changes
     }
     return res.status(200).json({ received: true, event: event.type });
   } catch (err) {

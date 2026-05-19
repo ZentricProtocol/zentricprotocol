@@ -7,21 +7,13 @@ import { createClient } from '@supabase/supabase-js';
 // ---------------------------------------------------------------------------
 // IP rate limiter — prevents bulk account creation to abuse the free tier.
 // Allows 3 signups per IP per hour. In-memory per Vercel instance; sufficient
-<<<<<<< Updated upstream
 // for burst protection. For distributed abuse, upgrade to Upstash Redis.
-=======
-// for burst protection. For distributed abuse, add Upstash Redis.
->>>>>>> Stashed changes
 // ---------------------------------------------------------------------------
 const IP_WINDOW_MS   = 60 * 60 * 1000; // 1 hour
 const IP_MAX_SIGNUPS = 3;
 const ipSignupMap    = new Map(); // ip → { count, windowStart }
 
 function getClientIP(req) {
-<<<<<<< Updated upstream
-=======
-  // Vercel sets x-forwarded-for; take the leftmost (real client) IP
->>>>>>> Stashed changes
   const forwarded = req.headers['x-forwarded-for'];
   if (forwarded) return forwarded.split(',')[0].trim();
   return req.socket?.remoteAddress ?? 'unknown';
@@ -277,21 +269,12 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   // IP rate limiting — prevents bulk account creation to abuse free tier
-<<<<<<< Updated upstream
   const clientIP = getClientIP(req);
   const ipCheck  = checkIPRateLimit(clientIP);
   if (!ipCheck.allowed) {
     return res.status(429).json({
       error: 'RATE_LIMIT_EXCEEDED',
       message: `Too many signup attempts. Try again in ${ipCheck.resetInMinutes} minute(s).`,
-=======
-  const clientIP  = getClientIP(req);
-  const ipCheck   = checkIPRateLimit(clientIP);
-  if (!ipCheck.allowed) {
-    return res.status(429).json({
-      error: 'RATE_LIMIT_EXCEEDED',
-      message: `Too many signup attempts from this IP. Try again in ${ipCheck.resetInMinutes} minute(s).`,
->>>>>>> Stashed changes
     });
   }
 
