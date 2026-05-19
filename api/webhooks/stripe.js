@@ -73,7 +73,7 @@ async function upsertSubscription(payload) {
     .from('subscriptions')
     .upsert(payload, { onConflict: 'stripe_subscription_id' });
   if (error) {
-    console.error('[stripe-webhook] upsertSubscription error:', JSON.stringify({ code: error.code, message: error.message, details: error.details, hint: error.hint }));
+    console.error('[stripe-webhook] upsertSubscription error:', error.message);
     throw error;
   }
 }
@@ -113,13 +113,10 @@ async function handleSubscriptionCreated(subscription) {
   const plan    = getPlanFromPriceId(priceId);
   const userId  = await resolveUserId(subscription.customer);
 
-  // Defensive: current_period_end can be null on some Stripe test fixtures
+  // current_period_end can be null on some Stripe test fixtures
   const periodEnd = subscription.current_period_end
     ? new Date(subscription.current_period_end * 1000).toISOString()
     : null;
-
-  console.log(`[stripe-webhook] creating subscription: id=${subscription.id} customer=${subscription.customer} plan=${plan} status=${subscription.status} period_end=${periodEnd}`);
-  console.log(`[stripe-webhook] env check: SUPABASE_URL=${!!process.env.SUPABASE_URL} SUPABASE_KEY=${!!process.env.SUPABASE_SERVICE_ROLE_KEY}`);
 
   await upsertSubscription({
     stripe_customer_id:     subscription.customer,
