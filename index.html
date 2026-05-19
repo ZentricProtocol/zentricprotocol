@@ -33,6 +33,9 @@
   <!-- Microsoft Clarity -->
   <script type="text/javascript">(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)})(window,document,"clarity","script","wrl3tlkmgy");</script>
 
+  <!-- Vercel Analytics -->
+  <script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
+
   <link rel="canonical" href="https://zentricprotocol.com">
   <link rel="alternate" hreflang="en" href="https://zentricprotocol.com">
   <link rel="alternate" hreflang="x-default" href="https://zentricprotocol.com">
@@ -741,8 +744,8 @@
       </script>
 
       <h1 class="headline">
-        <span class="hl"><span>Your AI agent can be hijacked</span></span>
-        <span class="hl dim"><span>by a single prompt.</span></span>
+        <span class="hl"><span>Prompt injection detection</span></span>
+        <span class="hl dim"><span>for LLM apps &amp; agents.</span></span>
       </h1>
 
       <div class="hero-bottom">
@@ -1308,6 +1311,19 @@ curl -X POST https://api.zentricprotocol.com/v1/analyze \
   </div>
 </section>
 
+<!-- MID-PAGE CTA STRIP -->
+<section style="background:var(--kinetic);padding:32px 0;">
+  <div class="frame" style="display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;">
+    <div>
+      <p style="font-family:var(--mono);font-size:13px;font-weight:700;color:#0A0A0A;letter-spacing:-0.01em;margin:0">Start detecting injection attacks in 5 minutes.</p>
+      <p style="font-family:var(--mono);font-size:11px;color:#0A0A0A;opacity:0.6;margin:6px 0 0;letter-spacing:0.02em">10,000 free requests · No credit card · API key in seconds</p>
+    </div>
+    <a href="#api-access" class="btn" style="background:#0A0A0A;color:var(--kinetic);font-size:13px;padding:12px 24px;white-space:nowrap;flex-shrink:0;">
+      Get your free API key →
+    </a>
+  </div>
+</section>
+
 <!-- API ACCESS / WAITLIST -->
 <section class="waitlist-section" id="api-access" aria-label="Get your API key">
   <div class="frame">
@@ -1317,7 +1333,7 @@ curl -X POST https://api.zentricprotocol.com/v1/analyze \
       <p class="waitlist-body">Enter your work email and we'll send you an API key with 10,000 free requests — no credit card, no commitment. Test the full protocol in your own environment before you decide.</p>
       <div class="waitlist-count">
         <div class="waitlist-count-dot"></div>
-        <span id="waitlist-count-text">Developers already have access</span>
+        <span id="waitlist-count-text">47 developers already have access</span>
       </div>
       <form class="waitlist-form" id="waitlist-form" novalidate>
         <input
