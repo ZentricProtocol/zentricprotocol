@@ -257,6 +257,76 @@ Zentric Protocol is designed from the ground up for regulated AI deployments.
 
 ---
 
+## For Agent Pipelines
+
+Agent attacks don't arrive through the chat input. They arrive through tool call responses, RAG chunks, and memory retrievals — any external content that enters the prompt window. Your system prompt doesn't protect you here: it doesn't run until after the input is already parsed.
+
+Wire Zentric at every ingestion point, not just on user messages:
+
+- **LLM input** — user messages before they reach the model
+- **Tool output** — external API responses before they re-enter the context window
+- **RAG retrieval** — document chunks before they are assembled into the prompt
+- **Memory reads** — stored context before it is injected into the next turn
+
+One POST to `/v1/analyze`. The verdict comes back in ~23ms. The agent continues or halts based on the result. Nothing else changes in your pipeline.
+
+```bash
+curl -X POST https://api.zentricprotocol.com/v1/analyze \
+  -H "Authorization: Bearer zp_live_..." \
+  -H "Content-Type: application/json" \
+  -d '{"input": "<tool_output_or_rag_chunk_here>", "modules": ["integrity", "privacy"]}'
+```
+
+---
+
+## MCP Server — Claude Desktop Integration
+
+Zentric Protocol ships a native **Model Context Protocol (MCP) server** that integrates directly with Claude Desktop and any MCP-compatible agent runtime.
+
+### What it does
+
+The MCP server exposes Zentric's detection engine as a native MCP tool. When wired into Claude Desktop, the agent automatically calls `analyze_prompt` before sending any input to the LLM — user messages, tool responses, RAG chunks, and memory retrievals are all checked.
+
+### MCP Tool exposed
+
+```
+analyze_prompt(text: string) -> ZentricReport
+```
+
+Returns: `verdict` (CLEARED / BLOCKED), `risk_score`, matched `signatures`, `pii_entities`, `report_hash` (SHA-256), `latency_ms`.
+
+### Install via npm
+
+```bash
+npx zentric-protocol-mcp
+```
+
+### Claude Desktop configuration
+
+Add to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "zentric-protocol": {
+      "command": "npx",
+      "args": ["zentric-protocol-mcp"],
+      "env": {
+        "ZENTRIC_API_KEY": "your_api_key"
+      }
+    }
+  }
+}
+```
+
+Get your API key at [zentricprotocol.com/quickstart](https://zentricprotocol.com/quickstart) — free tier is 10,000 requests/month, no credit card required.
+
+### MCP server source
+
+The MCP server source code is in [`/mcp-server`](./mcp-server). It is built with the Model Context Protocol SDK and published to npm as [`zentric-protocol-mcp`](https://www.npmjs.com/package/zentric-protocol-mcp).
+
+---
+
 ## Security
 
 We take the security of this protocol seriously. If you discover a vulnerability, please report it responsibly.
