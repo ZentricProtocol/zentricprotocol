@@ -26,6 +26,17 @@
 
 </div>
 
+<div align="center">
+<br/>
+
+![Zentric Protocol — See it in action](./zentric-demo.gif)
+
+<br/>
+<sub>A real prompt injection attempt. Caught in 23ms. Your model never sees it.</sub>
+<br/><br/>
+
+</div>
+
 ---
 
 ## Repository Scope & Commercial License
