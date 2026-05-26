@@ -2038,5 +2038,176 @@ window.addEventListener('scroll',()=>{
   }
 })();
 </script>
+
+<!-- ── GSAP + ScrollTrigger: hero entry choreography + section transitions ── -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" defer></script>
+<script defer>
+(function(){
+  function bootGsap(){
+    if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined' || !window.__zpBg) {
+      return setTimeout(bootGsap, 50);
+    }
+    gsap.registerPlugin(ScrollTrigger);
+
+    const bg = window.__zpBg;
+    const s  = bg.state;
+    const reduceMotion = bg.reduceMotion;
+    const isMobile     = bg.isMobile;
+
+    // ──────────────────────────────────────────────────────────────
+    // 1) HERO ENTRY — particle field blooms in sync with the headline
+    //    The headline already animates via CSS @keyframes (0.25–0.70s
+    //    stagger). We coordinate the particle bloom over the same
+    //    window so the field "wakes up" with the text. During the
+    //    intro we lock cameraZ so the tick won't fight the tween.
+    // ──────────────────────────────────────────────────────────────
+
+    // Initial state: field hidden, camera further back
+    s.baseOpacity   = 0;
+    s.accentOpacity = 0;
+    s.cameraZ       = 24;
+    s.fogDensity    = 0.06;
+
+    bg.lockCameraZ();
+    const intro = gsap.timeline({
+      defaults: { ease: 'power3.out' },
+      onComplete(){ bg.unlockCameraZ(); }
+    });
+    intro
+      // Camera glides in toward resting position
+      .to(s, { cameraZ: 18,  duration: 2.2 }, 0)
+      // Fog clears slightly as the field reveals
+      .to(s, { fogDensity: 0.045, duration: 2.2 }, 0)
+      // Base white field fades up (matches headline first-word timing)
+      .to(s, { baseOpacity: 0.55, duration: 1.6, ease: 'power2.out' }, 0.15)
+      // Kinetic accent dots ignite a beat later (matches dim second line)
+      .to(s, { accentOpacity: 0.85, duration: 1.4, ease: 'power2.out' }, 0.55);
+
+    // ──────────────────────────────────────────────────────────────
+    // 2) HERO CONTENT PARALLAX (desktop) — DOM-only, doesn't touch
+    //    bg state. cameraZ for the hero scroll is handled by the
+    //    tick's anchor-driven dolly, so no ScrollTrigger fights for
+    //    it here.
+    // ──────────────────────────────────────────────────────────────
+
+    if (!isMobile && !reduceMotion) {
+      gsap.to('.hero-content', {
+        y: -80,
+        opacity: 0.35,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: '#hero',
+          start: 'top top',
+          end: 'bottom 30%',
+          scrub: 0.6
+        }
+      });
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    // 3) PER-SECTION VISUAL REGIMES
+    //    Each section gets its own "personality" on the canvas
+    //    (color, density, movement, camera). Transitions are
+    //    scrub-tied so scrolling back up reverses them. The FROM
+    //    of each regime equals the TO of the previous one, so the
+    //    state composes cleanly across the whole scroll.
+    //
+    //      hero      → kinetic green, default drift,   z=-4
+    //      problem   → danger red,    faster, dimmer,  z=-8, fog+
+    //      explainer → cool blue,     slow + airy,     z=+2, fog-
+    //      proof     → code amber,    almost frozen,   z=-10, fog~
+    // ──────────────────────────────────────────────────────────────
+
+    // Use THREE.Color so values stay in the correct (linear) color space —
+    // a manual rgb lerp here would drift the tone every time the user
+    // scrolls back to a previous section.
+    const accentColor = bg.accentMat.color;
+    const mkCol = (hex) => bg.points.material.color.clone().setHex(hex);
+
+    const COL_HERO  = mkCol(0x00FFC2); // kinetic
+    const COL_PROB  = mkCol(0xFF4C4C); // danger
+    const COL_EXPL  = mkCol(0x9FB8FF); // instructional periwinkle
+    const COL_PROOF = mkCol(0xE5C07B); // code amber (matches JSON syntax)
+
+    //  cz   = camera Z position
+    //  fog  = scene fog density
+    //  base = base (white) particle opacity
+    //  acc  = accent particle opacity
+    //  tilt = extra camera pitch
+    //  rot  = field rotation speed multiplier
+    const HERO_STATE  = { cz: -4,  fog: 0.045, base: 0.55, acc: 0.85, tilt:  0.00, rot: 1.00 };
+    const PROB_STATE  = { cz: -8,  fog: 0.075, base: 0.37, acc: 0.85, tilt:  0.08, rot: 1.30 };
+    const EXPL_STATE  = { cz:  2,  fog: 0.030, base: 0.65, acc: 0.50, tilt:  0.00, rot: 0.40 };
+    const PROOF_STATE = { cz: -10, fog: 0.055, base: 0.40, acc: 0.95, tilt: -0.05, rot: 0.15 };
+
+    const lerp = (a, b, t) => a + (b - a) * t;
+
+    function makeRegime({ trigger, colFrom, colTo, from, to }) {
+      // Skip silently if the section isn't on the page (defensive).
+      if (!document.querySelector(trigger)) return;
+      ScrollTrigger.create({
+        trigger,
+        start: 'top bottom', // start as the section first enters viewport
+        end:   'top 30%',    // finish before it's fully in view
+        scrub: 0.8,
+        onUpdate(self){
+          const p = self.progress;
+          // cameraZ is driven by the tick from window.scrollY anchors —
+          // we don't write it here. Mixing scrub triggers on the same
+          // numeric field caused races where the wrong trigger fired last.
+          accentColor.lerpColors(colFrom, colTo, p);
+          s.fogDensity      = lerp(from.fog,  to.fog,  p);
+          s.baseOpacity     = lerp(from.base, to.base, p);
+          s.accentOpacity   = lerp(from.acc,  to.acc,  p);
+          s.cameraExtraTilt = lerp(from.tilt, to.tilt, p);
+          s.rotSpeedMul     = lerp(from.rot,  to.rot,  p);
+        }
+      });
+    }
+
+    makeRegime({ trigger: '#problem',   colFrom: COL_HERO,  colTo: COL_PROB,  from: HERO_STATE, to: PROB_STATE  });
+    makeRegime({ trigger: '#explainer', colFrom: COL_PROB,  colTo: COL_EXPL,  from: PROB_STATE, to: EXPL_STATE  });
+    makeRegime({ trigger: '#proof',     colFrom: COL_EXPL,  colTo: COL_PROOF, from: EXPL_STATE, to: PROOF_STATE });
+
+    // ──────────────────────────────────────────────────────────────
+    // 4) SECTION-HEAD REVEALS — replace the existing .reveal IO for
+    //    these three sections with a GSAP-driven entry that plays /
+    //    reverses on scroll. Other sections keep their IO reveal.
+    // ──────────────────────────────────────────────────────────────
+
+    function attachGsapReveal(selector) {
+      const el = document.querySelector(selector);
+      if (!el || reduceMotion) return;
+      el.classList.remove('reveal');       // take it out of the IO's hands
+      el.classList.add('reveal-gsap');
+      gsap.set(el, { opacity: 0, y: 40, filter: 'blur(6px)' });
+      gsap.to(el, {
+        opacity: 1, y: 0, filter: 'blur(0px)',
+        duration: 1.0, ease: 'power3.out',
+        scrollTrigger: {
+          trigger: el,
+          start: 'top 85%',
+          toggleActions: 'play none none reverse'
+        }
+      });
+    }
+
+    attachGsapReveal('#problem .section-head');
+    attachGsapReveal('#explainer .section-head');
+    attachGsapReveal('#proof .section-head');
+
+    // Settle ScrollTrigger after fonts/images potentially shift layout
+    window.addEventListener('load', () => ScrollTrigger.refresh());
+    setTimeout(() => ScrollTrigger.refresh(), 400);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootGsap);
+  } else {
+    bootGsap();
+  }
+})();
+</script>
 </body>
 </html>
