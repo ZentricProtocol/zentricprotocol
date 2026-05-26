@@ -1879,6 +1879,186 @@ window.addEventListener('scroll',()=>{
     const accent = new THREE.Points(accentGeo, accentMat);
     scene.add(accent);
 
+    // ════════════════════════════════════════════════════════════════════
+    // NARRATIVE LAYER — per-section particle behavior on top of regimes.
+    //   #problem    perlin distortion + per-particle accent flicker
+    //               + 80 infected accents swarm toward (0,0,0)
+    //   #explainer  infected die sequentially with green flash; perlin clears
+    //   #proof      ~400 base particles converge to a rotating icosahedron
+    //               "shield"; non-shield particles fade out
+    //   .cta-section  shield dissolves; particles return to originals
+    // ════════════════════════════════════════════════════════════════════
+
+    // ── Inline 3D Perlin noise (Ken Perlin ref impl, ~25 LOC, 3 octaves) ─
+    const perm = new Uint8Array(512);
+    {
+      const base = new Uint8Array(256);
+      for (let i = 0; i < 256; i++) base[i] = i;
+      for (let i = 255; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const tmp = base[i]; base[i] = base[j]; base[j] = tmp;
+      }
+      for (let i = 0; i < 512; i++) perm[i] = base[i & 255];
+    }
+    const pfade = (t) => t*t*t*(t*(t*6-15)+10);
+    const plerp = (a,b,t) => a + t*(b-a);
+    function pgrad(h,x,y,z){
+      const g = h & 15;
+      const u = g < 8 ? x : y;
+      const v = g < 4 ? y : (g === 12 || g === 14 ? x : z);
+      return ((g & 1) ? -u : u) + ((g & 2) ? -v : v);
+    }
+    function perlin3(x,y,z){
+      const X = Math.floor(x) & 255, Y = Math.floor(y) & 255, Z = Math.floor(z) & 255;
+      x -= Math.floor(x); y -= Math.floor(y); z -= Math.floor(z);
+      const u = pfade(x), v = pfade(y), w = pfade(z);
+      const A = perm[X] + Y, AA = perm[A] + Z, AB = perm[A+1] + Z;
+      const B = perm[X+1] + Y, BA = perm[B] + Z, BB = perm[B+1] + Z;
+      return plerp(
+        plerp(plerp(pgrad(perm[AA],   x,   y,   z),   pgrad(perm[BA],   x-1, y,   z),   u),
+              plerp(pgrad(perm[AB],   x,   y-1, z),   pgrad(perm[BB],   x-1, y-1, z),   u), v),
+        plerp(plerp(pgrad(perm[AA+1], x,   y,   z-1), pgrad(perm[BA+1], x-1, y,   z-1), u),
+              plerp(pgrad(perm[AB+1], x,   y-1, z-1), pgrad(perm[BB+1], x-1, y-1, z-1), u), v), w);
+    }
+    function perlin3oct(x,y,z){
+      let total = 0, amp = 1, freq = 1, norm = 0;
+      for (let i = 0; i < 3; i++) {
+        total += perlin3(x*freq, y*freq, z*freq) * amp;
+        norm += amp; amp *= 0.5; freq *= 2;
+      }
+      return total / norm;
+    }
+
+    // ── Split base into shield (400/200) + normal base ─────────────────
+    const SHIELD_COUNT  = isMobile ? 200 : 400;
+    const SHIELD_RADIUS = isMobile ? 2.5 : 4;
+    const SHIELD_DETAIL = isMobile ? 0   : 1;
+    const NORMAL_COUNT  = COUNT - SHIELD_COUNT;
+
+    const isShieldFlag = new Uint8Array(COUNT);
+    {
+      const picked = new Set();
+      while (picked.size < SHIELD_COUNT) picked.add(Math.floor(Math.random() * COUNT));
+      for (const idx of picked) isShieldFlag[idx] = 1;
+    }
+
+    const normalBaseOriginalPos = new Float32Array(NORMAL_COUNT * 3);
+    const shieldOriginalPos     = new Float32Array(SHIELD_COUNT * 3);
+    {
+      let n = 0, sIdx = 0;
+      for (let i = 0; i < COUNT; i++) {
+        if (isShieldFlag[i]) {
+          shieldOriginalPos[sIdx*3+0] = positions[i*3+0];
+          shieldOriginalPos[sIdx*3+1] = positions[i*3+1];
+          shieldOriginalPos[sIdx*3+2] = positions[i*3+2];
+          sIdx++;
+        } else {
+          normalBaseOriginalPos[n*3+0] = positions[i*3+0];
+          normalBaseOriginalPos[n*3+1] = positions[i*3+1];
+          normalBaseOriginalPos[n*3+2] = positions[i*3+2];
+          n++;
+        }
+      }
+    }
+
+    // Swap the base Points to use only non-shield positions.
+    // (Existing `bg.points` and `bg.baseMat` references stay valid.)
+    const newBaseGeom = new THREE.BufferGeometry();
+    newBaseGeom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(normalBaseOriginalPos), 3));
+    const oldBaseGeom = points.geometry;
+    points.geometry = newBaseGeom;
+    oldBaseGeom.dispose();
+
+    // Shield Points in its own Group so we can rotate the group without
+    // touching geometry vertices (per spec).
+    const shieldGeo = new THREE.BufferGeometry();
+    shieldGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(shieldOriginalPos), 3));
+    const shieldMat = new THREE.PointsMaterial({
+      size: isMobile ? 0.075 : 0.06,
+      map: baseMat.map,
+      color: 0xF5F5F5,
+      transparent: true,
+      opacity: 0.55,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      sizeAttenuation: true
+    });
+    const shieldPoints = new THREE.Points(shieldGeo, shieldMat);
+    const shieldGroup  = new THREE.Group();
+    shieldGroup.add(shieldPoints);
+    scene.add(shieldGroup);
+
+    // Pre-compute shield target positions from an icosahedron surface.
+    const shieldTargets = new Float32Array(SHIELD_COUNT * 3);
+    {
+      const icoGeo = new THREE.IcosahedronGeometry(SHIELD_RADIUS, SHIELD_DETAIL);
+      const icoPos = icoGeo.attributes.position.array;
+      const ICO_VC = icoPos.length / 3;
+      for (let i = 0; i < SHIELD_COUNT; i++) {
+        const j = (i % ICO_VC) * 3;
+        shieldTargets[i*3+0] = icoPos[j+0] + (Math.random()-0.5)*0.18;
+        shieldTargets[i*3+1] = icoPos[j+1] + (Math.random()-0.5)*0.18;
+        shieldTargets[i*3+2] = icoPos[j+2] + (Math.random()-0.5)*0.18;
+      }
+      icoGeo.dispose();
+    }
+
+    // ── Accent narrative: per-particle async flicker + 80 infected ─────
+    const INFECTED_COUNT = Math.min(80, ACCENT_COUNT);
+
+    // Per-particle phase for async flicker
+    const accentPhases = new Float32Array(ACCENT_COUNT);
+    for (let i = 0; i < ACCENT_COUNT; i++) accentPhases[i] = Math.random() * Math.PI * 2;
+
+    // Pick infected indices and assign per-particle swarm targets + death stagger
+    const infectedIdxs = [];
+    {
+      const picked = new Set();
+      while (picked.size < INFECTED_COUNT) picked.add(Math.floor(Math.random() * ACCENT_COUNT));
+      for (const idx of picked) infectedIdxs.push(idx);
+    }
+    const isInfected   = new Uint8Array(ACCENT_COUNT);
+    const swarmTargets = new Float32Array(ACCENT_COUNT * 3); // only the infected slots are written
+    const deathDelays  = new Float32Array(ACCENT_COUNT);     // 0..1 stagger order
+    const accentOriginalPos = new Float32Array(accentPos);
+    for (let n = 0; n < infectedIdxs.length; n++) {
+      const i = infectedIdxs[n];
+      isInfected[i] = 1;
+      // Chaotic swarm near (0,0,0) — each infected has its own perturbation.
+      swarmTargets[i*3+0] = (Math.random() - 0.5) * 2.4;
+      swarmTargets[i*3+1] = (Math.random() - 0.5) * 2.4;
+      swarmTargets[i*3+2] = (Math.random() - 0.5) * 2.4;
+      deathDelays[i] = n / Math.max(1, infectedIdxs.length - 1); // 0..1
+    }
+
+    // Per-particle brightness modulator. vertexColors=true makes PointsMaterial
+    // multiply its color by per-vertex color, which gives us per-particle alpha
+    // (via grayscale brightness) without needing a custom ShaderMaterial.
+    const accentVCols = new Float32Array(ACCENT_COUNT * 3);
+    for (let i = 0; i < ACCENT_COUNT * 3; i++) accentVCols[i] = 1;
+    accentGeo.setAttribute('color', new THREE.BufferAttribute(accentVCols, 3));
+    accentMat.vertexColors = true;
+
+    // ── Death flash layer: one green pulse per infected, at its position ─
+    const flashPos  = new Float32Array(INFECTED_COUNT * 3);
+    const flashCols = new Float32Array(INFECTED_COUNT * 3);
+    const flashGeo  = new THREE.BufferGeometry();
+    flashGeo.setAttribute('position', new THREE.BufferAttribute(flashPos,  3));
+    flashGeo.setAttribute('color',    new THREE.BufferAttribute(flashCols, 3));
+    const flashMat = new THREE.PointsMaterial({
+      size: isMobile ? 0.32 : 0.28,
+      map: baseMat.map,
+      color: 0x00FFC2,
+      transparent: true,
+      opacity: 1.0,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      sizeAttenuation: true,
+      vertexColors: true
+    });
+    const flashPoints = new THREE.Points(flashGeo, flashMat);
+    scene.add(flashPoints);
+
     // ── Shared state (GSAP writes here; tick applies it) ────────────────
     // GSAP / ScrollTrigger can take over by calling disableFallbackScroll().
     const state = {
@@ -1889,6 +2069,16 @@ window.addEventListener('scroll',()=>{
       accentOpacity: 0.85,  // accent.material.opacity
       fogDensity: 0.045,    // scene.fog.density
       rotSpeedMul: 1.0,     // multiplier on the continuous field rotation
+
+      // ── Narrative layer (each scrub-trigger writes ONE var; tick combines)
+      perlinIn:      0,  // #problem entry: 0 → 0.8
+      perlinOut:     0,  // #explainer entry: 0 → 0.8 (cancels perlinIn)
+      flickerIn:     0,  // #problem entry: 0 → 1
+      flickerOut:    0,  // #explainer entry: 0 → 1 (cancels flickerIn)
+      swarmAmount:   0,  // #problem entry: 0 → 1 (infected accents → origin)
+      deathProgress: 0,  // #explainer entry: 0 → 1 (staggered kill)
+      shieldIn:      0,  // #proof entry: 0 → 1 (converge)
+      shieldOut:     0,  // .cta-section entry: 0 → 1 (dissolve)
     };
 
     // cameraZ is driven directly from window.scrollY using per-section anchors.
@@ -1998,10 +2188,120 @@ window.addEventListener('scroll',()=>{
       camera.rotation.x = tilt + pointer.y * 0.05;
       camera.rotation.y = yaw  + pointer.x * 0.05;
 
+      // Combined narrative amounts (each component has a single writer so
+      // they don't race; the tick is the only place they're combined).
+      const perlinAmount  = Math.max(0, state.perlinIn  - state.perlinOut);
+      const flickerAmount = Math.max(0, state.flickerIn - state.flickerOut);
+      const shieldAmount  = Math.max(0, state.shieldIn  - state.shieldOut);
+
       // Apply state to materials + fog (GSAP-tweenable)
-      baseMat.opacity      = state.baseOpacity;
+      baseMat.opacity      = state.baseOpacity * (1 - shieldAmount);
+      shieldMat.opacity    = state.baseOpacity;
       accentMat.opacity    = state.accentOpacity;
       scene.fog.density    = state.fogDensity;
+
+      // ── NARRATIVE: per-frame position + color updates ───────────────
+      // reduced-motion: skip position transitions, keep flicker/death/flash
+      // (color + opacity only) — see spec.
+
+      // Perlin displacement on the non-shield base layer
+      if (!reduceMotion) {
+        const arr = newBaseGeom.attributes.position.array;
+        if (perlinAmount > 0.003) {
+          const ns = 0.06;   // noise spatial scale
+          const amp = 2.5;   // peak displacement (worlds-units)
+          const tt = t * 0.12;
+          for (let i = 0; i < NORMAL_COUNT; i++) {
+            const ox = normalBaseOriginalPos[i*3+0];
+            const oy = normalBaseOriginalPos[i*3+1];
+            const oz = normalBaseOriginalPos[i*3+2];
+            arr[i*3+0] = ox + perlin3oct(ox*ns,       oy*ns + tt, oz*ns)       * amp * perlinAmount;
+            arr[i*3+1] = oy + perlin3oct(ox*ns + 31,  oy*ns,      oz*ns + tt)  * amp * perlinAmount;
+            arr[i*3+2] = oz + perlin3oct(ox*ns,       oy*ns + 17, oz*ns + tt)  * amp * perlinAmount;
+          }
+          newBaseGeom.attributes.position.needsUpdate = true;
+        } else if (arr[0] !== normalBaseOriginalPos[0]) {
+          // Smooth handover back to originals when perlin is off
+          arr.set(normalBaseOriginalPos);
+          newBaseGeom.attributes.position.needsUpdate = true;
+        }
+      }
+
+      // Shield convergence + group rotation
+      if (!reduceMotion) {
+        const arr = shieldGeo.attributes.position.array;
+        for (let i = 0; i < SHIELD_COUNT; i++) {
+          const ox = shieldOriginalPos[i*3+0];
+          const oy = shieldOriginalPos[i*3+1];
+          const oz = shieldOriginalPos[i*3+2];
+          arr[i*3+0] = ox + (shieldTargets[i*3+0] - ox) * shieldAmount;
+          arr[i*3+1] = oy + (shieldTargets[i*3+1] - oy) * shieldAmount;
+          arr[i*3+2] = oz + (shieldTargets[i*3+2] - oz) * shieldAmount;
+        }
+        shieldGeo.attributes.position.needsUpdate = true;
+        // Continuous Y rotation when assembled (spec). When fully dissolved
+        // we ease the group's accumulated rotation back to 0 so shield
+        // particles return to their true world-frame originals.
+        if (shieldAmount > 0.005) {
+          shieldGroup.rotation.y += 0.003 * shieldAmount;
+        } else if (Math.abs(shieldGroup.rotation.y) > 0.001) {
+          shieldGroup.rotation.y *= 0.92;
+        } else {
+          shieldGroup.rotation.y = 0;
+        }
+      }
+
+      // Infected accent swarm toward origin
+      if (!reduceMotion) {
+        const arr = accentGeo.attributes.position.array;
+        for (let n = 0; n < infectedIdxs.length; n++) {
+          const i = infectedIdxs[n];
+          const ox = accentOriginalPos[i*3+0];
+          const oy = accentOriginalPos[i*3+1];
+          const oz = accentOriginalPos[i*3+2];
+          arr[i*3+0] = ox + (swarmTargets[i*3+0] - ox) * state.swarmAmount;
+          arr[i*3+1] = oy + (swarmTargets[i*3+1] - oy) * state.swarmAmount;
+          arr[i*3+2] = oz + (swarmTargets[i*3+2] - oz) * state.swarmAmount;
+        }
+        accentGeo.attributes.position.needsUpdate = true;
+      }
+
+      // Per-particle accent flicker + staggered infected death (alpha modulation
+      // via vertex colors). Runs in all motion modes — color/opacity only.
+      const colArr   = accentGeo.attributes.color.array;
+      const FLICK_MIN = 0.18;
+      for (let i = 0; i < ACCENT_COUNT; i++) {
+        const osc = FLICK_MIN + (1 - FLICK_MIN) * (0.5 + 0.5 * Math.sin(t * 4.5 + accentPhases[i]));
+        let a = 1 - flickerAmount + flickerAmount * osc;
+        if (isInfected[i]) {
+          const local = Math.min(1, Math.max(0, (state.deathProgress - deathDelays[i] * 0.8) * 5));
+          // Fade out in the second half of the per-particle death curve.
+          a *= 1 - Math.max(0, Math.min(1, (local - 0.5) * 2));
+        }
+        colArr[i*3+0] = a;
+        colArr[i*3+1] = a;
+        colArr[i*3+2] = a;
+      }
+      accentGeo.attributes.color.needsUpdate = true;
+
+      // Death flash: green pulse at each infected particle's current position,
+      // bell-shaped (peak at local=0.5 of its death window).
+      const apos = accentGeo.attributes.position.array;
+      const fposArr = flashGeo.attributes.position.array;
+      const fcolArr = flashGeo.attributes.color.array;
+      for (let n = 0; n < infectedIdxs.length; n++) {
+        const i = infectedIdxs[n];
+        const local = Math.min(1, Math.max(0, (state.deathProgress - deathDelays[i] * 0.8) * 5));
+        const pulse = local > 0 && local < 1 ? Math.sin(local * Math.PI) : 0;
+        fposArr[n*3+0] = apos[i*3+0];
+        fposArr[n*3+1] = apos[i*3+1];
+        fposArr[n*3+2] = apos[i*3+2];
+        fcolArr[n*3+0] = pulse;
+        fcolArr[n*3+1] = pulse;
+        fcolArr[n*3+2] = pulse;
+      }
+      flashGeo.attributes.position.needsUpdate = true;
+      flashGeo.attributes.color.needsUpdate    = true;
 
       if (!reduceMotion) {
         // Gentle continuous drift on the field itself.
@@ -2022,6 +2322,9 @@ window.addEventListener('scroll',()=>{
     window.__zpBg = {
       scene, camera, points, accent, renderer,
       baseMat, accentMat,
+      // Narrative layer
+      shieldPoints, shieldGroup, shieldMat, flashPoints, flashMat,
+      shieldCount: SHIELD_COUNT, infectedCount: INFECTED_COUNT,
       state,
       reduceMotion, isMobile,
       lockCameraZ()   { scrollDrivenCam = false; },
@@ -2169,6 +2472,55 @@ window.addEventListener('scroll',()=>{
     makeRegime({ trigger: '#problem',   colFrom: COL_HERO,  colTo: COL_PROB,  from: HERO_STATE, to: PROB_STATE  });
     makeRegime({ trigger: '#explainer', colFrom: COL_PROB,  colTo: COL_EXPL,  from: PROB_STATE, to: EXPL_STATE  });
     makeRegime({ trigger: '#proof',     colFrom: COL_EXPL,  colTo: COL_PROOF, from: EXPL_STATE, to: PROOF_STATE });
+
+    // ──────────────────────────────────────────────────────────────
+    // 3b) NARRATIVE LAYER — separate from regimes. Each trigger writes
+    //     ONE state variable (no race with regimes or with each other).
+    //     The tick combines pairs (e.g. perlinIn - perlinOut) to derive
+    //     the effective amounts. Fully reversible via scrub.
+    // ──────────────────────────────────────────────────────────────
+
+    // #problem: perlin distortion ramps up, accents start flickering,
+    // 80 infected accents swarm toward (0,0,0).
+    ScrollTrigger.create({
+      trigger: '#problem', start: 'top bottom', end: 'top 30%', scrub: 0.8,
+      onUpdate(self){
+        const p = self.progress;
+        s.perlinIn    = p * 0.8;
+        s.flickerIn   = p;
+        s.swarmAmount = p;
+      }
+    });
+
+    // #explainer: infected die one-by-one (staggered) with green flashes,
+    // perlin clears, flicker calms.
+    ScrollTrigger.create({
+      trigger: '#explainer', start: 'top bottom', end: 'top 30%', scrub: 0.8,
+      onUpdate(self){
+        const p = self.progress;
+        s.perlinOut     = p * 0.8;
+        s.flickerOut    = p;
+        s.deathProgress = p;
+      }
+    });
+
+    // #proof: ~400 base particles converge to a rotating icosahedron.
+    ScrollTrigger.create({
+      trigger: '#proof', start: 'top bottom', end: 'top 30%', scrub: 0.8,
+      onUpdate(self){
+        s.shieldIn = self.progress;
+      }
+    });
+
+    // .cta-section: shield dissolves back to originals.
+    if (document.querySelector('.cta-section')) {
+      ScrollTrigger.create({
+        trigger: '.cta-section', start: 'top bottom', end: 'top center', scrub: 1.5,
+        onUpdate(self){
+          s.shieldOut = self.progress;
+        }
+      });
+    }
 
     // ──────────────────────────────────────────────────────────────
     // 4) SECTION-HEAD REVEALS — replace the existing .reveal IO for
