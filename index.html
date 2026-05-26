@@ -1872,10 +1872,10 @@ import Lenis from 'lenis';
 
   const planeUniforms = {
     uTime:       { value: 0 },
-    uAmplitude:  { value: 0.8 },
+    uAmplitude:  { value: 1.6 },
     uCorruption: { value: 0 },     // 0..1 — high-freq chaos
     uRigidity:   { value: 0 },     // 0..1 — flattens motion when high
-    uGlow:       { value: 0.30 },  // emissive boost on peaks (drives bloom)
+    uGlow:       { value: 0.45 },  // emissive boost on peaks (drives bloom)
     uScanline:   { value: 0.30 },  // matrix scanline intensity
     uColorBase:  { value: new THREE.Color(0x040404) },
     uColorPeak:  { value: new THREE.Color(0x00FFC2) },
@@ -1950,11 +1950,6 @@ import Lenis from 'lenis';
       float edge = 1.0 - smoothstep(78.0, 115.0, length(vLocal.xy));
       color *= edge;
 
-      // Final plane opacity — the data field accompanies the content rather
-      // than competing with it. Dims everything (including bloom source) by
-      // the same factor so glow still reads where it matters.
-      color *= 0.55;
-
       gl_FragColor = vec4(color, 1.0);
     }
   `;
@@ -1988,7 +1983,7 @@ import Lenis from 'lenis';
     new THREE.Vector2(window.innerWidth, window.innerHeight),
     isMobile ? 0.25 : 0.35,    // strength (will be scrubbed by GSAP)
     isMobile ? 0.55 : 0.7,     // radius (soft glow halo)
-    0.75                        // threshold (only the brightest peaks bloom)
+    0.55                        // threshold (keep base surface out of bloom)
   );
   composer.addPass(bloomPass);
 
@@ -2132,25 +2127,24 @@ import Lenis from 'lenis';
 
   // Values tuned so the data field reads as atmosphere behind content, not
   // as a foreground element. Bloom strength is the dominant "impact" knob.
-  // Amplitudes and glow are intentionally subtle — the field accompanies.
   const HERO = {
-    corruption: 0,    rigidity: 0,    amplitude: 0.8,  glow: 0.30,
-    color: 0x00FFC2,  chroma: 0.0008,                  bloom: isMobile ? 0.18 : 0.30,
+    corruption: 0,    rigidity: 0,    amplitude: 1.6, glow: 0.45,
+    color: 0x00FFC2,  chroma: 0.0008,                 bloom: isMobile ? 0.18 : 0.30,
     scanline: 0.30,   camY: 6,         camZ: 38
   };
   const PROB = {
-    corruption: 1,    rigidity: 0,    amplitude: 1.1,  glow: 0.55,
-    color: 0xFF4C4C,  chroma: isMobile ? 0 : 0.012,    bloom: isMobile ? 0.32 : 0.55,
+    corruption: 1,    rigidity: 0,    amplitude: 2.2, glow: 0.85,
+    color: 0xFF4C4C,  chroma: isMobile ? 0 : 0.012,   bloom: isMobile ? 0.32 : 0.55,
     scanline: 0.42,   camY: 4,         camZ: 30
   };
   const EXPL = {
-    corruption: 0,    rigidity: 0.72, amplitude: 0.45, glow: 0.35,
-    color: 0x4C9FFF,  chroma: isMobile ? 0 : 0.0035,   bloom: isMobile ? 0.22 : 0.38,
+    corruption: 0,    rigidity: 0.72, amplitude: 0.9, glow: 0.55,
+    color: 0x4C9FFF,  chroma: isMobile ? 0 : 0.0035,  bloom: isMobile ? 0.22 : 0.38,
     scanline: 0.38,   camY: 8,         camZ: 44
   };
   const PROOF = {
-    corruption: 0,    rigidity: 0.92, amplitude: 0.25, glow: 0.70,
-    color: 0x00FFC2,  chroma: isMobile ? 0 : 0.0015,   bloom: isMobile ? 0.45 : 0.75,
+    corruption: 0,    rigidity: 0.92, amplitude: 0.5, glow: 1.10,
+    color: 0x00FFC2,  chroma: isMobile ? 0 : 0.0015,  bloom: isMobile ? 0.45 : 0.75,
     scanline: 0.48,   camY: 14,        camZ: 78
   };
 
@@ -2179,18 +2173,12 @@ import Lenis from 'lenis';
     });
   }
 
-  // Main narrative chain (climax at #proof; cycle closes at #protocol
-  // where the field calms back to the hero state).
   makeRegime({ trigger: '#problem',   from: HERO,  to: PROB  });
   makeRegime({ trigger: '#explainer', from: PROB,  to: EXPL  });
   makeRegime({ trigger: '#proof',     from: EXPL,  to: PROOF });
-  makeRegime({ trigger: '#protocol',  from: PROOF, to: HERO  });
-
-  // Identity coverage — sections after #protocol inherit the HERO state.
-  // No new identities; just keep the chain explicitly covered so the field
-  // stays active and smooth all the way to the footer.
-  ['#capabilities','#evidence','#agents','#pricing','#faq','#api-access','.cta-section']
-    .forEach(sel => makeRegime({ trigger: sel, from: HERO, to: HERO }));
+  if (document.querySelector('.cta-section')) {
+    makeRegime({ trigger: '.cta-section', from: PROOF, to: HERO });
+  }
 
   // ── Hero entry: bloom + glow bloom-in synced with the headline CSS
   //    animation (staggered 0.25–0.70s). The field is alive from frame 1;
