@@ -190,13 +190,15 @@ async function incrementPaidKey(supabase, keyHash, previousCount) {
   }
 }
 
-async function logReportRow(supabase, { reportId, userId, verdict, sha256, latencyMs }) {
+async function logReportRow(supabase, { reportId, userId, verdict, sha256, latencyMs, keyHash, tier }) {
   const { error } = await supabase.from('reports').insert({
     report_id: reportId,
-    user_id: userId,
+    user_id: userId ?? null,
     verdict,
     sha256,
     latency_ms: latencyMs,
+    key_hash: keyHash ?? null,
+    tier: tier ?? 'FREE',
   });
   if (error) throw error;
 }
@@ -313,11 +315,24 @@ export default async function handler(req, res) {
           verdict: result.verdict,
           sha256: result.report.sha256,
           latencyMs: result.report.latency_ms,
+          keyHash: auth.keyHash,
+          tier: auth.tier,
         }),
         incrementPaidKey(supabase, auth.keyHash, auth.used),
       );
     } else if (auth.kind === 'free') {
-      tasks.push(incrementFreeKey(supabase, auth.keyHash, auth.sameMonth, auth.currentMonth));
+      tasks.push(
+        logReportRow(supabase, {
+          reportId: result.report.report_id,
+          userId: null,
+          verdict: result.verdict,
+          sha256: result.report.sha256,
+          latencyMs: result.report.latency_ms,
+          keyHash: auth.keyHash,
+          tier: 'FREE',
+        }),
+        incrementFreeKey(supabase, auth.keyHash, auth.sameMonth, auth.currentMonth),
+      );
     }
     await Promise.all(tasks);
   } catch (err) {
