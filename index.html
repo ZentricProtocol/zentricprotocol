@@ -1762,462 +1762,804 @@ window.addEventListener('scroll',()=>{
 },{passive:true});
 </script>
 
-<!-- ────────────────────────────────────────────────────────────────────── -->
-<!-- 3D LAYER: GLSL data field + EffectComposer post-processing + Lenis    -->
-<!-- ────────────────────────────────────────────────────────────────────── -->
+<!-- ── 3D BACKGROUND: Three.js particle field, scroll-reactive ──────────── -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.min.js" defer></script>
+<script defer>
+(function(){
+  function boot(){
+    if (typeof THREE === 'undefined') { return setTimeout(boot, 50); }
 
-<!-- ES module deps: three + addons (postprocessing) + lenis -->
-<script type="importmap">
-{
-  "imports": {
-    "three":          "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
-    "three/addons/":  "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/",
-    "lenis":          "https://cdn.jsdelivr.net/npm/lenis@1.1.20/dist/lenis.mjs"
+    const canvas = document.getElementById('bg-canvas');
+    if (!canvas) return;
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+
+    // ── Renderer ────────────────────────────────────────────────────────
+    const renderer = new THREE.WebGLRenderer({
+      canvas: canvas,
+      antialias: false,
+      alpha: true,
+      powerPreference: 'low-power'
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2));
+    renderer.setClearColor(0x000000, 0);
+
+    // ── Scene + camera ──────────────────────────────────────────────────
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x0a0a0a, 0.045);
+
+    const camera = new THREE.PerspectiveCamera(
+      60,
+      window.innerWidth / window.innerHeight,
+      0.1, 200
+    );
+    camera.position.set(0, 0, 18);
+
+    // ── Particle field ──────────────────────────────────────────────────
+    const COUNT = isMobile ? 1400 : 3200;
+    const SPREAD_XY = 38;
+    const SPREAD_Z  = 60;
+
+    const positions = new Float32Array(COUNT * 3);
+    const seeds     = new Float32Array(COUNT); // per-particle randomness for drift
+
+    for (let i = 0; i < COUNT; i++) {
+      // Mix a denser core with a wider halo so the field has depth/breathing
+      const inCore = Math.random() < 0.55;
+      const r = inCore
+        ? Math.pow(Math.random(), 0.7) * SPREAD_XY * 0.55
+        : SPREAD_XY * (0.5 + Math.random() * 0.55);
+      const theta = Math.random() * Math.PI * 2;
+
+      positions[i*3 + 0] = Math.cos(theta) * r;
+      positions[i*3 + 1] = Math.sin(theta) * r * 0.7; // slight vertical squash
+      positions[i*3 + 2] = (Math.random() - 0.5) * SPREAD_Z;
+
+      seeds[i] = Math.random() * Math.PI * 2;
+    }
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+    // Round, soft particle sprite generated on the fly (no asset request)
+    function makeDotTexture(){
+      const size = 64;
+      const c = document.createElement('canvas');
+      c.width = c.height = size;
+      const ctx = c.getContext('2d');
+      const g = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
+      g.addColorStop(0,    'rgba(255,255,255,1)');
+      g.addColorStop(0.35, 'rgba(255,255,255,0.55)');
+      g.addColorStop(1,    'rgba(255,255,255,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, size, size);
+      const tex = new THREE.CanvasTexture(c);
+      tex.minFilter = THREE.LinearFilter;
+      return tex;
+    }
+
+    // Two layers: most particles are paper-white at low opacity,
+    // a smaller layer uses the kinetic accent (#00FFC2).
+    const baseMat = new THREE.PointsMaterial({
+      size: isMobile ? 0.075 : 0.06,
+      map: makeDotTexture(),
+      color: 0xF5F5F5,
+      transparent: true,
+      opacity: 0.55,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      sizeAttenuation: true
+    });
+    const points = new THREE.Points(geometry, baseMat);
+    scene.add(points);
+
+    // Accent layer — sparse, brighter, kinetic green
+    const ACCENT_COUNT = isMobile ? 140 : 260;
+    const accentPos = new Float32Array(ACCENT_COUNT * 3);
+    for (let i = 0; i < ACCENT_COUNT; i++) {
+      const theta = Math.random() * Math.PI * 2;
+      const r = Math.pow(Math.random(), 0.5) * SPREAD_XY * 0.9;
+      accentPos[i*3 + 0] = Math.cos(theta) * r;
+      accentPos[i*3 + 1] = Math.sin(theta) * r * 0.7;
+      accentPos[i*3 + 2] = (Math.random() - 0.5) * SPREAD_Z;
+    }
+    const accentGeo = new THREE.BufferGeometry();
+    accentGeo.setAttribute('position', new THREE.BufferAttribute(accentPos, 3));
+    const accentMat = new THREE.PointsMaterial({
+      size: isMobile ? 0.11 : 0.09,
+      map: baseMat.map,
+      color: 0x00FFC2,
+      transparent: true,
+      opacity: 0.85,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      sizeAttenuation: true
+    });
+    const accent = new THREE.Points(accentGeo, accentMat);
+    scene.add(accent);
+
+    // ════════════════════════════════════════════════════════════════════
+    // NARRATIVE LAYER — per-section particle behavior on top of regimes.
+    //   #problem    perlin distortion + per-particle accent flicker
+    //               + 80 infected accents swarm toward (0,0,0)
+    //   #explainer  infected die sequentially with green flash; perlin clears
+    //   #proof      ~400 base particles converge to a rotating icosahedron
+    //               "shield"; non-shield particles fade out
+    //   .cta-section  shield dissolves; particles return to originals
+    // ════════════════════════════════════════════════════════════════════
+
+    // ── Inline 3D Perlin noise (Ken Perlin ref impl, ~25 LOC, 3 octaves) ─
+    const perm = new Uint8Array(512);
+    {
+      const base = new Uint8Array(256);
+      for (let i = 0; i < 256; i++) base[i] = i;
+      for (let i = 255; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const tmp = base[i]; base[i] = base[j]; base[j] = tmp;
+      }
+      for (let i = 0; i < 512; i++) perm[i] = base[i & 255];
+    }
+    const pfade = (t) => t*t*t*(t*(t*6-15)+10);
+    const plerp = (a,b,t) => a + t*(b-a);
+    function pgrad(h,x,y,z){
+      const g = h & 15;
+      const u = g < 8 ? x : y;
+      const v = g < 4 ? y : (g === 12 || g === 14 ? x : z);
+      return ((g & 1) ? -u : u) + ((g & 2) ? -v : v);
+    }
+    function perlin3(x,y,z){
+      const X = Math.floor(x) & 255, Y = Math.floor(y) & 255, Z = Math.floor(z) & 255;
+      x -= Math.floor(x); y -= Math.floor(y); z -= Math.floor(z);
+      const u = pfade(x), v = pfade(y), w = pfade(z);
+      const A = perm[X] + Y, AA = perm[A] + Z, AB = perm[A+1] + Z;
+      const B = perm[X+1] + Y, BA = perm[B] + Z, BB = perm[B+1] + Z;
+      return plerp(
+        plerp(plerp(pgrad(perm[AA],   x,   y,   z),   pgrad(perm[BA],   x-1, y,   z),   u),
+              plerp(pgrad(perm[AB],   x,   y-1, z),   pgrad(perm[BB],   x-1, y-1, z),   u), v),
+        plerp(plerp(pgrad(perm[AA+1], x,   y,   z-1), pgrad(perm[BA+1], x-1, y,   z-1), u),
+              plerp(pgrad(perm[AB+1], x,   y-1, z-1), pgrad(perm[BB+1], x-1, y-1, z-1), u), v), w);
+    }
+    function perlin3oct(x,y,z){
+      let total = 0, amp = 1, freq = 1, norm = 0;
+      for (let i = 0; i < 3; i++) {
+        total += perlin3(x*freq, y*freq, z*freq) * amp;
+        norm += amp; amp *= 0.5; freq *= 2;
+      }
+      return total / norm;
+    }
+
+    // ── Split base into shield (400/200) + normal base ─────────────────
+    const SHIELD_COUNT  = isMobile ? 200 : 400;
+    const SHIELD_RADIUS = isMobile ? 2.5 : 4;
+    const SHIELD_DETAIL = isMobile ? 0   : 1;
+    const NORMAL_COUNT  = COUNT - SHIELD_COUNT;
+
+    const isShieldFlag = new Uint8Array(COUNT);
+    {
+      const picked = new Set();
+      while (picked.size < SHIELD_COUNT) picked.add(Math.floor(Math.random() * COUNT));
+      for (const idx of picked) isShieldFlag[idx] = 1;
+    }
+
+    const normalBaseOriginalPos = new Float32Array(NORMAL_COUNT * 3);
+    const shieldOriginalPos     = new Float32Array(SHIELD_COUNT * 3);
+    {
+      let n = 0, sIdx = 0;
+      for (let i = 0; i < COUNT; i++) {
+        if (isShieldFlag[i]) {
+          shieldOriginalPos[sIdx*3+0] = positions[i*3+0];
+          shieldOriginalPos[sIdx*3+1] = positions[i*3+1];
+          shieldOriginalPos[sIdx*3+2] = positions[i*3+2];
+          sIdx++;
+        } else {
+          normalBaseOriginalPos[n*3+0] = positions[i*3+0];
+          normalBaseOriginalPos[n*3+1] = positions[i*3+1];
+          normalBaseOriginalPos[n*3+2] = positions[i*3+2];
+          n++;
+        }
+      }
+    }
+
+    // Swap the base Points to use only non-shield positions.
+    // (Existing `bg.points` and `bg.baseMat` references stay valid.)
+    const newBaseGeom = new THREE.BufferGeometry();
+    newBaseGeom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(normalBaseOriginalPos), 3));
+    const oldBaseGeom = points.geometry;
+    points.geometry = newBaseGeom;
+    oldBaseGeom.dispose();
+
+    // Shield Points in its own Group so we can rotate the group without
+    // touching geometry vertices (per spec).
+    const shieldGeo = new THREE.BufferGeometry();
+    shieldGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(shieldOriginalPos), 3));
+    const shieldMat = new THREE.PointsMaterial({
+      size: isMobile ? 0.075 : 0.06,
+      map: baseMat.map,
+      color: 0xF5F5F5,
+      transparent: true,
+      opacity: 0.55,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      sizeAttenuation: true
+    });
+    const shieldPoints = new THREE.Points(shieldGeo, shieldMat);
+    const shieldGroup  = new THREE.Group();
+    shieldGroup.add(shieldPoints);
+    scene.add(shieldGroup);
+
+    // Pre-compute shield target positions from an icosahedron surface.
+    const shieldTargets = new Float32Array(SHIELD_COUNT * 3);
+    {
+      const icoGeo = new THREE.IcosahedronGeometry(SHIELD_RADIUS, SHIELD_DETAIL);
+      const icoPos = icoGeo.attributes.position.array;
+      const ICO_VC = icoPos.length / 3;
+      for (let i = 0; i < SHIELD_COUNT; i++) {
+        const j = (i % ICO_VC) * 3;
+        shieldTargets[i*3+0] = icoPos[j+0] + (Math.random()-0.5)*0.18;
+        shieldTargets[i*3+1] = icoPos[j+1] + (Math.random()-0.5)*0.18;
+        shieldTargets[i*3+2] = icoPos[j+2] + (Math.random()-0.5)*0.18;
+      }
+      icoGeo.dispose();
+    }
+
+    // ── Accent narrative: per-particle async flicker + 80 infected ─────
+    const INFECTED_COUNT = Math.min(80, ACCENT_COUNT);
+
+    // Per-particle phase for async flicker
+    const accentPhases = new Float32Array(ACCENT_COUNT);
+    for (let i = 0; i < ACCENT_COUNT; i++) accentPhases[i] = Math.random() * Math.PI * 2;
+
+    // Pick infected indices and assign per-particle swarm targets + death stagger
+    const infectedIdxs = [];
+    {
+      const picked = new Set();
+      while (picked.size < INFECTED_COUNT) picked.add(Math.floor(Math.random() * ACCENT_COUNT));
+      for (const idx of picked) infectedIdxs.push(idx);
+    }
+    const isInfected   = new Uint8Array(ACCENT_COUNT);
+    const swarmTargets = new Float32Array(ACCENT_COUNT * 3); // only the infected slots are written
+    const deathDelays  = new Float32Array(ACCENT_COUNT);     // 0..1 stagger order
+    const accentOriginalPos = new Float32Array(accentPos);
+    for (let n = 0; n < infectedIdxs.length; n++) {
+      const i = infectedIdxs[n];
+      isInfected[i] = 1;
+      // Chaotic swarm near (0,0,0) — each infected has its own perturbation.
+      swarmTargets[i*3+0] = (Math.random() - 0.5) * 2.4;
+      swarmTargets[i*3+1] = (Math.random() - 0.5) * 2.4;
+      swarmTargets[i*3+2] = (Math.random() - 0.5) * 2.4;
+      deathDelays[i] = n / Math.max(1, infectedIdxs.length - 1); // 0..1
+    }
+
+    // Per-particle brightness modulator. vertexColors=true makes PointsMaterial
+    // multiply its color by per-vertex color, which gives us per-particle alpha
+    // (via grayscale brightness) without needing a custom ShaderMaterial.
+    const accentVCols = new Float32Array(ACCENT_COUNT * 3);
+    for (let i = 0; i < ACCENT_COUNT * 3; i++) accentVCols[i] = 1;
+    accentGeo.setAttribute('color', new THREE.BufferAttribute(accentVCols, 3));
+    accentMat.vertexColors = true;
+
+    // ── Death flash layer: one green pulse per infected, at its position ─
+    const flashPos  = new Float32Array(INFECTED_COUNT * 3);
+    const flashCols = new Float32Array(INFECTED_COUNT * 3);
+    const flashGeo  = new THREE.BufferGeometry();
+    flashGeo.setAttribute('position', new THREE.BufferAttribute(flashPos,  3));
+    flashGeo.setAttribute('color',    new THREE.BufferAttribute(flashCols, 3));
+    const flashMat = new THREE.PointsMaterial({
+      size: isMobile ? 0.32 : 0.28,
+      map: baseMat.map,
+      color: 0x00FFC2,
+      transparent: true,
+      opacity: 1.0,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      sizeAttenuation: true,
+      vertexColors: true
+    });
+    const flashPoints = new THREE.Points(flashGeo, flashMat);
+    scene.add(flashPoints);
+
+    // ── Shared state (GSAP writes here; tick applies it) ────────────────
+    // GSAP / ScrollTrigger can take over by calling disableFallbackScroll().
+    const state = {
+      scrollProgress: 0,    // 0..1, drives camera dolly
+      cameraZ: 18,          // explicit override; GSAP can write
+      cameraExtraTilt: 0,   // extra pitch for transitions
+      baseOpacity: 0.55,    // points.material.opacity
+      accentOpacity: 0.85,  // accent.material.opacity
+      fogDensity: 0.045,    // scene.fog.density
+      rotSpeedMul: 1.0,     // multiplier on the continuous field rotation
+
+      // ── Narrative layer (each scrub-trigger writes ONE var; tick combines)
+      perlinIn:      0,  // #problem entry: 0 → 0.8
+      perlinOut:     0,  // #explainer entry: 0 → 0.8 (cancels perlinIn)
+      flickerIn:     0,  // #problem entry: 0 → 1
+      flickerOut:    0,  // #explainer entry: 0 → 1 (cancels flickerIn)
+      swarmAmount:   0,  // #problem entry: 0 → 1 (infected accents → origin)
+      deathProgress: 0,  // #explainer entry: 0 → 1 (staggered kill)
+      shieldIn:      0,  // #proof entry: 0 → 1 (converge)
+      shieldOut:     0,  // .cta-section entry: 0 → 1 (dissolve)
+    };
+
+    // cameraZ is driven directly from window.scrollY using per-section anchors.
+    // This is the single source of truth for the camera dolly so multiple
+    // ScrollTriggers can't race to write conflicting values. GSAP can take
+    // over briefly (e.g. for the hero intro 24→18) by calling lockCameraZ().
+    let scrollDrivenCam = true;
+    let cameraAnchors = [[0, 18]];
+    function refreshCameraAnchors(){
+      const vh = window.innerHeight;
+      const hero  = document.getElementById('hero');
+      const prob  = document.getElementById('problem');
+      const expl  = document.getElementById('explainer');
+      const proof = document.getElementById('proof');
+      if (!hero || !prob || !expl || !proof) return;
+      // Anchors mirror the regime ScrollTrigger ranges (top bottom → top 30%)
+      // so the camera arrives at each section's resting Z at the same scroll
+      // position where the rest of its visual identity finishes settling.
+      cameraAnchors = [
+        [0,                                            18 ],
+        [hero.offsetTop + hero.offsetHeight - vh,      -4 ],
+        [prob.offsetTop  - vh,                          -4],
+        [prob.offsetTop  - vh * 0.3,                    -8],
+        [expl.offsetTop  - vh,                          -8],
+        [expl.offsetTop  - vh * 0.3,                     2],
+        [proof.offsetTop - vh,                           2],
+        [proof.offsetTop - vh * 0.3,                   -10],
+      ];
+    }
+    function computeCameraZ(y){
+      const a = cameraAnchors;
+      if (y <= a[0][0]) return a[0][1];
+      for (let i = 0; i < a.length - 1; i++) {
+        const [y0, z0] = a[i];
+        const [y1, z1] = a[i+1];
+        if (y < y1) {
+          if (y1 === y0) return z1;
+          return z0 + (z1 - z0) * (y - y0) / (y1 - y0);
+        }
+      }
+      return a[a.length - 1][1];
+    }
+    refreshCameraAnchors();
+    window.addEventListener('load',   refreshCameraAnchors);
+    window.addEventListener('resize', refreshCameraAnchors);
+
+    // Subtle pointer parallax (desktop only)
+    const pointer = { x: 0, y: 0, tx: 0, ty: 0 };
+    if (!isMobile) {
+      window.addEventListener('pointermove', (e) => {
+        pointer.tx = (e.clientX / window.innerWidth  - 0.5) * 2;
+        pointer.ty = (e.clientY / window.innerHeight - 0.5) * 2;
+      }, { passive: true });
+    }
+
+    // ── Resize ──────────────────────────────────────────────────────────
+    function resize(){
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // ── Animation loop ──────────────────────────────────────────────────
+    const clock = new THREE.Clock();
+    let running = true;
+
+    document.addEventListener('visibilitychange', () => {
+      running = !document.hidden;
+      if (running) clock.getDelta(); // discard the gap
+    });
+
+    function tick(){
+      requestAnimationFrame(tick);
+      if (!running) return;
+
+      const dt = Math.min(0.066, clock.getDelta());
+      const t  = clock.elapsedTime;
+
+      // scrollProgress drives subtle camera y/yaw/tilt — derived from total
+      // page scroll (cheap, no DOM read). Eased for smoothness on trackpads.
+      const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+      const targetSP = Math.min(1, Math.max(0, window.scrollY / maxScroll));
+      state.scrollProgress += (targetSP - state.scrollProgress) * 0.06;
+
+      // cameraZ: tick-driven from anchors unless GSAP has temporarily locked it
+      // (e.g. for the hero intro 24→18 fly-in).
+      if (scrollDrivenCam) {
+        const target = computeCameraZ(window.scrollY);
+        state.cameraZ += (target - state.cameraZ) * 0.10;
+      }
+
+      // Ease pointer
+      pointer.x += (pointer.tx - pointer.x) * 0.04;
+      pointer.y += (pointer.ty - pointer.y) * 0.04;
+
+      // Apply state to camera
+      const yaw  = Math.sin(t * 0.05) * 0.08 + state.scrollProgress * 0.25;
+      const tilt = state.scrollProgress * 0.35 + state.cameraExtraTilt;
+
+      camera.position.x = pointer.x * 1.4;
+      camera.position.y = -pointer.y * 0.9 - state.scrollProgress * 1.2;
+      camera.position.z = state.cameraZ;
+      camera.rotation.x = tilt + pointer.y * 0.05;
+      camera.rotation.y = yaw  + pointer.x * 0.05;
+
+      // Combined narrative amounts (each component has a single writer so
+      // they don't race; the tick is the only place they're combined).
+      const perlinAmount  = Math.max(0, state.perlinIn  - state.perlinOut);
+      const flickerAmount = Math.max(0, state.flickerIn - state.flickerOut);
+      const shieldAmount  = Math.max(0, state.shieldIn  - state.shieldOut);
+
+      // Apply state to materials + fog (GSAP-tweenable)
+      baseMat.opacity      = state.baseOpacity * (1 - shieldAmount);
+      shieldMat.opacity    = state.baseOpacity;
+      accentMat.opacity    = state.accentOpacity;
+      scene.fog.density    = state.fogDensity;
+
+      // ── NARRATIVE: per-frame position + color updates ───────────────
+      // reduced-motion: skip position transitions, keep flicker/death/flash
+      // (color + opacity only) — see spec.
+
+      // Perlin displacement on the non-shield base layer
+      if (!reduceMotion) {
+        const arr = newBaseGeom.attributes.position.array;
+        if (perlinAmount > 0.003) {
+          const ns = 0.06;   // noise spatial scale
+          const amp = 2.5;   // peak displacement (worlds-units)
+          const tt = t * 0.12;
+          for (let i = 0; i < NORMAL_COUNT; i++) {
+            const ox = normalBaseOriginalPos[i*3+0];
+            const oy = normalBaseOriginalPos[i*3+1];
+            const oz = normalBaseOriginalPos[i*3+2];
+            arr[i*3+0] = ox + perlin3oct(ox*ns,       oy*ns + tt, oz*ns)       * amp * perlinAmount;
+            arr[i*3+1] = oy + perlin3oct(ox*ns + 31,  oy*ns,      oz*ns + tt)  * amp * perlinAmount;
+            arr[i*3+2] = oz + perlin3oct(ox*ns,       oy*ns + 17, oz*ns + tt)  * amp * perlinAmount;
+          }
+          newBaseGeom.attributes.position.needsUpdate = true;
+        } else if (arr[0] !== normalBaseOriginalPos[0]) {
+          // Smooth handover back to originals when perlin is off
+          arr.set(normalBaseOriginalPos);
+          newBaseGeom.attributes.position.needsUpdate = true;
+        }
+      }
+
+      // Shield convergence + group rotation
+      if (!reduceMotion) {
+        const arr = shieldGeo.attributes.position.array;
+        for (let i = 0; i < SHIELD_COUNT; i++) {
+          const ox = shieldOriginalPos[i*3+0];
+          const oy = shieldOriginalPos[i*3+1];
+          const oz = shieldOriginalPos[i*3+2];
+          arr[i*3+0] = ox + (shieldTargets[i*3+0] - ox) * shieldAmount;
+          arr[i*3+1] = oy + (shieldTargets[i*3+1] - oy) * shieldAmount;
+          arr[i*3+2] = oz + (shieldTargets[i*3+2] - oz) * shieldAmount;
+        }
+        shieldGeo.attributes.position.needsUpdate = true;
+        // Continuous Y rotation when assembled (spec). When fully dissolved
+        // we ease the group's accumulated rotation back to 0 so shield
+        // particles return to their true world-frame originals.
+        if (shieldAmount > 0.005) {
+          shieldGroup.rotation.y += 0.003 * shieldAmount;
+        } else if (Math.abs(shieldGroup.rotation.y) > 0.001) {
+          shieldGroup.rotation.y *= 0.92;
+        } else {
+          shieldGroup.rotation.y = 0;
+        }
+      }
+
+      // Infected accent swarm toward origin
+      if (!reduceMotion) {
+        const arr = accentGeo.attributes.position.array;
+        for (let n = 0; n < infectedIdxs.length; n++) {
+          const i = infectedIdxs[n];
+          const ox = accentOriginalPos[i*3+0];
+          const oy = accentOriginalPos[i*3+1];
+          const oz = accentOriginalPos[i*3+2];
+          arr[i*3+0] = ox + (swarmTargets[i*3+0] - ox) * state.swarmAmount;
+          arr[i*3+1] = oy + (swarmTargets[i*3+1] - oy) * state.swarmAmount;
+          arr[i*3+2] = oz + (swarmTargets[i*3+2] - oz) * state.swarmAmount;
+        }
+        accentGeo.attributes.position.needsUpdate = true;
+      }
+
+      // Per-particle accent flicker + staggered infected death (alpha modulation
+      // via vertex colors). Runs in all motion modes — color/opacity only.
+      const colArr   = accentGeo.attributes.color.array;
+      const FLICK_MIN = 0.18;
+      for (let i = 0; i < ACCENT_COUNT; i++) {
+        const osc = FLICK_MIN + (1 - FLICK_MIN) * (0.5 + 0.5 * Math.sin(t * 4.5 + accentPhases[i]));
+        let a = 1 - flickerAmount + flickerAmount * osc;
+        if (isInfected[i]) {
+          const local = Math.min(1, Math.max(0, (state.deathProgress - deathDelays[i] * 0.8) * 5));
+          // Fade out in the second half of the per-particle death curve.
+          a *= 1 - Math.max(0, Math.min(1, (local - 0.5) * 2));
+        }
+        colArr[i*3+0] = a;
+        colArr[i*3+1] = a;
+        colArr[i*3+2] = a;
+      }
+      accentGeo.attributes.color.needsUpdate = true;
+
+      // Death flash: green pulse at each infected particle's current position,
+      // bell-shaped (peak at local=0.5 of its death window).
+      const apos = accentGeo.attributes.position.array;
+      const fposArr = flashGeo.attributes.position.array;
+      const fcolArr = flashGeo.attributes.color.array;
+      for (let n = 0; n < infectedIdxs.length; n++) {
+        const i = infectedIdxs[n];
+        const local = Math.min(1, Math.max(0, (state.deathProgress - deathDelays[i] * 0.8) * 5));
+        const pulse = local > 0 && local < 1 ? Math.sin(local * Math.PI) : 0;
+        fposArr[n*3+0] = apos[i*3+0];
+        fposArr[n*3+1] = apos[i*3+1];
+        fposArr[n*3+2] = apos[i*3+2];
+        fcolArr[n*3+0] = pulse;
+        fcolArr[n*3+1] = pulse;
+        fcolArr[n*3+2] = pulse;
+      }
+      flashGeo.attributes.position.needsUpdate = true;
+      flashGeo.attributes.color.needsUpdate    = true;
+
+      if (!reduceMotion) {
+        // Gentle continuous drift on the field itself.
+        // rotSpeedMul gives each section a distinct "movement personality":
+        // hero/problem move, explainer slows, proof nearly freezes.
+        const r = state.rotSpeedMul;
+        points.rotation.y += dt * 0.015 * r;
+        points.rotation.x  = Math.sin(t * 0.1) * 0.05;
+        accent.rotation.y -= dt * 0.02 * r;
+        accent.rotation.x  = Math.cos(t * 0.12) * 0.05;
+      }
+
+      renderer.render(scene, camera);
+    }
+    tick();
+
+    // Expose for GSAP / ScrollTrigger and future sections
+    window.__zpBg = {
+      scene, camera, points, accent, renderer,
+      baseMat, accentMat,
+      // Narrative layer
+      shieldPoints, shieldGroup, shieldMat, flashPoints, flashMat,
+      shieldCount: SHIELD_COUNT, infectedCount: INFECTED_COUNT,
+      state,
+      reduceMotion, isMobile,
+      lockCameraZ()   { scrollDrivenCam = false; },
+      unlockCameraZ() { scrollDrivenCam = true;  },
+      refreshCameraAnchors,
+      get progress(){ return state.scrollProgress; }
+    };
   }
-}
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();
 </script>
 
-<!-- GSAP + ScrollTrigger (UMD globals). Loaded with defer; module script
-     polls for them after import. -->
+<!-- ── GSAP + ScrollTrigger: hero entry choreography + section transitions ── -->
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" defer></script>
-
-<script type="module">
-import * as THREE from 'three';
-import { EffectComposer }   from 'three/addons/postprocessing/EffectComposer.js';
-import { RenderPass }       from 'three/addons/postprocessing/RenderPass.js';
-import { UnrealBloomPass }  from 'three/addons/postprocessing/UnrealBloomPass.js';
-import { ShaderPass }       from 'three/addons/postprocessing/ShaderPass.js';
-import { OutputPass }       from 'three/addons/postprocessing/OutputPass.js';
-import Lenis from 'lenis';
-
-(async function boot(){
-  const canvas = document.getElementById('bg-canvas');
-  if (!canvas) return;
-
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const isMobile     = window.matchMedia('(max-width: 768px)').matches;
-
-  // ── Renderer ──────────────────────────────────────────────────────────
-  const renderer = new THREE.WebGLRenderer({
-    canvas, antialias: false, alpha: false, powerPreference: 'high-performance'
-  });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2));
-  renderer.setSize(window.innerWidth, window.innerHeight, false);
-  renderer.setClearColor(0x0a0a0a, 1);
-
-  // ── Scene + camera ────────────────────────────────────────────────────
-  const scene  = new THREE.Scene();
-  scene.background = new THREE.Color(0x0a0a0a);
-
-  const camera = new THREE.PerspectiveCamera(
-    55, window.innerWidth / window.innerHeight, 0.1, 600
-  );
-  camera.position.set(0, 6, 38);
-  camera.lookAt(0, 0, -10);
-
-  // ── Inline simplex 3D noise (Ashima Arts, public domain) ──────────────
-  const NOISE_GLSL = `
-    vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}
-    vec4 mod289(vec4 x){return x-floor(x*(1.0/289.0))*289.0;}
-    vec4 permute(vec4 x){return mod289(((x*34.0)+1.0)*x);}
-    vec4 taylorInvSqrt(vec4 r){return 1.79284291400159 - 0.85373472095314 * r;}
-    float snoise(vec3 v){
-      const vec2 C = vec2(1.0/6.0, 1.0/3.0);
-      const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
-      vec3 i  = floor(v + dot(v, C.yyy));
-      vec3 x0 = v - i + dot(i, C.xxx);
-      vec3 g  = step(x0.yzx, x0.xyz);
-      vec3 l  = 1.0 - g;
-      vec3 i1 = min(g.xyz, l.zxy);
-      vec3 i2 = max(g.xyz, l.zxy);
-      vec3 x1 = x0 - i1 + C.xxx;
-      vec3 x2 = x0 - i2 + C.yyy;
-      vec3 x3 = x0 - D.yyy;
-      i = mod289(i);
-      vec4 p = permute(permute(permute(
-                i.z + vec4(0.0, i1.z, i2.z, 1.0))
-              + i.y + vec4(0.0, i1.y, i2.y, 1.0))
-              + i.x + vec4(0.0, i1.x, i2.x, 1.0));
-      float n_ = 0.142857142857;
-      vec3 ns = n_ * D.wyz - D.xzx;
-      vec4 j  = p - 49.0 * floor(p * ns.z * ns.z);
-      vec4 x_ = floor(j * ns.z);
-      vec4 y_ = floor(j - 7.0 * x_);
-      vec4 x  = x_ * ns.x + ns.yyyy;
-      vec4 y  = y_ * ns.x + ns.yyyy;
-      vec4 h  = 1.0 - abs(x) - abs(y);
-      vec4 b0 = vec4(x.xy, y.xy);
-      vec4 b1 = vec4(x.zw, y.zw);
-      vec4 s0 = floor(b0)*2.0 + 1.0;
-      vec4 s1 = floor(b1)*2.0 + 1.0;
-      vec4 sh = -step(h, vec4(0.0));
-      vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy;
-      vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww;
-      vec3 p0 = vec3(a0.xy, h.x);
-      vec3 p1 = vec3(a0.zw, h.y);
-      vec3 p2 = vec3(a1.xy, h.z);
-      vec3 p3 = vec3(a1.zw, h.w);
-      vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2,p2), dot(p3,p3)));
-      p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w;
-      vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
-      m = m * m;
-      return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
+<script defer>
+(function(){
+  function bootGsap(){
+    if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined' || !window.__zpBg) {
+      return setTimeout(bootGsap, 50);
     }
-  `;
+    gsap.registerPlugin(ScrollTrigger);
 
-  // ── Data field plane (tilted "data ground" stretching away) ───────────
-  const SEG = isMobile ? 100 : 300;
-  const planeGeo = new THREE.PlaneGeometry(220, 220, SEG, SEG);
+    const bg = window.__zpBg;
+    const s  = bg.state;
+    const reduceMotion = bg.reduceMotion;
+    const isMobile     = bg.isMobile;
 
-  const planeUniforms = {
-    uTime:       { value: 0 },
-    uAmplitude:  { value: 1.6 },
-    uCorruption: { value: 0 },     // 0..1 — high-freq chaos
-    uRigidity:   { value: 0 },     // 0..1 — flattens motion when high
-    uGlow:       { value: 0.45 },  // emissive boost on peaks (drives bloom)
-    uScanline:   { value: 0.30 },  // matrix scanline intensity
-    uColorBase:  { value: new THREE.Color(0x040404) },
-    uColorPeak:  { value: new THREE.Color(0x00FFC2) },
-  };
+    // ──────────────────────────────────────────────────────────────
+    // 1) HERO ENTRY — particle field blooms in sync with the headline
+    //    The headline already animates via CSS @keyframes (0.25–0.70s
+    //    stagger). We coordinate the particle bloom over the same
+    //    window so the field "wakes up" with the text. During the
+    //    intro we lock cameraZ so the tick won't fight the tween.
+    // ──────────────────────────────────────────────────────────────
 
-  const planeVertexShader = NOISE_GLSL + `
-    uniform float uTime;
-    uniform float uAmplitude;
-    uniform float uCorruption;
-    uniform float uRigidity;
-    varying vec2  vUv;
-    varying vec3  vLocal;
-    varying float vHeight;
-    void main(){
-      vec3 p = position;
+    // Initial state: field hidden, camera further back
+    s.baseOpacity   = 0;
+    s.accentOpacity = 0;
+    s.cameraZ       = 24;
+    s.fogDensity    = 0.06;
 
-      // Base undulation — two slow sinusoids crossing each other
-      float baseWave =
-        sin(p.x * 0.09 + uTime * 0.55) *
-        cos(p.y * 0.11 + uTime * 0.42) * uAmplitude;
-
-      // Organic low-frequency noise
-      float n1 = snoise(vec3(p.xy * 0.045, uTime * 0.18)) * 1.8;
-      float n2 = snoise(vec3(p.xy * 0.13,  uTime * 0.28)) * 0.45;
-
-      // High-frequency corruption noise (active during attack)
-      float chaos =
-        snoise(vec3(p.xy * 0.40, uTime * 3.2)) * 3.2 +
-        snoise(vec3(p.xy * 1.10, uTime * 6.0)) * 1.6;
-
-      // Rigidity flattens everything when the field "hardens" into a barrier
-      float settle = 1.0 - uRigidity * 0.92;
-
-      float h = (baseWave + n1 + n2 + chaos * uCorruption) * settle;
-
-      p.z += h;
-      vUv     = uv;
-      vLocal  = p;
-      vHeight = h;
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
-    }
-  `;
-
-  const planeFragmentShader = `
-    uniform float uTime;
-    uniform float uGlow;
-    uniform float uScanline;
-    uniform vec3  uColorBase;
-    uniform vec3  uColorPeak;
-    varying vec2  vUv;
-    varying vec3  vLocal;
-    varying float vHeight;
-    void main(){
-      // Color by height. Most of the surface stays in the base (dark) tone;
-      // only the upper portion of peaks crosses into the accent color, so the
-      // field reads as "dark surface with glowing ridges" rather than a flat
-      // wash of colour.
-      float h = smoothstep(0.4, 3.2, vHeight);
-      vec3 color = mix(uColorBase, uColorPeak, h);
-
-      // Emissive boost on the very tips — this is what UnrealBloom picks up.
-      // Curve is steep so only the brightest few pixels bloom.
-      color *= 1.0 + uGlow * pow(h, 4.0);
-
-      // Terminal/matrix scanlines along local Y, slowly scrolling
-      float scan = sin(vLocal.y * 3.4 - uTime * 1.2);
-      scan = 0.5 + 0.5 * scan;
-      scan = pow(scan, 7.0);
-      color *= 1.0 - uScanline * scan * 0.35;
-
-      // Radial edge fade so the surface dissolves into the void at edges
-      float edge = 1.0 - smoothstep(78.0, 115.0, length(vLocal.xy));
-      color *= edge;
-
-      gl_FragColor = vec4(color, 1.0);
-    }
-  `;
-
-  const planeMat = new THREE.ShaderMaterial({
-    uniforms: planeUniforms,
-    vertexShader: planeVertexShader,
-    fragmentShader: planeFragmentShader,
-    side: THREE.DoubleSide,
-  });
-
-  const plane = new THREE.Mesh(planeGeo, planeMat);
-  // Tilt the plane like a receding "data floor" rather than a flat wall.
-  plane.rotation.x = -Math.PI * 0.42;   // ~76° tilt from vertical
-  plane.position.y = -14;               // pushed down so peaks sit below lookAt
-  plane.position.z = -40;               // pushed back so it's vista, not in-face
-  scene.add(plane);
-
-  // ── Post-processing composer ──────────────────────────────────────────
-  const composer = new EffectComposer(renderer);
-  composer.setPixelRatio(renderer.getPixelRatio());
-  composer.setSize(window.innerWidth, window.innerHeight);
-
-  composer.addPass(new RenderPass(scene, camera));
-
-  // UnrealBloom — strength/radius/threshold tuned per device. The high
-  // threshold means only the brightest pixels (peaks of the data field)
-  // contribute to the bloom, so the bloom reads as "edge glow on peaks"
-  // rather than a wash over the whole frame.
-  const bloomPass = new UnrealBloomPass(
-    new THREE.Vector2(window.innerWidth, window.innerHeight),
-    isMobile ? 0.25 : 0.35,    // strength (will be scrubbed by GSAP)
-    isMobile ? 0.55 : 0.7,     // radius (soft glow halo)
-    0.55                        // threshold (keep base surface out of bloom)
-  );
-  composer.addPass(bloomPass);
-
-  // Chromatic aberration (custom shader pass). Skipped on mobile per spec.
-  const chromaPass = isMobile ? null : new ShaderPass({
-    uniforms: {
-      tDiffuse: { value: null },
-      uAmount:  { value: 0.001 },
-    },
-    vertexShader: `
-      varying vec2 vUv;
-      void main(){
-        vUv = uv;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      }
-    `,
-    fragmentShader: `
-      uniform sampler2D tDiffuse;
-      uniform float uAmount;
-      varying vec2 vUv;
-      void main(){
-        vec2 dir = vUv - vec2(0.5);
-        float off = uAmount * (0.6 + length(dir) * 1.8);
-        float r = texture2D(tDiffuse, vUv + dir * off).r;
-        float g = texture2D(tDiffuse, vUv).g;
-        float b = texture2D(tDiffuse, vUv - dir * off).b;
-        gl_FragColor = vec4(r, g, b, 1.0);
-      }
-    `,
-  });
-  if (chromaPass) composer.addPass(chromaPass);
-
-  // Vignette — deeper than default so the data field reads only behind the
-  // content viewport center and dissolves into pure black at the periphery.
-  const vignettePass = new ShaderPass({
-    uniforms: {
-      tDiffuse:   { value: null },
-      uIntensity: { value: 0.92 },
-    },
-    vertexShader: `
-      varying vec2 vUv;
-      void main(){
-        vUv = uv;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      }
-    `,
-    fragmentShader: `
-      uniform sampler2D tDiffuse;
-      uniform float uIntensity;
-      varying vec2 vUv;
-      void main(){
-        vec4 c = texture2D(tDiffuse, vUv);
-        float d = distance(vUv, vec2(0.5));
-        // Aggressive falloff: bright center, deep black corners
-        float vig = smoothstep(0.85, 0.15, d);
-        vig = mix(1.0, vig, uIntensity);
-        gl_FragColor = vec4(c.rgb * vig, c.a);
-      }
-    `,
-  });
-  composer.addPass(vignettePass);
-
-  // OutputPass handles tone-mapping + correct sRGB output.
-  composer.addPass(new OutputPass());
-
-  // ── Resize ────────────────────────────────────────────────────────────
-  function resize(){
-    const w = window.innerWidth, h = window.innerHeight;
-    renderer.setSize(w, h, false);
-    composer.setSize(w, h);
-    camera.aspect = w / h;
-    camera.updateProjectionMatrix();
-    bloomPass.setSize(w, h);
-  }
-  window.addEventListener('resize', resize);
-
-  // ── Lenis smooth scroll ───────────────────────────────────────────────
-  let lenis = null;
-  if (!reduceMotion) {
-    lenis = new Lenis({
-      duration:     1.05,
-      easing:       (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smoothWheel:  true,
-      wheelMultiplier: 1.0,
-      touchMultiplier: 1.6,
+    bg.lockCameraZ();
+    const intro = gsap.timeline({
+      defaults: { ease: 'power3.out' },
+      onComplete(){ bg.unlockCameraZ(); }
     });
-  }
+    intro
+      // Camera glides in toward resting position
+      .to(s, { cameraZ: 18,  duration: 2.2 }, 0)
+      // Fog clears slightly as the field reveals
+      .to(s, { fogDensity: 0.045, duration: 2.2 }, 0)
+      // Base white field fades up (matches headline first-word timing)
+      .to(s, { baseOpacity: 0.55, duration: 1.6, ease: 'power2.out' }, 0.15)
+      // Kinetic accent dots ignite a beat later (matches dim second line)
+      .to(s, { accentOpacity: 0.85, duration: 1.4, ease: 'power2.out' }, 0.55);
 
-  // ── Animation loop ────────────────────────────────────────────────────
-  const clock = new THREE.Clock();
-  let running = true;
-  document.addEventListener('visibilitychange', () => {
-    running = !document.hidden;
-    if (running) clock.getDelta();
-  });
+    // ──────────────────────────────────────────────────────────────
+    // 2) HERO CONTENT PARALLAX (desktop) — DOM-only, doesn't touch
+    //    bg state. cameraZ for the hero scroll is handled by the
+    //    tick's anchor-driven dolly, so no ScrollTrigger fights for
+    //    it here.
+    // ──────────────────────────────────────────────────────────────
 
-  function tick(time){
-    requestAnimationFrame(tick);
-    if (!running) return;
-    if (lenis) lenis.raf(time);
-    const dt = Math.min(0.066, clock.getDelta());
-    // prefers-reduced-motion: hold uTime so the surface stops animating
-    if (!reduceMotion) planeUniforms.uTime.value += dt;
-    composer.render();
-  }
-  requestAnimationFrame(tick);
+    if (!isMobile && !reduceMotion) {
+      gsap.to('.hero-content', {
+        y: -80,
+        opacity: 0.35,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: '#hero',
+          start: 'top top',
+          end: 'bottom 30%',
+          scrub: 0.6
+        }
+      });
+    }
 
-  // ── Expose for GSAP / tests ───────────────────────────────────────────
-  window.__zpBg = {
-    scene, camera, renderer, composer,
-    plane, planeMat, planeUniforms,
-    bloomPass, chromaPass, vignettePass,
-    lenis, reduceMotion, isMobile,
-  };
+    // ──────────────────────────────────────────────────────────────
+    // 3) PER-SECTION VISUAL REGIMES
+    //    Each section gets its own "personality" on the canvas
+    //    (color, density, movement, camera). Transitions are
+    //    scrub-tied so scrolling back up reverses them. The FROM
+    //    of each regime equals the TO of the previous one, so the
+    //    state composes cleanly across the whole scroll.
+    //
+    //      hero      → kinetic green, default drift,   z=-4
+    //      problem   → danger red,    faster, dimmer,  z=-8, fog+
+    //      explainer → cool blue,     slow + airy,     z=+2, fog-
+    //      proof     → code amber,    almost frozen,   z=-10, fog~
+    // ──────────────────────────────────────────────────────────────
 
-  // ════════════════════════════════════════════════════════════════════
-  // GSAP ScrollTrigger — scrub-driven uniform animation per section.
-  // ════════════════════════════════════════════════════════════════════
+    // Use THREE.Color so values stay in the correct (linear) color space —
+    // a manual rgb lerp here would drift the tone every time the user
+    // scrolls back to a previous section.
+    const accentColor = bg.accentMat.color;
+    const mkCol = (hex) => bg.points.material.color.clone().setHex(hex);
 
-  // Wait for GSAP UMD scripts to finish loading.
-  let tries = 0;
-  while (typeof window.gsap === 'undefined' || typeof window.ScrollTrigger === 'undefined') {
-    await new Promise(r => setTimeout(r, 50));
-    if (++tries > 200) { console.warn('[zp-3d] GSAP never loaded'); return; }
-  }
-  const gsap = window.gsap;
-  const ScrollTrigger = window.ScrollTrigger;
-  gsap.registerPlugin(ScrollTrigger);
+    const COL_HERO  = mkCol(0x00FFC2); // kinetic
+    const COL_PROB  = mkCol(0xFF4C4C); // danger
+    const COL_EXPL  = mkCol(0x9FB8FF); // instructional periwinkle
+    const COL_PROOF = mkCol(0xE5C07B); // code amber (matches JSON syntax)
 
-  // Lenis + GSAP ticker integration (drives ScrollTrigger.update on Lenis frame).
-  if (lenis) {
-    lenis.on('scroll', ScrollTrigger.update);
-    gsap.ticker.lagSmoothing(0);
-  }
+    //  cz   = camera Z position
+    //  fog  = scene fog density
+    //  base = base (white) particle opacity
+    //  acc  = accent particle opacity
+    //  tilt = extra camera pitch
+    //  rot  = field rotation speed multiplier
+    const HERO_STATE  = { cz: -4,  fog: 0.045, base: 0.55, acc: 0.85, tilt:  0.00, rot: 1.00 };
+    const PROB_STATE  = { cz: -8,  fog: 0.075, base: 0.37, acc: 0.85, tilt:  0.08, rot: 1.30 };
+    const EXPL_STATE  = { cz:  2,  fog: 0.030, base: 0.65, acc: 0.50, tilt:  0.00, rot: 0.40 };
+    const PROOF_STATE = { cz: -10, fog: 0.055, base: 0.40, acc: 0.95, tilt: -0.05, rot: 0.15 };
 
-  // ── Per-section uniform targets ───────────────────────────────────────
-  //  bloom    = bloomPass.strength
-  //  chroma   = chromaPass.uniforms.uAmount.value (desktop only)
-  //  camZ/camY = camera position
-  const lerp = (a, b, t) => a + (b - a) * t;
+    const lerp = (a, b, t) => a + (b - a) * t;
 
-  // Values tuned so the data field reads as atmosphere behind content, not
-  // as a foreground element. Bloom strength is the dominant "impact" knob.
-  const HERO = {
-    corruption: 0,    rigidity: 0,    amplitude: 1.6, glow: 0.45,
-    color: 0x00FFC2,  chroma: 0.0008,                 bloom: isMobile ? 0.18 : 0.30,
-    scanline: 0.30,   camY: 6,         camZ: 38
-  };
-  const PROB = {
-    corruption: 1,    rigidity: 0,    amplitude: 2.2, glow: 0.85,
-    color: 0xFF4C4C,  chroma: isMobile ? 0 : 0.012,   bloom: isMobile ? 0.32 : 0.55,
-    scanline: 0.42,   camY: 4,         camZ: 30
-  };
-  const EXPL = {
-    corruption: 0,    rigidity: 0.72, amplitude: 0.9, glow: 0.55,
-    color: 0x4C9FFF,  chroma: isMobile ? 0 : 0.0035,  bloom: isMobile ? 0.22 : 0.38,
-    scanline: 0.38,   camY: 8,         camZ: 44
-  };
-  const PROOF = {
-    corruption: 0,    rigidity: 0.92, amplitude: 0.5, glow: 1.10,
-    color: 0x00FFC2,  chroma: isMobile ? 0 : 0.0015,  bloom: isMobile ? 0.45 : 0.75,
-    scanline: 0.48,   camY: 14,        camZ: 78
-  };
+    function makeRegime({ trigger, colFrom, colTo, from, to }) {
+      // Skip silently if the section isn't on the page (defensive).
+      if (!document.querySelector(trigger)) return;
+      ScrollTrigger.create({
+        trigger,
+        start: 'top bottom', // start as the section first enters viewport
+        end:   'top 30%',    // finish before it's fully in view
+        scrub: 0.8,
+        onUpdate(self){
+          const p = self.progress;
+          // cameraZ is driven by the tick from window.scrollY anchors —
+          // we don't write it here. Mixing scrub triggers on the same
+          // numeric field caused races where the wrong trigger fired last.
+          accentColor.lerpColors(colFrom, colTo, p);
+          s.fogDensity      = lerp(from.fog,  to.fog,  p);
+          s.baseOpacity     = lerp(from.base, to.base, p);
+          s.accentOpacity   = lerp(from.acc,  to.acc,  p);
+          s.cameraExtraTilt = lerp(from.tilt, to.tilt, p);
+          s.rotSpeedMul     = lerp(from.rot,  to.rot,  p);
+        }
+      });
+    }
 
-  function makeRegime({ trigger, from, to }) {
-    if (!document.querySelector(trigger)) return;
-    const colFrom = new THREE.Color(from.color);
-    const colTo   = new THREE.Color(to.color);
+    makeRegime({ trigger: '#problem',   colFrom: COL_HERO,  colTo: COL_PROB,  from: HERO_STATE, to: PROB_STATE  });
+    makeRegime({ trigger: '#explainer', colFrom: COL_PROB,  colTo: COL_EXPL,  from: PROB_STATE, to: EXPL_STATE  });
+    makeRegime({ trigger: '#proof',     colFrom: COL_EXPL,  colTo: COL_PROOF, from: EXPL_STATE, to: PROOF_STATE });
+
+    // ──────────────────────────────────────────────────────────────
+    // 3b) NARRATIVE LAYER — separate from regimes. Each trigger writes
+    //     ONE state variable (no race with regimes or with each other).
+    //     The tick combines pairs (e.g. perlinIn - perlinOut) to derive
+    //     the effective amounts. Fully reversible via scrub.
+    // ──────────────────────────────────────────────────────────────
+
+    // #problem: perlin distortion ramps up, accents start flickering,
+    // 80 infected accents swarm toward (0,0,0).
     ScrollTrigger.create({
-      trigger, start: 'top bottom', end: 'top 30%', scrub: 0.8,
+      trigger: '#problem', start: 'top bottom', end: 'top 30%', scrub: 0.8,
       onUpdate(self){
         const p = self.progress;
-        planeUniforms.uCorruption.value = lerp(from.corruption, to.corruption, p);
-        planeUniforms.uRigidity.value   = lerp(from.rigidity,   to.rigidity,   p);
-        planeUniforms.uAmplitude.value  = lerp(from.amplitude,  to.amplitude,  p);
-        planeUniforms.uGlow.value       = lerp(from.glow,       to.glow,       p);
-        planeUniforms.uScanline.value   = lerp(from.scanline,   to.scanline,   p);
-        planeUniforms.uColorPeak.value.lerpColors(colFrom, colTo, p);
-        bloomPass.strength              = lerp(from.bloom,      to.bloom,      p);
-        if (chromaPass) {
-          chromaPass.uniforms.uAmount.value = lerp(from.chroma, to.chroma, p);
+        s.perlinIn    = p * 0.8;
+        s.flickerIn   = p;
+        s.swarmAmount = p;
+      }
+    });
+
+    // #explainer: infected die one-by-one (staggered) with green flashes,
+    // perlin clears, flicker calms.
+    ScrollTrigger.create({
+      trigger: '#explainer', start: 'top bottom', end: 'top 30%', scrub: 0.8,
+      onUpdate(self){
+        const p = self.progress;
+        s.perlinOut     = p * 0.8;
+        s.flickerOut    = p;
+        s.deathProgress = p;
+      }
+    });
+
+    // #proof: ~400 base particles converge to a rotating icosahedron.
+    ScrollTrigger.create({
+      trigger: '#proof', start: 'top bottom', end: 'top 30%', scrub: 0.8,
+      onUpdate(self){
+        s.shieldIn = self.progress;
+      }
+    });
+
+    // .cta-section: shield dissolves back to originals.
+    if (document.querySelector('.cta-section')) {
+      ScrollTrigger.create({
+        trigger: '.cta-section', start: 'top bottom', end: 'top center', scrub: 1.5,
+        onUpdate(self){
+          s.shieldOut = self.progress;
         }
-        camera.position.y = lerp(from.camY, to.camY, p);
-        camera.position.z = lerp(from.camZ, to.camZ, p);
-        camera.lookAt(0, 0, -10);
-      }
-    });
+      });
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    // 4) SECTION-HEAD REVEALS — replace the existing .reveal IO for
+    //    these three sections with a GSAP-driven entry that plays /
+    //    reverses on scroll. Other sections keep their IO reveal.
+    // ──────────────────────────────────────────────────────────────
+
+    function attachGsapReveal(selector) {
+      const el = document.querySelector(selector);
+      if (!el || reduceMotion) return;
+      el.classList.remove('reveal');       // take it out of the IO's hands
+      el.classList.add('reveal-gsap');
+      gsap.set(el, { opacity: 0, y: 40, filter: 'blur(6px)' });
+      gsap.to(el, {
+        opacity: 1, y: 0, filter: 'blur(0px)',
+        duration: 1.0, ease: 'power3.out',
+        scrollTrigger: {
+          trigger: el,
+          start: 'top 85%',
+          toggleActions: 'play none none reverse'
+        }
+      });
+    }
+
+    attachGsapReveal('#problem .section-head');
+    attachGsapReveal('#explainer .section-head');
+    attachGsapReveal('#proof .section-head');
+
+    // Settle ScrollTrigger after fonts/images potentially shift layout
+    window.addEventListener('load', () => ScrollTrigger.refresh());
+    setTimeout(() => ScrollTrigger.refresh(), 400);
   }
 
-  makeRegime({ trigger: '#problem',   from: HERO,  to: PROB  });
-  makeRegime({ trigger: '#explainer', from: PROB,  to: EXPL  });
-  makeRegime({ trigger: '#proof',     from: EXPL,  to: PROOF });
-  if (document.querySelector('.cta-section')) {
-    makeRegime({ trigger: '.cta-section', from: PROOF, to: HERO });
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootGsap);
+  } else {
+    bootGsap();
   }
-
-  // ── Hero entry: bloom + glow bloom-in synced with the headline CSS
-  //    animation (staggered 0.25–0.70s). The field is alive from frame 1;
-  //    only the emissive strength fades in so the headline reads clearly
-  //    before the surface "lights up" behind it.
-  if (!reduceMotion) {
-    bloomPass.strength = 0;
-    planeUniforms.uGlow.value = 0;
-    gsap.to(bloomPass,      { strength: HERO.bloom, duration: 1.8, ease: 'power3.out' });
-    gsap.to(planeUniforms.uGlow, { value: HERO.glow, duration: 1.6, ease: 'power3.out', delay: 0.2 });
-  }
-
-  // ── Section-head reveals (DOM-only; kept for continuity with the
-  //    previous design — handled via GSAP instead of the global IO).
-  function attachReveal(selector) {
-    const el = document.querySelector(selector);
-    if (!el || reduceMotion) return;
-    el.classList.remove('reveal');
-    el.classList.add('reveal-gsap');
-    gsap.set(el, { opacity: 0, y: 40, filter: 'blur(6px)' });
-    gsap.to(el, {
-      opacity: 1, y: 0, filter: 'blur(0px)',
-      duration: 1.0, ease: 'power3.out',
-      scrollTrigger: {
-        trigger: el, start: 'top 85%',
-        toggleActions: 'play none none reverse'
-      }
-    });
-  }
-  attachReveal('#problem .section-head');
-  attachReveal('#explainer .section-head');
-  attachReveal('#proof .section-head');
-
-  // Settle ScrollTrigger after layout/fonts shift
-  window.addEventListener('load', () => ScrollTrigger.refresh());
-  setTimeout(() => ScrollTrigger.refresh(), 400);
-})().catch(err => {
-  console.error('[zp-3d] boot failed:', err);
-});
+})();
 </script>
 </body>
 </html>
