@@ -275,19 +275,23 @@
 
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
-    html{background:#0A0A0A}
+    html{scroll-behavior:smooth;background:#0A0A0A}
     body{
-      background:#0A0A0A;color:#F5F5F5;
+      background:transparent;color:#F5F5F5;
       font-family:'Helvetica Neue','Helvetica',Arial,sans-serif;
       font-weight:400;-webkit-font-smoothing:antialiased;
       letter-spacing:-0.011em;overflow-x:hidden;
     }
-    /* Lenis owns scroll smoothing — disable native smooth-scroll so anchors
-       don't fight Lenis. */
-    html.lenis,html.lenis body{height:auto}
-    .lenis.lenis-smooth{scroll-behavior:auto !important}
-    .lenis.lenis-smooth [data-lenis-prevent]{overscroll-behavior:contain}
-    .lenis.lenis-stopped{overflow:clip}
+
+    /* 3D background canvas — fixed behind all content */
+    #bg-canvas{
+      position:fixed;
+      top:0;left:0;
+      width:100vw;height:100vh;
+      z-index:-1;
+      pointer-events:none;
+      display:block;
+    }
     :root{
       --ink:#0A0A0A;--paper:#F5F5F5;--kinetic:#00FFC2;
       --ink-90:rgba(245,245,245,0.92);--ink-60:rgba(245,245,245,0.55);
@@ -458,8 +462,8 @@
     }
 
     /* SECTIONS */
-    .section{padding:140px 0;position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:center}
-    @media(max-width:640px){.section{padding:80px 0;min-height:100svh}}
+    .section{padding:140px 0;border-top:1px solid var(--rule);position:relative}
+    @media(max-width:640px){.section{padding:80px 0}}
     .section-meta{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:80px;padding-bottom:18px;border-bottom:1px solid var(--rule)}
     @media(max-width:640px){.section-meta{margin-bottom:48px}}
     .section-id{font-family:var(--mono);font-size:11px;letter-spacing:0.22em;color:var(--ink-40);text-transform:uppercase}
@@ -542,22 +546,9 @@
     @keyframes scrollDown{0%{transform:translateY(-100%)}100%{transform:translateY(400%)}}
 
     /* SCROLL REVEAL */
-    /* Reveal — minimal fade + translateY (no blur). GSAP drives the
-       animation; the class only declares the resting "from" state so the
-       first paint doesn't flash content in place. */
-    .reveal{opacity:0;transform:translateY(30px);will-change:opacity,transform}
-    .reveal.in{opacity:1;transform:translateY(0)}
-    .reveal-d1,.reveal-d2,.reveal-d3{} /* stagger handled by GSAP, kept as data hooks */
-
-    /* Thin kinetic separators between consecutive top-level sections —
-       minimalist design element. .section already sets position:relative. */
-    section + section{position:relative}
-    section + section::before{
-      content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);
-      width:min(88%,1200px);height:1px;
-      background:rgba(0,255,194,0.30);
-      pointer-events:none;
-    }
+    .reveal{opacity:0;transform:translateY(30px);filter:blur(4px);transition:opacity 0.9s cubic-bezier(0.16,1,0.3,1),transform 0.9s cubic-bezier(0.16,1,0.3,1),filter 0.9s cubic-bezier(0.16,1,0.3,1)}
+    .reveal.in{opacity:1;transform:translateY(0);filter:blur(0)}
+    .reveal-d1{transition-delay:0.1s}.reveal-d2{transition-delay:0.2s}.reveal-d3{transition-delay:0.3s}
 
     /* SOCIAL ICONS */
     .social-links{display:flex;align-items:center;gap:12px;margin-top:8px}
@@ -603,6 +594,9 @@
   </style>
 </head>
 <body>
+
+<!-- 3D background canvas (Three.js particle field, scroll-reactive) -->
+<canvas id="bg-canvas" aria-hidden="true"></canvas>
 
 <!-- LAUNCH BANNER — auto-switches pre-launch ↔ live on May 21 2026 -->
 <div class="launch-banner hidden" id="launchBanner" role="banner" aria-label="Launch announcement">
@@ -967,7 +961,7 @@ curl -X POST https://api.zentricprotocol.com/v1/analyze \
           <span style="font-family:var(--mono);font-size:10px;letter-spacing:0.14em;color:rgba(255,76,76,0.85);text-transform:uppercase">◆ Attack blocked</span>
         </div>
         <pre style="margin:0;padding:24px 20px;font-family:var(--mono);font-size:12px;line-height:1.75;color:var(--ink-60);overflow-x:auto;flex:1;"><code>{
-  <span style="color:#98C379">"verdict"</span>: <span style="color:var(--kinetic);font-weight:600">"BLOCKED"</span>,
+  <span style="color:#98C379">"verdict"</span>: <span style="color:rgba(255,76,76,0.95)">"BLOCKED"</span>,
   <span style="color:#98C379">"reason"</span>: <span style="color:#98C379">"prompt_injection.instruction_override"</span>,
   <span style="color:#98C379">"confidence"</span>: <span style="color:#E5C07B">0.998</span>,
   <span style="color:#98C379">"latency_ms"</span>: <span style="color:#E5C07B">22.7</span>,
@@ -1752,6 +1746,12 @@ if(hero&&spotlight){
   hero.addEventListener('mouseleave',()=>{spotlight.style.left='50%';spotlight.style.top='50%'});
 }
 
+// Scroll reveal
+const observer=new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');observer.unobserve(e.target)}});
+},{threshold:0.1,rootMargin:'0px 0px -60px 0px'});
+document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
+
 // Nav highlight on scroll
 const sections=document.querySelectorAll('section[id]');
 const navLinks=document.querySelectorAll('.nav-link[href^="#"]');
@@ -1763,92 +1763,473 @@ window.addEventListener('scroll',()=>{
 </script>
 
 <!-- ────────────────────────────────────────────────────────────────────── -->
-<!-- Lenis smooth scroll + GSAP scroll reveals.                            -->
-<!-- No 3D, no canvas, no post-processing — the layout is the experience.  -->
+<!-- 3D LAYER: GLSL data field + EffectComposer post-processing + Lenis    -->
 <!-- ────────────────────────────────────────────────────────────────────── -->
 
+<!-- ES module deps: three + addons (postprocessing) + lenis -->
 <script type="importmap">
 {
   "imports": {
-    "lenis": "https://cdn.jsdelivr.net/npm/lenis@1.1.20/dist/lenis.mjs"
+    "three":          "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+    "three/addons/":  "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/",
+    "lenis":          "https://cdn.jsdelivr.net/npm/lenis@1.1.20/dist/lenis.mjs"
   }
 }
 </script>
 
+<!-- GSAP + ScrollTrigger (UMD globals). Loaded with defer; module script
+     polls for them after import. -->
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" defer></script>
 
 <script type="module">
+import * as THREE from 'three';
+import { EffectComposer }   from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass }       from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass }  from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { ShaderPass }       from 'three/addons/postprocessing/ShaderPass.js';
+import { OutputPass }       from 'three/addons/postprocessing/OutputPass.js';
 import Lenis from 'lenis';
 
-const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-// ── Lenis smooth scroll ──────────────────────────────────────────────
-const lenis = reduceMotion ? null : new Lenis({
-  duration: 1.05,
-  easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-  smoothWheel: true,
-  wheelMultiplier: 1.0,
-  touchMultiplier: 1.4,
-});
-
-// ── Wait for GSAP UMD (deferred scripts above) ───────────────────────
-async function ensureGsap(){
-  let tries = 0;
-  while ((typeof window.gsap === 'undefined' || typeof window.ScrollTrigger === 'undefined') && tries < 200) {
-    await new Promise(r => setTimeout(r, 50));
-    tries++;
-  }
-  return typeof window.gsap !== 'undefined';
-}
-
 (async function boot(){
-  if (!(await ensureGsap())) {
-    // Fail-open: if GSAP never loads, show reveal elements so content is
-    // never permanently hidden, and tick Lenis on its own rAF loop.
-    document.querySelectorAll('.reveal').forEach(el => el.classList.add('in'));
-    if (lenis) {
-      const raf = (t) => { lenis.raf(t); requestAnimationFrame(raf); };
-      requestAnimationFrame(raf);
+  const canvas = document.getElementById('bg-canvas');
+  if (!canvas) return;
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const isMobile     = window.matchMedia('(max-width: 768px)').matches;
+
+  // ── Renderer ──────────────────────────────────────────────────────────
+  const renderer = new THREE.WebGLRenderer({
+    canvas, antialias: false, alpha: false, powerPreference: 'high-performance'
+  });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2));
+  renderer.setSize(window.innerWidth, window.innerHeight, false);
+  renderer.setClearColor(0x0a0a0a, 1);
+
+  // ── Scene + camera ────────────────────────────────────────────────────
+  const scene  = new THREE.Scene();
+  scene.background = new THREE.Color(0x0a0a0a);
+
+  const camera = new THREE.PerspectiveCamera(
+    55, window.innerWidth / window.innerHeight, 0.1, 600
+  );
+  camera.position.set(0, 6, 38);
+  camera.lookAt(0, 0, -10);
+
+  // ── Inline simplex 3D noise (Ashima Arts, public domain) ──────────────
+  const NOISE_GLSL = `
+    vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}
+    vec4 mod289(vec4 x){return x-floor(x*(1.0/289.0))*289.0;}
+    vec4 permute(vec4 x){return mod289(((x*34.0)+1.0)*x);}
+    vec4 taylorInvSqrt(vec4 r){return 1.79284291400159 - 0.85373472095314 * r;}
+    float snoise(vec3 v){
+      const vec2 C = vec2(1.0/6.0, 1.0/3.0);
+      const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
+      vec3 i  = floor(v + dot(v, C.yyy));
+      vec3 x0 = v - i + dot(i, C.xxx);
+      vec3 g  = step(x0.yzx, x0.xyz);
+      vec3 l  = 1.0 - g;
+      vec3 i1 = min(g.xyz, l.zxy);
+      vec3 i2 = max(g.xyz, l.zxy);
+      vec3 x1 = x0 - i1 + C.xxx;
+      vec3 x2 = x0 - i2 + C.yyy;
+      vec3 x3 = x0 - D.yyy;
+      i = mod289(i);
+      vec4 p = permute(permute(permute(
+                i.z + vec4(0.0, i1.z, i2.z, 1.0))
+              + i.y + vec4(0.0, i1.y, i2.y, 1.0))
+              + i.x + vec4(0.0, i1.x, i2.x, 1.0));
+      float n_ = 0.142857142857;
+      vec3 ns = n_ * D.wyz - D.xzx;
+      vec4 j  = p - 49.0 * floor(p * ns.z * ns.z);
+      vec4 x_ = floor(j * ns.z);
+      vec4 y_ = floor(j - 7.0 * x_);
+      vec4 x  = x_ * ns.x + ns.yyyy;
+      vec4 y  = y_ * ns.x + ns.yyyy;
+      vec4 h  = 1.0 - abs(x) - abs(y);
+      vec4 b0 = vec4(x.xy, y.xy);
+      vec4 b1 = vec4(x.zw, y.zw);
+      vec4 s0 = floor(b0)*2.0 + 1.0;
+      vec4 s1 = floor(b1)*2.0 + 1.0;
+      vec4 sh = -step(h, vec4(0.0));
+      vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy;
+      vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww;
+      vec3 p0 = vec3(a0.xy, h.x);
+      vec3 p1 = vec3(a0.zw, h.y);
+      vec3 p2 = vec3(a1.xy, h.z);
+      vec3 p3 = vec3(a1.zw, h.w);
+      vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2,p2), dot(p3,p3)));
+      p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w;
+      vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
+      m = m * m;
+      return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
     }
-    return;
+  `;
+
+  // ── Data field plane (tilted "data ground" stretching away) ───────────
+  const SEG = isMobile ? 100 : 300;
+  const planeGeo = new THREE.PlaneGeometry(220, 220, SEG, SEG);
+
+  const planeUniforms = {
+    uTime:       { value: 0 },
+    uAmplitude:  { value: 0.8 },
+    uCorruption: { value: 0 },     // 0..1 — high-freq chaos
+    uRigidity:   { value: 0 },     // 0..1 — flattens motion when high
+    uGlow:       { value: 0.30 },  // emissive boost on peaks (drives bloom)
+    uScanline:   { value: 0.30 },  // matrix scanline intensity
+    uColorBase:  { value: new THREE.Color(0x040404) },
+    uColorPeak:  { value: new THREE.Color(0x00FFC2) },
+  };
+
+  const planeVertexShader = NOISE_GLSL + `
+    uniform float uTime;
+    uniform float uAmplitude;
+    uniform float uCorruption;
+    uniform float uRigidity;
+    varying vec2  vUv;
+    varying vec3  vLocal;
+    varying float vHeight;
+    void main(){
+      vec3 p = position;
+
+      // Base undulation — two slow sinusoids crossing each other
+      float baseWave =
+        sin(p.x * 0.09 + uTime * 0.55) *
+        cos(p.y * 0.11 + uTime * 0.42) * uAmplitude;
+
+      // Organic low-frequency noise
+      float n1 = snoise(vec3(p.xy * 0.045, uTime * 0.18)) * 1.8;
+      float n2 = snoise(vec3(p.xy * 0.13,  uTime * 0.28)) * 0.45;
+
+      // High-frequency corruption noise (active during attack)
+      float chaos =
+        snoise(vec3(p.xy * 0.40, uTime * 3.2)) * 3.2 +
+        snoise(vec3(p.xy * 1.10, uTime * 6.0)) * 1.6;
+
+      // Rigidity flattens everything when the field "hardens" into a barrier
+      float settle = 1.0 - uRigidity * 0.92;
+
+      float h = (baseWave + n1 + n2 + chaos * uCorruption) * settle;
+
+      p.z += h;
+      vUv     = uv;
+      vLocal  = p;
+      vHeight = h;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
+    }
+  `;
+
+  const planeFragmentShader = `
+    uniform float uTime;
+    uniform float uGlow;
+    uniform float uScanline;
+    uniform vec3  uColorBase;
+    uniform vec3  uColorPeak;
+    varying vec2  vUv;
+    varying vec3  vLocal;
+    varying float vHeight;
+    void main(){
+      // Color by height. Most of the surface stays in the base (dark) tone;
+      // only the upper portion of peaks crosses into the accent color, so the
+      // field reads as "dark surface with glowing ridges" rather than a flat
+      // wash of colour.
+      float h = smoothstep(0.4, 3.2, vHeight);
+      vec3 color = mix(uColorBase, uColorPeak, h);
+
+      // Emissive boost on the very tips — this is what UnrealBloom picks up.
+      // Curve is steep so only the brightest few pixels bloom.
+      color *= 1.0 + uGlow * pow(h, 4.0);
+
+      // Terminal/matrix scanlines along local Y, slowly scrolling
+      float scan = sin(vLocal.y * 3.4 - uTime * 1.2);
+      scan = 0.5 + 0.5 * scan;
+      scan = pow(scan, 7.0);
+      color *= 1.0 - uScanline * scan * 0.35;
+
+      // Radial edge fade so the surface dissolves into the void at edges
+      float edge = 1.0 - smoothstep(78.0, 115.0, length(vLocal.xy));
+      color *= edge;
+
+      // Final plane opacity — the data field accompanies the content rather
+      // than competing with it. Dims everything (including bloom source) by
+      // the same factor so glow still reads where it matters.
+      color *= 0.55;
+
+      gl_FragColor = vec4(color, 1.0);
+    }
+  `;
+
+  const planeMat = new THREE.ShaderMaterial({
+    uniforms: planeUniforms,
+    vertexShader: planeVertexShader,
+    fragmentShader: planeFragmentShader,
+    side: THREE.DoubleSide,
+  });
+
+  const plane = new THREE.Mesh(planeGeo, planeMat);
+  // Tilt the plane like a receding "data floor" rather than a flat wall.
+  plane.rotation.x = -Math.PI * 0.42;   // ~76° tilt from vertical
+  plane.position.y = -14;               // pushed down so peaks sit below lookAt
+  plane.position.z = -40;               // pushed back so it's vista, not in-face
+  scene.add(plane);
+
+  // ── Post-processing composer ──────────────────────────────────────────
+  const composer = new EffectComposer(renderer);
+  composer.setPixelRatio(renderer.getPixelRatio());
+  composer.setSize(window.innerWidth, window.innerHeight);
+
+  composer.addPass(new RenderPass(scene, camera));
+
+  // UnrealBloom — strength/radius/threshold tuned per device. The high
+  // threshold means only the brightest pixels (peaks of the data field)
+  // contribute to the bloom, so the bloom reads as "edge glow on peaks"
+  // rather than a wash over the whole frame.
+  const bloomPass = new UnrealBloomPass(
+    new THREE.Vector2(window.innerWidth, window.innerHeight),
+    isMobile ? 0.25 : 0.35,    // strength (will be scrubbed by GSAP)
+    isMobile ? 0.55 : 0.7,     // radius (soft glow halo)
+    0.75                        // threshold (only the brightest peaks bloom)
+  );
+  composer.addPass(bloomPass);
+
+  // Chromatic aberration (custom shader pass). Skipped on mobile per spec.
+  const chromaPass = isMobile ? null : new ShaderPass({
+    uniforms: {
+      tDiffuse: { value: null },
+      uAmount:  { value: 0.001 },
+    },
+    vertexShader: `
+      varying vec2 vUv;
+      void main(){
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform sampler2D tDiffuse;
+      uniform float uAmount;
+      varying vec2 vUv;
+      void main(){
+        vec2 dir = vUv - vec2(0.5);
+        float off = uAmount * (0.6 + length(dir) * 1.8);
+        float r = texture2D(tDiffuse, vUv + dir * off).r;
+        float g = texture2D(tDiffuse, vUv).g;
+        float b = texture2D(tDiffuse, vUv - dir * off).b;
+        gl_FragColor = vec4(r, g, b, 1.0);
+      }
+    `,
+  });
+  if (chromaPass) composer.addPass(chromaPass);
+
+  // Vignette — deeper than default so the data field reads only behind the
+  // content viewport center and dissolves into pure black at the periphery.
+  const vignettePass = new ShaderPass({
+    uniforms: {
+      tDiffuse:   { value: null },
+      uIntensity: { value: 0.92 },
+    },
+    vertexShader: `
+      varying vec2 vUv;
+      void main(){
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform sampler2D tDiffuse;
+      uniform float uIntensity;
+      varying vec2 vUv;
+      void main(){
+        vec4 c = texture2D(tDiffuse, vUv);
+        float d = distance(vUv, vec2(0.5));
+        // Aggressive falloff: bright center, deep black corners
+        float vig = smoothstep(0.85, 0.15, d);
+        vig = mix(1.0, vig, uIntensity);
+        gl_FragColor = vec4(c.rgb * vig, c.a);
+      }
+    `,
+  });
+  composer.addPass(vignettePass);
+
+  // OutputPass handles tone-mapping + correct sRGB output.
+  composer.addPass(new OutputPass());
+
+  // ── Resize ────────────────────────────────────────────────────────────
+  function resize(){
+    const w = window.innerWidth, h = window.innerHeight;
+    renderer.setSize(w, h, false);
+    composer.setSize(w, h);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    bloomPass.setSize(w, h);
+  }
+  window.addEventListener('resize', resize);
+
+  // ── Lenis smooth scroll ───────────────────────────────────────────────
+  let lenis = null;
+  if (!reduceMotion) {
+    lenis = new Lenis({
+      duration:     1.05,
+      easing:       (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel:  true,
+      wheelMultiplier: 1.0,
+      touchMultiplier: 1.6,
+    });
   }
 
-  const { gsap, ScrollTrigger } = window;
+  // ── Animation loop ────────────────────────────────────────────────────
+  const clock = new THREE.Clock();
+  let running = true;
+  document.addEventListener('visibilitychange', () => {
+    running = !document.hidden;
+    if (running) clock.getDelta();
+  });
+
+  function tick(time){
+    requestAnimationFrame(tick);
+    if (!running) return;
+    if (lenis) lenis.raf(time);
+    const dt = Math.min(0.066, clock.getDelta());
+    // prefers-reduced-motion: hold uTime so the surface stops animating
+    if (!reduceMotion) planeUniforms.uTime.value += dt;
+    composer.render();
+  }
+  requestAnimationFrame(tick);
+
+  // ── Expose for GSAP / tests ───────────────────────────────────────────
+  window.__zpBg = {
+    scene, camera, renderer, composer,
+    plane, planeMat, planeUniforms,
+    bloomPass, chromaPass, vignettePass,
+    lenis, reduceMotion, isMobile,
+  };
+
+  // ════════════════════════════════════════════════════════════════════
+  // GSAP ScrollTrigger — scrub-driven uniform animation per section.
+  // ════════════════════════════════════════════════════════════════════
+
+  // Wait for GSAP UMD scripts to finish loading.
+  let tries = 0;
+  while (typeof window.gsap === 'undefined' || typeof window.ScrollTrigger === 'undefined') {
+    await new Promise(r => setTimeout(r, 50));
+    if (++tries > 200) { console.warn('[zp-3d] GSAP never loaded'); return; }
+  }
+  const gsap = window.gsap;
+  const ScrollTrigger = window.ScrollTrigger;
   gsap.registerPlugin(ScrollTrigger);
 
-  // ── Lenis ↔ GSAP ticker integration ────────────────────────────────
+  // Lenis + GSAP ticker integration (drives ScrollTrigger.update on Lenis frame).
   if (lenis) {
     lenis.on('scroll', ScrollTrigger.update);
-    gsap.ticker.add((time) => lenis.raf(time * 1000));
     gsap.ticker.lagSmoothing(0);
   }
 
-  // ── Scroll reveals: fade + translateY(30→0), staggered via .reveal-dN
-  const delayFor = (el) =>
-    el.classList.contains('reveal-d3') ? 0.30 :
-    el.classList.contains('reveal-d2') ? 0.20 :
-    el.classList.contains('reveal-d1') ? 0.10 : 0;
+  // ── Per-section uniform targets ───────────────────────────────────────
+  //  bloom    = bloomPass.strength
+  //  chroma   = chromaPass.uniforms.uAmount.value (desktop only)
+  //  camZ/camY = camera position
+  const lerp = (a, b, t) => a + (b - a) * t;
 
-  document.querySelectorAll('.reveal').forEach(el => {
-    gsap.fromTo(el,
-      { opacity: 0, y: 30 },
-      {
-        opacity: 1, y: 0,
-        duration: 0.9, ease: 'power3.out',
-        delay: delayFor(el),
-        scrollTrigger: {
-          trigger: el, start: 'top 85%',
-          toggleActions: 'play none none reverse'
+  // Values tuned so the data field reads as atmosphere behind content, not
+  // as a foreground element. Bloom strength is the dominant "impact" knob.
+  // Amplitudes and glow are intentionally subtle — the field accompanies.
+  const HERO = {
+    corruption: 0,    rigidity: 0,    amplitude: 0.8,  glow: 0.30,
+    color: 0x00FFC2,  chroma: 0.0008,                  bloom: isMobile ? 0.18 : 0.30,
+    scanline: 0.30,   camY: 6,         camZ: 38
+  };
+  const PROB = {
+    corruption: 1,    rigidity: 0,    amplitude: 1.1,  glow: 0.55,
+    color: 0xFF4C4C,  chroma: isMobile ? 0 : 0.012,    bloom: isMobile ? 0.32 : 0.55,
+    scanline: 0.42,   camY: 4,         camZ: 30
+  };
+  const EXPL = {
+    corruption: 0,    rigidity: 0.72, amplitude: 0.45, glow: 0.35,
+    color: 0x4C9FFF,  chroma: isMobile ? 0 : 0.0035,   bloom: isMobile ? 0.22 : 0.38,
+    scanline: 0.38,   camY: 8,         camZ: 44
+  };
+  const PROOF = {
+    corruption: 0,    rigidity: 0.92, amplitude: 0.25, glow: 0.70,
+    color: 0x00FFC2,  chroma: isMobile ? 0 : 0.0015,   bloom: isMobile ? 0.45 : 0.75,
+    scanline: 0.48,   camY: 14,        camZ: 78
+  };
+
+  function makeRegime({ trigger, from, to }) {
+    if (!document.querySelector(trigger)) return;
+    const colFrom = new THREE.Color(from.color);
+    const colTo   = new THREE.Color(to.color);
+    ScrollTrigger.create({
+      trigger, start: 'top bottom', end: 'top 30%', scrub: 0.8,
+      onUpdate(self){
+        const p = self.progress;
+        planeUniforms.uCorruption.value = lerp(from.corruption, to.corruption, p);
+        planeUniforms.uRigidity.value   = lerp(from.rigidity,   to.rigidity,   p);
+        planeUniforms.uAmplitude.value  = lerp(from.amplitude,  to.amplitude,  p);
+        planeUniforms.uGlow.value       = lerp(from.glow,       to.glow,       p);
+        planeUniforms.uScanline.value   = lerp(from.scanline,   to.scanline,   p);
+        planeUniforms.uColorPeak.value.lerpColors(colFrom, colTo, p);
+        bloomPass.strength              = lerp(from.bloom,      to.bloom,      p);
+        if (chromaPass) {
+          chromaPass.uniforms.uAmount.value = lerp(from.chroma, to.chroma, p);
         }
+        camera.position.y = lerp(from.camY, to.camY, p);
+        camera.position.z = lerp(from.camZ, to.camZ, p);
+        camera.lookAt(0, 0, -10);
       }
-    );
-  });
+    });
+  }
 
-  // Settle ScrollTrigger after fonts/images shift layout
+  // Main narrative chain (climax at #proof; cycle closes at #protocol
+  // where the field calms back to the hero state).
+  makeRegime({ trigger: '#problem',   from: HERO,  to: PROB  });
+  makeRegime({ trigger: '#explainer', from: PROB,  to: EXPL  });
+  makeRegime({ trigger: '#proof',     from: EXPL,  to: PROOF });
+  makeRegime({ trigger: '#protocol',  from: PROOF, to: HERO  });
+
+  // Identity coverage — sections after #protocol inherit the HERO state.
+  // No new identities; just keep the chain explicitly covered so the field
+  // stays active and smooth all the way to the footer.
+  ['#capabilities','#evidence','#agents','#pricing','#faq','#api-access','.cta-section']
+    .forEach(sel => makeRegime({ trigger: sel, from: HERO, to: HERO }));
+
+  // ── Hero entry: bloom + glow bloom-in synced with the headline CSS
+  //    animation (staggered 0.25–0.70s). The field is alive from frame 1;
+  //    only the emissive strength fades in so the headline reads clearly
+  //    before the surface "lights up" behind it.
+  if (!reduceMotion) {
+    bloomPass.strength = 0;
+    planeUniforms.uGlow.value = 0;
+    gsap.to(bloomPass,      { strength: HERO.bloom, duration: 1.8, ease: 'power3.out' });
+    gsap.to(planeUniforms.uGlow, { value: HERO.glow, duration: 1.6, ease: 'power3.out', delay: 0.2 });
+  }
+
+  // ── Section-head reveals (DOM-only; kept for continuity with the
+  //    previous design — handled via GSAP instead of the global IO).
+  function attachReveal(selector) {
+    const el = document.querySelector(selector);
+    if (!el || reduceMotion) return;
+    el.classList.remove('reveal');
+    el.classList.add('reveal-gsap');
+    gsap.set(el, { opacity: 0, y: 40, filter: 'blur(6px)' });
+    gsap.to(el, {
+      opacity: 1, y: 0, filter: 'blur(0px)',
+      duration: 1.0, ease: 'power3.out',
+      scrollTrigger: {
+        trigger: el, start: 'top 85%',
+        toggleActions: 'play none none reverse'
+      }
+    });
+  }
+  attachReveal('#problem .section-head');
+  attachReveal('#explainer .section-head');
+  attachReveal('#proof .section-head');
+
+  // Settle ScrollTrigger after layout/fonts shift
   window.addEventListener('load', () => ScrollTrigger.refresh());
   setTimeout(() => ScrollTrigger.refresh(), 400);
-})();
+})().catch(err => {
+  console.error('[zp-3d] boot failed:', err);
+});
 </script>
 </body>
 </html>
