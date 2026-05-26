@@ -1748,5 +1748,308 @@ window.addEventListener('scroll',()=>{
   navLinks.forEach(l=>{l.style.color=l.getAttribute('href')==='#'+current?'#F5F5F5':'';});
 },{passive:true});
 </script>
+
+<!-- ──────────────────────────────────────────────────────────────────── -->
+<!-- OFF+BRAND-style interactions layer.                                   -->
+<!-- Zero HTML/CSS edits anywhere else: this script injects its own deps,  -->
+<!-- styles and elements on top of the existing page.                      -->
+<!-- ──────────────────────────────────────────────────────────────────── -->
+<script>
+(async function(){
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const isTouch = window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
+
+  // ── External deps (Lenis as ESM, GSAP UMD) ─────────────────────────
+  function loadScript(src){
+    return new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = src; s.async = false;
+      s.onload = resolve; s.onerror = () => reject(new Error('failed ' + src));
+      document.head.appendChild(s);
+    });
+  }
+
+  let lenis = null;
+  try {
+    const mod = await import('https://cdn.jsdelivr.net/npm/lenis@1.1.20/dist/lenis.mjs');
+    const Lenis = mod.default || mod.Lenis;
+    lenis = new Lenis({
+      duration: 1.05,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+      wheelMultiplier: 1.0,
+      touchMultiplier: 1.4,
+    });
+    if (reduceMotion) lenis.stop();
+  } catch(e) { console.warn('[zp-fx] Lenis failed:', e); }
+
+  try {
+    if (typeof window.gsap === 'undefined')
+      await loadScript('https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js');
+    if (typeof window.ScrollTrigger === 'undefined')
+      await loadScript('https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js');
+  } catch(e) { console.warn('[zp-fx] GSAP failed to load:', e); return; }
+
+  const { gsap, ScrollTrigger } = window;
+  gsap.registerPlugin(ScrollTrigger);
+
+  // Lenis ↔ GSAP ticker
+  if (lenis) {
+    lenis.on('scroll', ScrollTrigger.update);
+    gsap.ticker.add((time) => lenis.raf(time * 1000));
+    gsap.ticker.lagSmoothing(0);
+  }
+
+  // ── Reduced motion: stop here, only smooth scroll remains ─────────
+  if (reduceMotion) return;
+
+  // ════════════════════════════════════════════════════════════════════
+  // (4) SPLIT TEXT REVEAL — words rise from below, staggered
+  // ════════════════════════════════════════════════════════════════════
+  function splitWords(el){
+    if (el.__zpSplit) return el.__zpSplit;
+    el.__zpSplit = [];
+    // Walk text nodes only — preserves <em>, <code>, etc.
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    const textNodes = [];
+    while (walker.nextNode()) {
+      if (walker.currentNode.textContent.trim()) textNodes.push(walker.currentNode);
+    }
+    textNodes.forEach(node => {
+      const parent = node.parentNode;
+      const parts = node.textContent.split(/(\s+)/);
+      const frag = document.createDocumentFragment();
+      parts.forEach(w => {
+        if (/^\s+$/.test(w)) {
+          frag.appendChild(document.createTextNode(w));
+        } else if (w) {
+          const wrap = document.createElement('span');
+          wrap.style.cssText = 'display:inline-block;overflow:hidden;vertical-align:bottom;line-height:inherit;padding-bottom:0.08em;margin-bottom:-0.08em';
+          const inner = document.createElement('span');
+          inner.style.cssText = 'display:inline-block;will-change:transform,opacity';
+          inner.textContent = w;
+          wrap.appendChild(inner);
+          frag.appendChild(wrap);
+          el.__zpSplit.push(inner);
+        }
+      });
+      parent.replaceChild(frag, node);
+    });
+    return el.__zpSplit;
+  }
+
+  // Only target h1/h2 whose ancestor (or self) carries .reveal — and avoid
+  // the hero h1 which already has its own keyframe animation.
+  document.querySelectorAll('.reveal h1, .reveal h2, h1.reveal, h2.reveal').forEach(el => {
+    if (el.closest('.hero')) return;
+    const words = splitWords(el);
+    if (!words || !words.length) return;
+    gsap.set(words, { yPercent: 110, opacity: 0 });
+    gsap.to(words, {
+      yPercent: 0, opacity: 1,
+      duration: 0.9, ease: 'power3.out',
+      stagger: 0.08,
+      scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: 'play none none reverse' }
+    });
+  });
+
+  // ════════════════════════════════════════════════════════════════════
+  // (7) ANIMATED COUNTERS — count from 0 to target on viewport entry
+  // ════════════════════════════════════════════════════════════════════
+  function animateCounter(el){
+    if (el.__zpCount) return;
+    // Find the first non-empty text node so we don't touch nested elements
+    const textNode = Array.from(el.childNodes).find(n => n.nodeType === Node.TEXT_NODE && /\d/.test(n.textContent));
+    if (!textNode) return;
+    const original = textNode.textContent;
+    const m = original.match(/[\d,]+\.?\d*/);
+    if (!m) return;
+    const numStr = m[0];
+    const hasComma = numStr.includes(',');
+    const hasDot   = numStr.includes('.');
+    const target   = parseFloat(numStr.replace(/,/g, ''));
+    if (!isFinite(target)) return;
+    const decimals = hasDot ? numStr.split('.')[1].length : 0;
+    const before = original.slice(0, m.index);
+    const after  = original.slice(m.index + m[0].length);
+    el.__zpCount = true;
+    const state = { val: 0 };
+    function render(){
+      let v = state.val.toFixed(decimals);
+      if (hasComma && state.val >= 1000) {
+        v = parseFloat(v).toLocaleString('en-US', {
+          minimumFractionDigits: decimals, maximumFractionDigits: decimals
+        });
+      }
+      textNode.textContent = before + v + after;
+    }
+    render();
+    gsap.to(state, {
+      val: target, duration: 1.5, ease: 'power2.out', onUpdate: render,
+      scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: 'play none none none' }
+    });
+  }
+  document.querySelectorAll('.metric-val, .b-stat, .prec').forEach(animateCounter);
+  const wcount = document.getElementById('waitlist-count-text');
+  if (wcount) animateCounter(wcount);
+
+  // ════════════════════════════════════════════════════════════════════
+  // (5) PARALLAX — hero content sinks slightly, code/demo cards drift up
+  // ════════════════════════════════════════════════════════════════════
+  if (!isTouch) {
+    const heroContent = document.querySelector('.hero-content');
+    if (heroContent) {
+      gsap.to(heroContent, {
+        y: () => window.innerHeight * 0.15,
+        ease: 'none',
+        scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true }
+      });
+    }
+    document.querySelectorAll('#problem .reveal-d1, #proof .reveal-d1, #explainer .reveal-d1, #agents .reveal-d2').forEach(el => {
+      gsap.to(el, {
+        y: () => -window.innerHeight * 0.08,
+        ease: 'none',
+        scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: true }
+      });
+    });
+  }
+
+  // ── Touch devices stop here — no cursor / magnetic / lens / tilt ──
+  if (isTouch) {
+    setTimeout(() => ScrollTrigger.refresh(), 400);
+    return;
+  }
+
+  // ════════════════════════════════════════════════════════════════════
+  // (2) CUSTOM CURSOR — dot follows exactly, ring lerps. Hover & lens.
+  // ════════════════════════════════════════════════════════════════════
+  const cursorStyle = document.createElement('style');
+  cursorStyle.textContent = `
+    html.zp-cursor, html.zp-cursor *, html.zp-cursor *::before, html.zp-cursor *::after { cursor: none !important; }
+    html.zp-cursor input, html.zp-cursor textarea, html.zp-cursor select { cursor: text !important; }
+    .zp-dot {
+      position:fixed; top:0; left:0; width:8px; height:8px;
+      background:#fff; border-radius:50%;
+      pointer-events:none; z-index:99999;
+      mix-blend-mode:difference;
+      will-change:transform;
+      transition:opacity 0.2s ease;
+    }
+    .zp-ring {
+      position:fixed; top:0; left:0; width:40px; height:40px;
+      border:1px solid rgba(255,255,255,0.4); border-radius:50%;
+      pointer-events:none; z-index:99998;
+      will-change:transform,width,height,border-color,backdrop-filter;
+      transition:width 0.28s ease, height 0.28s ease, border-color 0.28s ease,
+                 backdrop-filter 0.4s ease, opacity 0.2s ease;
+    }
+    .zp-ring.is-hover { width:60px; height:60px; border-color:#00FFC2; }
+    .zp-ring.is-lens  { width:80px; height:80px; border-color:rgba(0,255,194,0.65); backdrop-filter:saturate(180%) contrast(115%); -webkit-backdrop-filter:saturate(180%) contrast(115%); }
+    html.zp-cursor-text .zp-dot, html.zp-cursor-text .zp-ring { opacity:0; }
+  `;
+  document.head.appendChild(cursorStyle);
+  document.documentElement.classList.add('zp-cursor');
+
+  const dot  = document.createElement('div'); dot.className  = 'zp-dot';
+  const ring = document.createElement('div'); ring.className = 'zp-ring';
+  document.body.append(dot, ring);
+
+  let mx = window.innerWidth / 2, my = window.innerHeight / 2;
+  let rx = mx, ry = my;
+  let dotDown = false;
+
+  function paintDot(){
+    const s = dotDown ? ' scale(0.5)' : '';
+    dot.style.transform = `translate3d(${mx}px,${my}px,0) translate3d(-50%,-50%,0)${s}`;
+  }
+  function ringLoop(){
+    rx += (mx - rx) * 0.08;
+    ry += (my - ry) * 0.08;
+    ring.style.transform = `translate3d(${rx}px,${ry}px,0) translate3d(-50%,-50%,0)`;
+    requestAnimationFrame(ringLoop);
+  }
+  window.addEventListener('pointermove', (e) => { mx = e.clientX; my = e.clientY; paintDot(); }, { passive: true });
+  window.addEventListener('pointerdown', () => { dotDown = true;  paintDot(); });
+  window.addEventListener('pointerup',   () => { dotDown = false; paintDot(); });
+  paintDot(); ringLoop();
+
+  // Hover on interactive elements
+  const hoverables = document.querySelectorAll('a, button, [role="button"], summary, .btn, .waitlist-btn');
+  hoverables.forEach(el => {
+    el.addEventListener('pointerenter', () => ring.classList.add('is-hover'));
+    el.addEventListener('pointerleave', () => ring.classList.remove('is-hover'));
+  });
+
+  // Hide custom cursor over text inputs (native text caret is more usable)
+  document.querySelectorAll('input, textarea').forEach(el => {
+    el.addEventListener('pointerenter', () => document.documentElement.classList.add('zp-cursor-text'));
+    el.addEventListener('pointerleave', () => document.documentElement.classList.remove('zp-cursor-text'));
+  });
+
+  // ════════════════════════════════════════════════════════════════════
+  // (6) LENS on code blocks — ring grows + saturate filter
+  // ════════════════════════════════════════════════════════════════════
+  document.querySelectorAll('pre').forEach(el => {
+    el.addEventListener('pointerenter', () => ring.classList.add('is-lens'));
+    el.addEventListener('pointerleave', () => ring.classList.remove('is-lens'));
+  });
+
+  // ════════════════════════════════════════════════════════════════════
+  // (3) MAGNETIC BUTTONS — attract within 80px, max 12px displacement
+  // ════════════════════════════════════════════════════════════════════
+  const magnets = Array.from(document.querySelectorAll('.btn, .waitlist-btn'));
+  const magnetActive = new WeakMap();
+  window.addEventListener('pointermove', (e) => {
+    magnets.forEach(btn => {
+      const r = btn.getBoundingClientRect();
+      if (r.width === 0) return;
+      const cx = r.left + r.width  / 2;
+      const cy = r.top  + r.height / 2;
+      const dx = e.clientX - cx;
+      const dy = e.clientY - cy;
+      const dist = Math.hypot(dx, dy);
+      const active = magnetActive.get(btn);
+      if (dist < 80) {
+        gsap.to(btn, {
+          x: (dx / 80) * 12,
+          y: (dy / 80) * 12,
+          duration: 0.3, ease: 'power3.out', overwrite: 'auto'
+        });
+        magnetActive.set(btn, true);
+      } else if (active) {
+        gsap.to(btn, { x: 0, y: 0, duration: 0.45, ease: 'elastic.out(1, 0.55)', overwrite: 'auto' });
+        magnetActive.set(btn, false);
+      }
+    });
+  }, { passive: true });
+
+  // ════════════════════════════════════════════════════════════════════
+  // (8) 3D TILT — pricing cards + feature cards (.bento children)
+  // ════════════════════════════════════════════════════════════════════
+  const tiltCards = document.querySelectorAll('#pricing-grid > div, .bento > div');
+  tiltCards.forEach(card => {
+    card.style.transformStyle = 'preserve-3d';
+    card.addEventListener('pointermove', (e) => {
+      const r = card.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width;
+      const py = (e.clientY - r.top)  / r.height;
+      const rx = -(py - 0.5) * 8;   // -4°..4°
+      const ry =  (px - 0.5) * 8;
+      gsap.to(card, {
+        rotateX: rx, rotateY: ry, transformPerspective: 900,
+        duration: 0.4, ease: 'power3.out', overwrite: 'auto'
+      });
+    });
+    card.addEventListener('pointerleave', () => {
+      gsap.to(card, { rotateX: 0, rotateY: 0, duration: 0.6, ease: 'power3.out', overwrite: 'auto' });
+    });
+  });
+
+  // Settle ScrollTrigger after late layout shifts (fonts, images, banner)
+  window.addEventListener('load', () => ScrollTrigger.refresh());
+  setTimeout(() => ScrollTrigger.refresh(), 400);
+})();
+</script>
+
 </body>
 </html>
