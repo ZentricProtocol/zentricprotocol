@@ -275,12 +275,22 @@
 
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
-    html{scroll-behavior:smooth}
+    html{scroll-behavior:smooth;background:#0A0A0A}
     body{
-      background:#0A0A0A;color:#F5F5F5;
+      background:transparent;color:#F5F5F5;
       font-family:'Helvetica Neue','Helvetica',Arial,sans-serif;
       font-weight:400;-webkit-font-smoothing:antialiased;
       letter-spacing:-0.011em;overflow-x:hidden;
+    }
+
+    /* 3D background canvas — fixed behind all content */
+    #bg-canvas{
+      position:fixed;
+      top:0;left:0;
+      width:100vw;height:100vh;
+      z-index:-1;
+      pointer-events:none;
+      display:block;
     }
     :root{
       --ink:#0A0A0A;--paper:#F5F5F5;--kinetic:#00FFC2;
@@ -584,6 +594,9 @@
   </style>
 </head>
 <body>
+
+<!-- 3D background canvas (Three.js particle field, scroll-reactive) -->
+<canvas id="bg-canvas" aria-hidden="true"></canvas>
 
 <!-- LAUNCH BANNER — auto-switches pre-launch ↔ live on May 21 2026 -->
 <div class="launch-banner hidden" id="launchBanner" role="banner" aria-label="Launch announcement">
@@ -1747,6 +1760,283 @@ window.addEventListener('scroll',()=>{
   sections.forEach(s=>{if(window.scrollY>=s.offsetTop-120)current=s.id});
   navLinks.forEach(l=>{l.style.color=l.getAttribute('href')==='#'+current?'#F5F5F5':'';});
 },{passive:true});
+</script>
+
+<!-- ── 3D BACKGROUND: Three.js particle field, scroll-reactive ──────────── -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.min.js" defer></script>
+<script defer>
+(function(){
+  function boot(){
+    if (typeof THREE === 'undefined') { return setTimeout(boot, 50); }
+
+    const canvas = document.getElementById('bg-canvas');
+    if (!canvas) return;
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+
+    // ── Renderer ────────────────────────────────────────────────────────
+    const renderer = new THREE.WebGLRenderer({
+      canvas: canvas,
+      antialias: false,
+      alpha: true,
+      powerPreference: 'low-power'
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2));
+    renderer.setClearColor(0x000000, 0);
+
+    // ── Scene + camera ──────────────────────────────────────────────────
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x0a0a0a, 0.045);
+
+    const camera = new THREE.PerspectiveCamera(
+      60,
+      window.innerWidth / window.innerHeight,
+      0.1, 200
+    );
+    camera.position.set(0, 0, 18);
+
+    // ── Particle field ──────────────────────────────────────────────────
+    const COUNT = isMobile ? 1400 : 3200;
+    const SPREAD_XY = 38;
+    const SPREAD_Z  = 60;
+
+    const positions = new Float32Array(COUNT * 3);
+    const seeds     = new Float32Array(COUNT); // per-particle randomness for drift
+
+    for (let i = 0; i < COUNT; i++) {
+      // Mix a denser core with a wider halo so the field has depth/breathing
+      const inCore = Math.random() < 0.55;
+      const r = inCore
+        ? Math.pow(Math.random(), 0.7) * SPREAD_XY * 0.55
+        : SPREAD_XY * (0.5 + Math.random() * 0.55);
+      const theta = Math.random() * Math.PI * 2;
+
+      positions[i*3 + 0] = Math.cos(theta) * r;
+      positions[i*3 + 1] = Math.sin(theta) * r * 0.7; // slight vertical squash
+      positions[i*3 + 2] = (Math.random() - 0.5) * SPREAD_Z;
+
+      seeds[i] = Math.random() * Math.PI * 2;
+    }
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+    // Round, soft particle sprite generated on the fly (no asset request)
+    function makeDotTexture(){
+      const size = 64;
+      const c = document.createElement('canvas');
+      c.width = c.height = size;
+      const ctx = c.getContext('2d');
+      const g = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
+      g.addColorStop(0,    'rgba(255,255,255,1)');
+      g.addColorStop(0.35, 'rgba(255,255,255,0.55)');
+      g.addColorStop(1,    'rgba(255,255,255,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, size, size);
+      const tex = new THREE.CanvasTexture(c);
+      tex.minFilter = THREE.LinearFilter;
+      return tex;
+    }
+
+    // Two layers: most particles are paper-white at low opacity,
+    // a smaller layer uses the kinetic accent (#00FFC2).
+    const baseMat = new THREE.PointsMaterial({
+      size: isMobile ? 0.075 : 0.06,
+      map: makeDotTexture(),
+      color: 0xF5F5F5,
+      transparent: true,
+      opacity: 0.55,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      sizeAttenuation: true
+    });
+    const points = new THREE.Points(geometry, baseMat);
+    scene.add(points);
+
+    // Accent layer — sparse, brighter, kinetic green
+    const ACCENT_COUNT = isMobile ? 140 : 260;
+    const accentPos = new Float32Array(ACCENT_COUNT * 3);
+    for (let i = 0; i < ACCENT_COUNT; i++) {
+      const theta = Math.random() * Math.PI * 2;
+      const r = Math.pow(Math.random(), 0.5) * SPREAD_XY * 0.9;
+      accentPos[i*3 + 0] = Math.cos(theta) * r;
+      accentPos[i*3 + 1] = Math.sin(theta) * r * 0.7;
+      accentPos[i*3 + 2] = (Math.random() - 0.5) * SPREAD_Z;
+    }
+    const accentGeo = new THREE.BufferGeometry();
+    accentGeo.setAttribute('position', new THREE.BufferAttribute(accentPos, 3));
+    const accentMat = new THREE.PointsMaterial({
+      size: isMobile ? 0.11 : 0.09,
+      map: baseMat.map,
+      color: 0x00FFC2,
+      transparent: true,
+      opacity: 0.85,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      sizeAttenuation: true
+    });
+    const accent = new THREE.Points(accentGeo, accentMat);
+    scene.add(accent);
+
+    // ── Shared state (GSAP writes here; tick applies it) ────────────────
+    // GSAP / ScrollTrigger can take over by calling disableFallbackScroll().
+    const state = {
+      scrollProgress: 0,    // 0..1, drives camera dolly
+      cameraZ: 18,          // explicit override; GSAP can write
+      cameraExtraTilt: 0,   // extra pitch for transitions
+      baseOpacity: 0.55,    // points.material.opacity
+      accentOpacity: 0.85,  // accent.material.opacity
+      fogDensity: 0.045,    // scene.fog.density
+      rotSpeedMul: 1.0,     // multiplier on the continuous field rotation
+    };
+
+    // cameraZ is driven directly from window.scrollY using per-section anchors.
+    // This is the single source of truth for the camera dolly so multiple
+    // ScrollTriggers can't race to write conflicting values. GSAP can take
+    // over briefly (e.g. for the hero intro 24→18) by calling lockCameraZ().
+    let scrollDrivenCam = true;
+    let cameraAnchors = [[0, 18]];
+    function refreshCameraAnchors(){
+      const vh = window.innerHeight;
+      const hero  = document.getElementById('hero');
+      const prob  = document.getElementById('problem');
+      const expl  = document.getElementById('explainer');
+      const proof = document.getElementById('proof');
+      if (!hero || !prob || !expl || !proof) return;
+      // Anchors mirror the regime ScrollTrigger ranges (top bottom → top 30%)
+      // so the camera arrives at each section's resting Z at the same scroll
+      // position where the rest of its visual identity finishes settling.
+      cameraAnchors = [
+        [0,                                            18 ],
+        [hero.offsetTop + hero.offsetHeight - vh,      -4 ],
+        [prob.offsetTop  - vh,                          -4],
+        [prob.offsetTop  - vh * 0.3,                    -8],
+        [expl.offsetTop  - vh,                          -8],
+        [expl.offsetTop  - vh * 0.3,                     2],
+        [proof.offsetTop - vh,                           2],
+        [proof.offsetTop - vh * 0.3,                   -10],
+      ];
+    }
+    function computeCameraZ(y){
+      const a = cameraAnchors;
+      if (y <= a[0][0]) return a[0][1];
+      for (let i = 0; i < a.length - 1; i++) {
+        const [y0, z0] = a[i];
+        const [y1, z1] = a[i+1];
+        if (y < y1) {
+          if (y1 === y0) return z1;
+          return z0 + (z1 - z0) * (y - y0) / (y1 - y0);
+        }
+      }
+      return a[a.length - 1][1];
+    }
+    refreshCameraAnchors();
+    window.addEventListener('load',   refreshCameraAnchors);
+    window.addEventListener('resize', refreshCameraAnchors);
+
+    // Subtle pointer parallax (desktop only)
+    const pointer = { x: 0, y: 0, tx: 0, ty: 0 };
+    if (!isMobile) {
+      window.addEventListener('pointermove', (e) => {
+        pointer.tx = (e.clientX / window.innerWidth  - 0.5) * 2;
+        pointer.ty = (e.clientY / window.innerHeight - 0.5) * 2;
+      }, { passive: true });
+    }
+
+    // ── Resize ──────────────────────────────────────────────────────────
+    function resize(){
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // ── Animation loop ──────────────────────────────────────────────────
+    const clock = new THREE.Clock();
+    let running = true;
+
+    document.addEventListener('visibilitychange', () => {
+      running = !document.hidden;
+      if (running) clock.getDelta(); // discard the gap
+    });
+
+    function tick(){
+      requestAnimationFrame(tick);
+      if (!running) return;
+
+      const dt = Math.min(0.066, clock.getDelta());
+      const t  = clock.elapsedTime;
+
+      // scrollProgress drives subtle camera y/yaw/tilt — derived from total
+      // page scroll (cheap, no DOM read). Eased for smoothness on trackpads.
+      const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+      const targetSP = Math.min(1, Math.max(0, window.scrollY / maxScroll));
+      state.scrollProgress += (targetSP - state.scrollProgress) * 0.06;
+
+      // cameraZ: tick-driven from anchors unless GSAP has temporarily locked it
+      // (e.g. for the hero intro 24→18 fly-in).
+      if (scrollDrivenCam) {
+        const target = computeCameraZ(window.scrollY);
+        state.cameraZ += (target - state.cameraZ) * 0.10;
+      }
+
+      // Ease pointer
+      pointer.x += (pointer.tx - pointer.x) * 0.04;
+      pointer.y += (pointer.ty - pointer.y) * 0.04;
+
+      // Apply state to camera
+      const yaw  = Math.sin(t * 0.05) * 0.08 + state.scrollProgress * 0.25;
+      const tilt = state.scrollProgress * 0.35 + state.cameraExtraTilt;
+
+      camera.position.x = pointer.x * 1.4;
+      camera.position.y = -pointer.y * 0.9 - state.scrollProgress * 1.2;
+      camera.position.z = state.cameraZ;
+      camera.rotation.x = tilt + pointer.y * 0.05;
+      camera.rotation.y = yaw  + pointer.x * 0.05;
+
+      // Apply state to materials + fog (GSAP-tweenable)
+      baseMat.opacity      = state.baseOpacity;
+      accentMat.opacity    = state.accentOpacity;
+      scene.fog.density    = state.fogDensity;
+
+      if (!reduceMotion) {
+        // Gentle continuous drift on the field itself.
+        // rotSpeedMul gives each section a distinct "movement personality":
+        // hero/problem move, explainer slows, proof nearly freezes.
+        const r = state.rotSpeedMul;
+        points.rotation.y += dt * 0.015 * r;
+        points.rotation.x  = Math.sin(t * 0.1) * 0.05;
+        accent.rotation.y -= dt * 0.02 * r;
+        accent.rotation.x  = Math.cos(t * 0.12) * 0.05;
+      }
+
+      renderer.render(scene, camera);
+    }
+    tick();
+
+    // Expose for GSAP / ScrollTrigger and future sections
+    window.__zpBg = {
+      scene, camera, points, accent, renderer,
+      baseMat, accentMat,
+      state,
+      reduceMotion, isMobile,
+      lockCameraZ()   { scrollDrivenCam = false; },
+      unlockCameraZ() { scrollDrivenCam = true;  },
+      refreshCameraAnchors,
+      get progress(){ return state.scrollProgress; }
+    };
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();
 </script>
 </body>
 </html>
