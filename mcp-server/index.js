@@ -163,7 +163,6 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
       name: TOOL_NAME,
       description: TOOL_DESCRIPTION,
       inputSchema: TOOL_INPUT_SCHEMA,
-      outputSchema: TOOL_OUTPUT_SCHEMA,
       annotations: TOOL_ANNOTATIONS,
     },
   ],
