@@ -11,7 +11,7 @@ import {
   ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 
-const VERSION = '0.1.7';
+const VERSION = '0.1.8';
 const ENDPOINT = 'https://api.zentricprotocol.com/v1/analyze';
 const TOOL_NAME = 'analyze_prompt';
 const TOOL_DESCRIPTION =
@@ -192,6 +192,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       content: [
         { type: 'text', text: JSON.stringify(result, null, 2) },
       ],
+      structuredContent: result,
     };
   } catch (err) {
     return {
