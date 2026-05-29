@@ -18,7 +18,7 @@ Indirect prompt injection is the dominant attack surface for AI agents in produc
 - **Verdict** — `CLEARED`, `ANONYMIZED`, or `BLOCKED`
 - **Matched injection signatures** — which patterns triggered (e.g. `INSTRUCTION_OVERRIDE_EN`, `ROLE_HIJACK_ES`)
 - **Detected PII entities** — names, emails, phone numbers, credit cards, etc.
-- **Signed audit report** — SHA-256 hash + UUID + UTC timestamp (GDPR Art. 30 compliant)
+- **Signed audit report** — SHA-256 hash + UUID + UTC timestamp (audit record for your GDPR Art.30 documentation)
 - **Latency** — sub-millisecond (typically <0.1ms server-side)
 
 ## Quickstart

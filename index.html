@@ -90,7 +90,7 @@
         "applicationCategory": "SecurityApplication",
         "applicationSubCategory": "AI Agent Security Infrastructure",
         "operatingSystem": "Cloud, API",
-        "description": "Zentric Protocol is a deterministic security layer for LLM applications and AI agent pipelines. It detects prompt injection attacks (direct and indirect) and PII in every input before it reaches the model — including user messages, tool call responses, RAG chunks, memory reads, and sub-agent outputs. Returns a signed verdict (CLEARED/ANONYMIZED/BLOCKED) with a SHA-256 hash and GDPR Art.30-compliant audit record per request. Available as a REST API and as a native MCP server for Claude Desktop, Cursor, and other MCP-compatible agents. 22 injection signatures across 7 languages, 12 PII entity types, 100% precision on known patterns with zero false positives, sub-millisecond mean server-side latency.",
+        "description": "Zentric Protocol is a deterministic security layer for LLM applications and AI agent pipelines. It detects prompt injection attacks (direct and indirect) and PII in every input before it reaches the model — including user messages, tool call responses, RAG chunks, memory reads, and sub-agent outputs. Returns a signed verdict (CLEARED/ANONYMIZED/BLOCKED) with a SHA-256 hash and audit record for your GDPR Art.30 documentation, per request. Available as a REST API and as a native MCP server for Claude Desktop, Cursor, and other MCP-compatible agents. 22 injection signatures across 7 languages, 12 PII entity types, 100% precision on known patterns with zero false positives, sub-millisecond mean server-side latency.",
         "offers": [
           {
             "@type": "Offer",
@@ -149,7 +149,7 @@
           "PII Integrity with 12 entity types and multilingual support",
           "Deterministic Infrastructure with SHA-256 audit trail",
           "Secure Protocol with 22 injection signatures across 7 languages",
-          "GDPR Art.30 compliant audit-grade JSON output",
+          "Audit-grade JSON output for your GDPR Art.30 documentation",
           "Sub-millisecond mean server-side processing (network latency not included)",
           "100% precision on known patterns with zero false positives"
         ],
@@ -247,7 +247,7 @@
             "name": "How does Zentric Protocol compare to LlamaGuard, Microsoft Prompt Shields, and OpenAI Moderation?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "LlamaGuard, Microsoft Prompt Shields, and OpenAI Moderation are all LLM-based classifiers — probabilistic, with model drift, and no reproducible audit record. The same input can produce different verdicts across runs. Zentric Protocol is deterministic: 22 fixed signatures, same input always returns the same verdict, and every request produces a signed SHA-256 + GDPR Art.30 record that can be presented to a regulator or DPO. The architectural difference matters: LLM-based detectors can themselves be manipulated by adversarial inputs, since they share the same attack surface as the model they guard. Zentric's detection runs outside the model stack entirely."
+              "text": "LlamaGuard, Microsoft Prompt Shields, and OpenAI Moderation are all LLM-based classifiers — probabilistic, with model drift, and no reproducible audit record. The same input can produce different verdicts across runs. Zentric Protocol is deterministic: 22 fixed signatures, same input always returns the same verdict, and every request produces a signed SHA-256 audit record for your GDPR Art.30 documentation that can be presented to a regulator or DPO. The architectural difference matters: LLM-based detectors can themselves be manipulated by adversarial inputs, since they share the same attack surface as the model they guard. Zentric's detection runs outside the model stack entirely."
             }
           },
           {
@@ -255,7 +255,7 @@
             "name": "Does Zentric Protocol work as an MCP server for Claude Desktop and AI agents?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes. The zentric-protocol-mcp package on npm is a Model Context Protocol server that exposes a single analyze_prompt tool. Install it with npx and add it to your claude_desktop_config.json — setup takes under 2 minutes. Once connected, any MCP-compatible agent (Claude Desktop, Cursor, or a custom agent built on the MCP SDK) can call analyze_prompt before each LLM invocation to check for injection attacks and PII. The tool returns a structured verdict (CLEARED/ANONYMIZED/BLOCKED), matched signature IDs, detected PII entities with character offsets, the SHA-256 input hash, and a GDPR Art.30 audit record."
+              "text": "Yes. The zentric-protocol-mcp package on npm is a Model Context Protocol server that exposes a single analyze_prompt tool. Install it with npx and add it to your claude_desktop_config.json — setup takes under 2 minutes. Once connected, any MCP-compatible agent (Claude Desktop, Cursor, or a custom agent built on the MCP SDK) can call analyze_prompt before each LLM invocation to check for injection attacks and PII. The tool returns a structured verdict (CLEARED/ANONYMIZED/BLOCKED), matched signature IDs, detected PII entities with character offsets, the SHA-256 input hash, and an audit record for your GDPR Art.30 documentation."
             }
           }
         ]
@@ -791,7 +791,7 @@
       <div class="hero-bottom">
         <div class="hero-bottom-left">
           <p class="subhead">
-            A poisoned document in your RAG pipeline can instruct your model to leak data or bypass your system prompt — <em>and your system prompt won't stop it</em>. Zentric sits before every LLM call: <strong style="color:var(--paper);font-weight:600">&lt;0.1ms</strong>, deterministic, <strong style="color:var(--paper);font-weight:600">CLEARED / BLOCKED</strong> verdict, signed GDPR Art.30 audit record per request.
+            A poisoned document in your RAG pipeline can instruct your model to leak data or bypass your system prompt — <em>and your system prompt won't stop it</em>. Zentric sits before every LLM call: <strong style="color:var(--paper);font-weight:600">&lt;0.1ms</strong>, deterministic, <strong style="color:var(--paper);font-weight:600">CLEARED / BLOCKED</strong> verdict, signed audit record for your GDPR Art.30 documentation, per request.
           </p>
           <div class="cta-row">
             <a href="#api-access" class="btn btn-primary" id="heroCta">
@@ -1102,7 +1102,7 @@ curl -X POST https://api.zentricprotocol.com/v1/analyze \
       <div class="b-4">
         <div class="b-num">SAVES YOU</div>
         <div class="b-title">The GDPR Art.30 conversation.</div>
-        <div class="b-body">Record of processing activities, generated per request.</div>
+        <div class="b-body">A per-request audit record for your Art.30 documentation.</div>
       </div>
       <div class="b-4">
         <div class="b-num">SAVES YOU</div>
@@ -1444,7 +1444,7 @@ curl -X POST https://api.zentricprotocol.com/v1/analyze \
     <div class="waitlist-inner reveal">
       <span class="waitlist-label">API Access · Free</span>
       <h2 class="waitlist-title">Wire it into your pipeline today.</h2>
-      <p class="waitlist-body">10,000 free requests — enough to validate against your actual traffic. No credit card, no sales call. Production-ready from day one: deterministic verdicts, signed audit records, GDPR Art.30 compliant.</p>
+      <p class="waitlist-body">10,000 free requests — enough to validate against your actual traffic. No credit card, no sales call. Production-ready from day one: deterministic verdicts, signed audit records for your GDPR Art.30 documentation.</p>
       <div class="waitlist-count">
         <div class="waitlist-count-dot"></div>
         <span id="waitlist-count-text">47 developers already have access</span>

@@ -56,7 +56,7 @@ export default async function handler(req, res) {
     return rpcOk({
       tools: [{
         name: TOOL_NAME,
-        description: 'Analyze a prompt for injection attacks and PII before sending it to an LLM. Returns verdict (CLEARED/BLOCKED/ANONYMIZED), matched injection signatures, detected PII entities, SHA-256 hash, and a GDPR Art.30-compliant audit report.',
+        description: 'Analyze a prompt for injection attacks and PII before sending it to an LLM. Returns verdict (CLEARED/BLOCKED/ANONYMIZED), matched injection signatures, detected PII entities, SHA-256 hash, and an audit report for your GDPR Art.30 documentation.',
         inputSchema: {
           type: 'object',
           properties: {

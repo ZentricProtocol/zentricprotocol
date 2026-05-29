@@ -11,7 +11,7 @@
 [![Status](https://raw.githubusercontent.com/ZentricProtocol/zentricprotocol/main/badges/status.svg)](https://zentricprotocol.com)
 [![Latency](https://raw.githubusercontent.com/ZentricProtocol/zentricprotocol/main/badges/latency.svg)](https://zentricprotocol.com)
 [![Precision](https://raw.githubusercontent.com/ZentricProtocol/zentricprotocol/main/badges/precision.svg)](https://zentricprotocol.com)
-[![GDPR](https://img.shields.io/badge/GDPR-Art.30_compliant-F5F5F5?style=flat-square&labelColor=0A0A0A)](https://zentricprotocol.com)
+[![GDPR](https://img.shields.io/badge/GDPR-Art.30_ready-F5F5F5?style=flat-square&labelColor=0A0A0A)](https://zentricprotocol.com)
 [![EU AI Act](https://img.shields.io/badge/EU_AI_Act-§52_compliant-F5F5F5?style=flat-square&labelColor=0A0A0A)](https://zentricprotocol.com)
 [![CCPA](https://img.shields.io/badge/CCPA-§1798.100_compliant-F5F5F5?style=flat-square&labelColor=0A0A0A)](https://zentricprotocol.com)
 
@@ -152,7 +152,7 @@ Every request that passes through the protocol generates a signed, immutable aud
     ]
   },
   "compliance": {
-    "gdpr_art30": true,
+    "audit_record": true,
     "ccpa": true,
     "eu_ai_act_s52": true
   },
