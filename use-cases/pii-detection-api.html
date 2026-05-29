@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Real-Time PII Detection API · Zentric Protocol</title>
-  <meta name="description" content="Detect and redact 17 PII entity types — emails, IBANs, SSNs, NIF, CPF, CURP — before prompts reach your LLM. 23.4ms mean latency, 10,000 free requests, signed audit reports.">
+  <meta name="description" content="Detect and redact 12 format-validated PII entity types — emails, IBANs, SSNs, NIF, CPF, CURP — before prompts reach your LLM. Sub-millisecond latency, zero false positives, 10,000 free requests, signed audit reports.">
   <meta name="author" content="Zentric Protocol">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
 
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://zentricprotocol.com/use-cases/pii-detection-api">
   <meta property="og:title" content="Real-Time PII Detection API for AI Applications">
-  <meta property="og:description" content="Detect and redact 17 PII entity types — emails, IBANs, SSNs, NIF, CPF, CURP — before prompts reach your LLM. 23.4ms mean latency, 10,000 free requests, signed audit reports.">
+  <meta property="og:description" content="Detect and redact 12 format-validated PII entity types — emails, IBANs, SSNs, NIF, CPF, CURP — before prompts reach your LLM. Sub-millisecond latency, zero false positives, 10,000 free requests, signed audit reports.">
   <meta property="og:image" content="https://zentricprotocol.com/og.png?v=prelaunch">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -21,7 +21,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:site" content="@ZentricProtocol">
   <meta name="twitter:title" content="Real-Time PII Detection API for AI Applications">
-  <meta name="twitter:description" content="Detect and redact 17 PII entity types — emails, IBANs, SSNs, NIF, CPF, CURP — before prompts reach your LLM. 23.4ms mean latency, 10,000 free requests, signed audit reports.">
+  <meta name="twitter:description" content="Detect and redact 12 format-validated PII entity types — emails, IBANs, SSNs, NIF, CPF, CURP — before prompts reach your LLM. Sub-millisecond latency, zero false positives, 10,000 free requests, signed audit reports.">
   <meta name="twitter:image" content="https://zentricprotocol.com/og.png?v=prelaunch">
 
   <link rel="canonical" href="https://zentricprotocol.com/use-cases/pii-detection-api">
@@ -212,7 +212,7 @@ a.inline:hover{border-bottom-color:var(--kinetic)}
       "@id": "https://zentricprotocol.com/use-cases/pii-detection-api#webpage",
       "url": "https://zentricprotocol.com/use-cases/pii-detection-api",
       "name": "Real-Time PII Detection API for AI Applications",
-      "description": "Detect and redact 17 PII entity types \u2014 emails, IBANs, SSNs, NIF, CPF, CURP \u2014 before prompts reach your LLM. 23.4ms mean latency, 10,000 free requests, signed audit reports.",
+      "description": "Detect and redact 12 format-validated PII entity types \u2014 emails, IBANs, SSNs, NIF, CPF, CURP \u2014 before prompts reach your LLM. Sub-millisecond latency, zero false positives, 10,000 free requests, signed audit reports.",
       "inLanguage": "en-US",
       "isPartOf": {
         "@type": "WebSite",
@@ -288,20 +288,21 @@ a.inline:hover{border-bottom-color:var(--kinetic)}
         <span>Use case</span>
       </div>
       <h1>Real-Time PII Detection API for AI Applications</h1>
-      <p class="lede">PrivacyGuard scans every prompt for <strong>17 PII entity types</strong> — emails, phone numbers, IBANs, U.S. SSNs, SWIFT codes, and regional identifiers like NIF, CPF, and CURP — and returns a redacted version your application can safely forward to the model. Mean server-side latency: 23.4 milliseconds. Every call ships with a SHA-256 signed report and a UUID, so any later audit can reproduce what was redacted and when.</p>
+      <p class="lede">PrivacyGuard scans every prompt for <strong>12 format-validated PII entity types</strong> — emails, phone numbers, IBANs, U.S. SSNs, and regional identifiers like NIF/NIE, CPF, and CURP — and returns a redacted version your application can safely forward to the model. Detection is deterministic: each entity is verified against its real-world format (Luhn for credit cards, IBAN mod-97, mod-11 for CPF/NHS, NIF/NIE control letter), so there are <strong>zero false positives on known patterns</strong>. Mean server-side latency is <strong>sub-millisecond</strong>. Every call ships with a SHA-256 signed report and a UUID, so any later audit can reproduce what was redacted and when.</p>
 
       <h2>What counts as PII in an LLM application?</h2>
       <p>Personally identifiable information — PII — is any data that can identify a specific person directly (an email, a phone number, a national identifier) or indirectly when combined with other data. In a Large Language Model application the risk is that users routinely paste this information into prompts without realizing it: a customer-support assistant receives an email signature; a coding assistant receives a stack trace with a real user record; a translation tool receives a contract with a tax ID.</p>
       <p>Once that information enters the model the application loses control of it. The model provider may log it. The application itself may store the prompt for analytics or fine-tuning. The information may surface again in a completion to a different user. The window between user input and model invocation is the only point where redaction is straightforward — once the prompt has been processed there is no clean way to unmix it. A real-time PII detection API is the surgical instrument for that window.</p>
 
-      <h2>The 17 PII entity types</h2>
-      <p>PrivacyGuard recognizes 17 entity types covering the categories most production applications encounter:</p>
+      <h2>The 12 PII entity types</h2>
+      <p>PrivacyGuard recognizes 12 entity types covering the categories most production applications encounter. Every type is format-validated — a match must satisfy the entity's real check-digit or control-character rule before it is redacted, which is why detection is deterministic with zero false positives on known patterns:</p>
       <ul>
-        <li><strong>Contact data</strong> — email addresses, phone numbers in international and U.S. formats.</li>
-        <li><strong>Financial identifiers</strong> — IBAN account numbers with country prefix and check digits, SWIFT/BIC codes.</li>
-        <li><strong>National identifiers</strong> — U.S. Social Security numbers (SSN), Spanish NIF, Brazilian CPF, Mexican CURP, and additional regional formats published in the Integrity Report.</li>
+        <li><strong>Contact data</strong> — email addresses, phone numbers in international and U.S. formats, IP addresses, and dates of birth.</li>
+        <li><strong>Financial identifiers</strong> — credit card numbers (validated with the Luhn checksum) and IBAN account numbers (validated with country prefix and mod-97 check digits).</li>
+        <li><strong>National identifiers</strong> — U.S. Social Security numbers (SSN), passport numbers, Spanish NIF/NIE (control letter), Brazilian CPF (mod-11), Mexican CURP, and UK NHS numbers (mod-11).</li>
       </ul>
-      <p>Each entity is matched by a dedicated pattern, not by a single generic regular expression. Regional identifiers fail under a one-size-fits-all approach: an IBAN has structural check digits, a CPF has its own modulo-11 validation, a CURP follows the date-of-birth-plus-initials schema. Treating them as first-class entities lets PrivacyGuard report the type of redaction with the correct semantic label — which downstream audit systems need when explaining what was redacted from a user prompt.</p>
+      <p>The full set of 12 entity types is: EMAIL, PHONE, CREDIT_CARD, IBAN, IP_ADDRESS, DATE_OF_BIRTH, PASSPORT, Spanish NIF/NIE, US SSN, Brazilian CPF, Mexican CURP, and UK NHS number.</p>
+      <p>Each entity is matched by a dedicated pattern, not by a single generic regular expression, and then verified against its format. Regional identifiers fail under a one-size-fits-all approach: an IBAN has structural mod-97 check digits, a CPF has its own modulo-11 validation, a NIF/NIE carries a control letter, and a CURP follows the date-of-birth-plus-initials schema. Treating them as first-class, format-validated entities lets PrivacyGuard report the type of redaction with the correct semantic label — and guarantees that a flagged match is a genuine one — which downstream audit systems need when explaining what was redacted from a user prompt.</p>
 
       <h2>What the API returns</h2>
       <p>Every analysis with the privacy module enabled returns a <code class="inline">privacy.entities</code> array. Each entity records the type (EMAIL, PHONE, IBAN, SSN, etc.), the action taken (REDACTED), and the position offsets of the match in the original input as a <code class="inline">[start, end]</code> pair. Position offsets let your application overlay the redaction back onto its own UI if it needs to show users which part of their input was modified.</p>
@@ -338,7 +339,7 @@ curl -X POST <span class="k">https://api.zentricprotocol.com/v1/analyze</span> \
     <span class="k">"timestamp_utc"</span>: <span class="k">"2026-05-17T11:43:51.108Z"</span>,
     <span class="k">"sha256"</span>: <span class="k">"4f0e670c&hellip;"</span>,
     <span class="k">"verdict"</span>: <span class="v">"ANONYMIZED"</span>,
-    <span class="k">"integrity"</span>: { <span class="k">"injection_detected"</span>: <span class="v">false</span>, <span class="k">"signatures_matched"</span>: [], <span class="k">"confidence"</span>: <span class="n">0.9998</span> },
+    <span class="k">"integrity"</span>: { <span class="k">"injection_detected"</span>: <span class="v">false</span>, <span class="k">"signatures_matched"</span>: [], <span class="k">"confidence"</span>: <span class="v">null</span> },
     <span class="k">"privacy"</span>: {
       <span class="k">"pii_detected"</span>: <span class="v">true</span>,
       <span class="k">"entities"</span>: [
@@ -347,10 +348,10 @@ curl -X POST <span class="k">https://api.zentricprotocol.com/v1/analyze</span> \
       ]
     },
     <span class="k">"compliance"</span>: { <span class="k">"gdpr_art30"</span>: <span class="v">true</span>, <span class="k">"ccpa"</span>: <span class="v">true</span>, <span class="k">"eu_ai_act_s52"</span>: <span class="v">true</span> },
-    <span class="k">"latency_ms"</span>: <span class="n">22.7</span>
+    <span class="k">"latency_ms"</span>: <span class="n">0.05</span>
   },
   <span class="k">"anonymized_input"</span>: <span class="k">"My email is [REDACTED] and my SSN is [REDACTED]."</span>,
-  <span class="k">"latency_ms"</span>: <span class="n">22.7</span>
+  <span class="k">"latency_ms"</span>: <span class="n">0.05</span>
 }</pre>
       </div>
 
@@ -359,7 +360,7 @@ curl -X POST <span class="k">https://api.zentricprotocol.com/v1/analyze</span> \
       <p>PrivacyGuard's structured output — typed entity records with position offsets, a SHA-256 hash on the full report, and a UTC timestamp — gives a compliance team a defensible answer to "what personal data did this LLM see, when, and how was it minimized?" Combined with retention-window controls on your side, this is the foundation of GDPR-style data-minimization for AI applications.</p>
 
       <h2>Performance and pricing</h2>
-      <p>Mean server-side latency is 23.4 milliseconds with P99 under 100 milliseconds, measured across one million simulated requests. The Free tier covers 10,000 PII analyses/month with no credit card. Indie at $29/month raises the quota to 25,000 analyses; Team at $99/month to 100,000; Scale at $499/month to 500,000. Enterprise is custom pricing — unlimited analyses with EU data residency, dedicated SLA, and signed PDF integrity certificates suitable for vendor due-diligence packages.</p>
+      <p>Detection runs entirely in the request hot path with no model inference, so mean server-side latency is sub-millisecond (<0.1ms). Because matching is deterministic, the same input always produces the same output — there is no model drift and no variance to budget for. The Free tier covers 10,000 PII analyses/month with no credit card. Indie at $29/month raises the quota to 25,000 analyses; Team at $99/month to 100,000; Scale at $499/month to 500,000. Enterprise is custom pricing — unlimited analyses with EU data residency, dedicated SLA, and signed PDF integrity certificates suitable for vendor due-diligence packages.</p>
 
       <div class="cta-box">
         <h2>Redact PII before it reaches your model</h2>

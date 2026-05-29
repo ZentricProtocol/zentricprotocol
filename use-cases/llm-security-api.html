@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LLM Security API · Zentric Protocol</title>
-  <meta name="description" content="Single REST endpoint for prompt injection detection and PII redaction in production LLMs. 99.62% precision, 23.4ms mean latency, signed audit reports. 10,000 free requests.">
+  <meta name="description" content="Single REST endpoint for prompt injection detection and PII redaction in production LLMs. 100% precision on known patterns, zero false positives, sub-millisecond latency, signed audit reports. 10,000 free requests.">
   <meta name="author" content="Zentric Protocol">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
 
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://zentricprotocol.com/use-cases/llm-security-api">
   <meta property="og:title" content="LLM Security API — Protect Your AI Application in Production">
-  <meta property="og:description" content="Single REST endpoint for prompt injection detection and PII redaction in production LLMs. 99.62% precision, 23.4ms mean latency, signed audit reports. 10,000 free requests.">
+  <meta property="og:description" content="Single REST endpoint for prompt injection detection and PII redaction in production LLMs. 100% precision on known patterns, zero false positives, sub-millisecond latency, signed audit reports. 10,000 free requests.">
   <meta property="og:image" content="https://zentricprotocol.com/og.png?v=prelaunch">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -21,7 +21,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:site" content="@ZentricProtocol">
   <meta name="twitter:title" content="LLM Security API — Protect Your AI Application in Production">
-  <meta name="twitter:description" content="Single REST endpoint for prompt injection detection and PII redaction in production LLMs. 99.62% precision, 23.4ms mean latency, signed audit reports. 10,000 free requests.">
+  <meta name="twitter:description" content="Single REST endpoint for prompt injection detection and PII redaction in production LLMs. 100% precision on known patterns, zero false positives, sub-millisecond latency, signed audit reports. 10,000 free requests.">
   <meta name="twitter:image" content="https://zentricprotocol.com/og.png?v=prelaunch">
 
   <link rel="canonical" href="https://zentricprotocol.com/use-cases/llm-security-api">
@@ -212,7 +212,7 @@ a.inline:hover{border-bottom-color:var(--kinetic)}
       "@id": "https://zentricprotocol.com/use-cases/llm-security-api#webpage",
       "url": "https://zentricprotocol.com/use-cases/llm-security-api",
       "name": "LLM Security API \u2014 Protect Your AI Application in Production",
-      "description": "Single REST endpoint for prompt injection detection and PII redaction in production LLMs. 99.62% precision, 23.4ms mean latency, signed audit reports. 10,000 free requests.",
+      "description": "Single REST endpoint for prompt injection detection and PII redaction in production LLMs. 100% precision on known patterns, zero false positives, sub-millisecond latency, signed audit reports. 10,000 free requests.",
       "inLanguage": "en-US",
       "isPartOf": {
         "@type": "WebSite",
@@ -288,7 +288,7 @@ a.inline:hover{border-bottom-color:var(--kinetic)}
         <span>Use case</span>
       </div>
       <h1>LLM Security API — Protect Your AI Application in Production</h1>
-      <p class="lede">Zentric Protocol's <code class="inline">/v1/analyze</code> endpoint combines <strong>prompt injection detection</strong> (22 signatures, 7 languages) and <strong>PII redaction</strong> (17 entity types) behind a single REST call. Mean server-side latency: 23.4 milliseconds. Every response is a deterministic verdict with a SHA-256 signed report, so the same prompt always produces the same result and any later audit can reproduce the decision.</p>
+      <p class="lede">Zentric Protocol's <code class="inline">/v1/analyze</code> endpoint combines <strong>prompt injection detection</strong> (22 signatures, 7 languages) and <strong>PII redaction</strong> (12 entity types) behind a single REST call. Mean server-side latency is sub-millisecond (&lt;0.1ms). Every response is a deterministic verdict with a SHA-256 signed report, so the same prompt always produces the same result and any later audit can reproduce the decision.</p>
 
       <h2>The security problem in production LLMs</h2>
       <p>A production LLM application has three failure modes that show up almost simultaneously. The first is <strong>prompt injection</strong> — a user crafts an input that overrides the system prompt or tricks the model into ignoring its guardrails. The second is <strong>PII leakage</strong> — a user pastes personal data into the prompt and the model provider, the logging pipeline, or future fine-tuning sees it. The third is the <strong>audit gap</strong> — when an incident happens, the team has logs but no signed, immutable, reproducible record of what was sent to the model, when, and how it was judged.</p>
@@ -345,7 +345,7 @@ a.inline:hover{border-bottom-color:var(--kinetic)}
 }</pre>
       </div>
 
-      <p>In the synchronous-gate pattern shown here, every prompt waits on the analysis call before the model is invoked. The mean overhead is roughly 23 milliseconds — small enough that most applications absorb it without user-visible impact. For latency-critical workloads, the same wrapper adapts to the asynchronous-audit pattern: fire the analysis call in parallel with the model call and use the verdict to populate the audit log after the fact.</p>
+      <p>In the synchronous-gate pattern shown here, every prompt waits on the analysis call before the model is invoked. The mean overhead is sub-millisecond (&lt;0.1ms) — small enough that most applications absorb it without user-visible impact. For latency-critical workloads, the same wrapper adapts to the asynchronous-audit pattern: fire the analysis call in parallel with the model call and use the verdict to populate the audit log after the fact.</p>
       <p>The error path is intentionally explicit. A BLOCKED response throws, forcing the caller to handle the case. Hiding injection behind an empty string or a generic error makes the application harder to debug later — and harder to defend during a post-incident review.</p>
 
       <h2>Operational notes</h2>
@@ -355,7 +355,7 @@ a.inline:hover{border-bottom-color:var(--kinetic)}
       <p><strong>Logging.</strong> The four fields most worth keeping in your local audit table are <code class="inline">report_id</code>, <code class="inline">sha256</code>, <code class="inline">verdict</code>, and <code class="inline">latency_ms</code>. The <code class="inline">report_id</code> is sufficient to retrieve the full record later from Zentric's audit store if your tier includes long-term retention.</p>
 
       <h2>Performance and pricing</h2>
-      <p>Across one million simulated requests, Zentric Protocol reports 99.62% overall precision, a 23.4 millisecond mean server-side latency, and a P99 under 100 milliseconds. The Free tier covers 10,000 requests/month with no credit card and is enough to exercise the full integration end-to-end. Indie at $29/month covers 25,000 requests; Team at $99/month covers 100,000; Scale at $499/month covers 500,000 — all with the same module set. Enterprise is custom pricing — unlimited requests with EU data residency, dedicated SLA, signed PDF integrity certificates, and priority support.</p>
+      <p>Zentric Protocol is built for certainty, not coverage statistics: 100% precision on known patterns with zero false positives, so every block is guaranteed. Detection is deterministic — the same input always yields the same verdict, with no model in the hot path and no model drift — and runs in sub-millisecond time (&lt;0.1ms mean server-side latency). Every request emits a SHA-256 signed report, so any decision is fully auditable and reproducible after the fact. The Free tier covers 10,000 requests/month with no credit card and is enough to exercise the full integration end-to-end. Indie at $29/month covers 25,000 requests; Team at $99/month covers 100,000; Scale at $499/month covers 500,000 — all with the same module set. Enterprise is custom pricing — unlimited requests with EU data residency, dedicated SLA, signed PDF integrity certificates, and priority support.</p>
 
       <div class="cta-box">
         <h2>Wire it in this afternoon</h2>

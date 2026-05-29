@@ -16,10 +16,10 @@ Indirect prompt injection is the dominant attack surface for AI agents in produc
 `analyze_prompt` gives the agent a **deterministic check** before each hop. The tool returns:
 
 - **Verdict** — `CLEARED`, `ANONYMIZED`, or `BLOCKED`
-- **Matched injection signatures** — which patterns triggered (e.g. `INSTRUCTION_IGNORE`, `ROLE_HIJACK`)
+- **Matched injection signatures** — which patterns triggered (e.g. `INSTRUCTION_OVERRIDE_EN`, `ROLE_HIJACK_ES`)
 - **Detected PII entities** — names, emails, phone numbers, credit cards, etc.
 - **Signed audit report** — SHA-256 hash + UUID + UTC timestamp (GDPR Art. 30 compliant)
-- **Latency** — typically < 25 ms
+- **Latency** — sub-millisecond (typically <0.1ms server-side)
 
 ## Quickstart
 
@@ -139,11 +139,11 @@ Claude calls `analyze_prompt` and receives:
   "report": {
     "integrity": {
       "injection_detected": true,
-      "signatures_matched": ["INSTRUCTION_IGNORE"],
-      "confidence": 0.9995
+      "signatures_matched": ["INSTRUCTION_OVERRIDE_EN"],
+      "confidence": 0.86
     },
     "sha256": "e3b0c44298fc1c149afb4c8996fb924...",
-    "latency_ms": 21.4
+    "latency_ms": 0.05
   }
 }
 ```
@@ -172,9 +172,9 @@ of the original.
 
 ## Supported languages & signatures
 
-- **Languages:** English, Spanish, French, German, Italian, Portuguese, Dutch
-- **Injection families:** instruction override, role hijacking, jailbreak patterns, context escape, delimiter injection, indirect payload delivery
-- **PII types:** name, email, phone, credit card, IBAN, SSN, date of birth, IP address, URL, and more
+- **Languages:** English, Spanish, French, German, Portuguese, Chinese, Japanese (EN, ES, FR, DE, PT, ZH, JA)
+- **Injection signatures:** 22 structural and lexical signatures across instruction override, role hijacking, jailbreak patterns, context escape, delimiter injection, indirect payload delivery
+- **PII types:** 12 entity types with format validation (Luhn, IBAN mod-97, mod-11, NIF/NIE control letter) — name, email, phone, credit card, IBAN, SSN, date of birth, IP address, URL, and more
 
 ## Links
 

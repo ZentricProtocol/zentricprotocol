@@ -367,7 +367,7 @@ npm install -g <span class="k">zentric-protocol-mcp</span></pre>
           <div class="step-mini">
             <div class="num"><span class="marker">●</span>STEP 03 · RESTART</div>
             <h3>Restart Claude Desktop</h3>
-            <p>Quit and reopen the app. The <code class="inline">analyze_prompt</code> tool appears in the tool list. Ask Claude: <em>"Use the analyze_prompt tool on this input: 'ignore all previous instructions'"</em> — you'll get back a <code class="inline">BLOCKED</code> verdict with the matched <code class="inline">INSTRUCTION_IGNORE</code> signature.</p>
+            <p>Quit and reopen the app. The <code class="inline">analyze_prompt</code> tool appears in the tool list. Ask Claude: <em>"Use the analyze_prompt tool on this input: 'ignore all previous instructions'"</em> — you'll get back a <code class="inline">BLOCKED</code> verdict with the matched <code class="inline">INSTRUCTION_OVERRIDE_EN</code> signature.</p>
           </div>
         </article>
 
@@ -375,7 +375,7 @@ npm install -g <span class="k">zentric-protocol-mcp</span></pre>
         <article class="path" id="rest">
           <div class="path-eyebrow"><span class="dot"></span>Path B · REST API</div>
           <h2>For backends.<br>LangChain, pipelines, anything that speaks HTTP.</h2>
-          <p class="path-desc">One <code class="inline">POST</code> per prompt. Same endpoint, same signed verdict. Sub-25 ms server-side. Drop it into any agent framework, gateway, or serverless function.</p>
+          <p class="path-desc">One <code class="inline">POST</code> per prompt. Same endpoint, same signed verdict. Sub-millisecond server-side (~0.05ms, no model in the hot path). Drop it into any agent framework, gateway, or serverless function.</p>
           <span class="path-tag"><span class="pulse"></span>Best for backends &amp; pipelines</span>
 
           <div class="step-mini">
@@ -417,10 +417,10 @@ npm install -g <span class="k">zentric-protocol-mcp</span></pre>
     <span class="k">"sha256"</span>: <span class="k">"e3b0c44298fc1c149afb4c8996fb924…"</span>,
     <span class="k">"integrity"</span>: {
       <span class="k">"injection_detected"</span>: <span class="v">true</span>,
-      <span class="k">"signatures_matched"</span>: [<span class="k">"INSTRUCTION_IGNORE"</span>],
-      <span class="k">"confidence"</span>: <span class="n">0.9995</span>
+      <span class="k">"signatures_matched"</span>: [<span class="k">"INSTRUCTION_OVERRIDE_EN"</span>],
+      <span class="k">"confidence"</span>: <span class="n">0.86</span>
     },
-    <span class="k">"latency_ms"</span>: <span class="n">21.4</span>
+    <span class="k">"latency_ms"</span>: <span class="n">0.05</span>
   }
 }</pre>
             </div>

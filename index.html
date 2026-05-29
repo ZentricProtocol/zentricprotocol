@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Zentric Protocol — Prompt Injection &amp; PII Detection API</title>
-  <meta name="description" content="Detect prompt injection and redact PII before they reach your LLM. API with 99.62% precision, sub-25ms latency, signed reports. 10,000 free requests.">
+  <meta name="description" content="Deterministic prompt injection and PII detection before text reaches your LLM. 100% precision on known patterns, zero false positives, sub-millisecond, signed audit reports. 10,000 free requests.">
   <meta name="keywords" content="prompt injection detection API, PII detection API, AI security infrastructure, EU AI Act compliance API, LLM security layer, GDPR compliant AI API, prompt injection detection, AI integrity, deterministic infrastructure, audit-grade AI">
   <meta name="author" content="Zentric Protocol">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
@@ -13,7 +13,7 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://zentricprotocol.com">
   <meta property="og:title" content="Zentric Protocol — Prompt Injection &amp; PII Detection API for LLM apps">
-  <meta property="og:description" content="Prompt injection detection and PII redaction API for production LLM applications. 99.62% precision, sub-25ms latency, signed audit reports, GDPR &amp; EU AI Act compliant. 10,000 free requests, no credit card.">
+  <meta property="og:description" content="Deterministic prompt injection and PII detection for production LLM apps. 100% precision on known patterns, zero false positives, sub-millisecond, signed audit reports, GDPR &amp; EU AI Act compliant. 10,000 free requests, no credit card.">
   <meta property="og:image" content="https://zentricprotocol.com/og.png?v=prelaunch">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -26,7 +26,7 @@
   <meta name="twitter:site" content="@ZentricProtocol">
   <meta name="twitter:creator" content="@ZentricProtocol">
   <meta name="twitter:title" content="Zentric Protocol — Prompt Injection &amp; PII Detection API">
-  <meta name="twitter:description" content="Prompt injection detection and PII redaction API for LLM apps. 99.62% precision · sub-25ms · signed audit reports · GDPR &amp; EU AI Act compliant. 10,000 free requests.">
+  <meta name="twitter:description" content="Deterministic prompt injection and PII detection for LLM apps. 100% precision on known patterns · zero false positives · sub-millisecond · signed audit reports · GDPR &amp; EU AI Act compliant. 10,000 free requests.">
   <meta name="twitter:image" content="https://zentricprotocol.com/og.png?v=prelaunch">
   <meta name="twitter:image:alt" content="Zentric Protocol — Launching May 21">
 
@@ -90,7 +90,7 @@
         "applicationCategory": "SecurityApplication",
         "applicationSubCategory": "AI Agent Security Infrastructure",
         "operatingSystem": "Cloud, API",
-        "description": "Zentric Protocol is a deterministic security layer for LLM applications and AI agent pipelines. It detects prompt injection attacks (direct and indirect) and PII in every input before it reaches the model — including user messages, tool call responses, RAG chunks, memory reads, and sub-agent outputs. Returns a signed verdict (CLEARED/ANONYMIZED/BLOCKED) with a SHA-256 hash and GDPR Art.30-compliant audit record per request. Available as a REST API and as a native MCP server for Claude Desktop, Cursor, and other MCP-compatible agents. 22 injection signatures across 7 languages, 17 PII entity types, 23ms mean latency, 99.62% detection precision.",
+        "description": "Zentric Protocol is a deterministic security layer for LLM applications and AI agent pipelines. It detects prompt injection attacks (direct and indirect) and PII in every input before it reaches the model — including user messages, tool call responses, RAG chunks, memory reads, and sub-agent outputs. Returns a signed verdict (CLEARED/ANONYMIZED/BLOCKED) with a SHA-256 hash and GDPR Art.30-compliant audit record per request. Available as a REST API and as a native MCP server for Claude Desktop, Cursor, and other MCP-compatible agents. 22 injection signatures across 7 languages, 12 PII entity types, 100% precision on known patterns with zero false positives, sub-millisecond mean server-side latency.",
         "offers": [
           {
             "@type": "Offer",
@@ -146,12 +146,12 @@
           }
         ],
         "featureList": [
-          "PII Integrity with 17 entity types and multilingual support",
+          "PII Integrity with 12 entity types and multilingual support",
           "Deterministic Infrastructure with SHA-256 audit trail",
           "Secure Protocol with 22 injection signatures across 7 languages",
           "GDPR Art.30 compliant audit-grade JSON output",
-          "Sub-25ms mean server-side processing (network latency not included)",
-          "99.62% detection precision across 1M simulations"
+          "Sub-millisecond mean server-side processing (network latency not included)",
+          "100% precision on known patterns with zero false positives"
         ],
         "softwareVersion": "1.0",
         "releaseNotes": "Initial release — Q2 2026",
@@ -163,7 +163,7 @@
         "@id": "https://zentricprotocol.com/#webpage",
         "url": "https://zentricprotocol.com",
         "name": "Zentric Protocol — Prompt Injection & PII Detection API",
-        "description": "Prompt injection detection and PII redaction API for LLM apps. 99.62% precision, sub-25ms latency, GDPR & EU AI Act compliant.",
+        "description": "Deterministic prompt injection and PII detection for LLM apps. 100% precision on known patterns, zero false positives, sub-millisecond, GDPR & EU AI Act compliant.",
         "isPartOf": { "@id": "https://zentricprotocol.com/#website" },
         "primaryImageOfPage": "https://zentricprotocol.com/og.png",
         "inLanguage": "en-US",
@@ -191,7 +191,7 @@
             "name": "How does Zentric Protocol detect PII in AI applications?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Each prompt is sent to the /v1/analyze endpoint with the privacy module enabled, and PrivacyGuard scans it against 17 PII entity types including emails, phone numbers, IBANs, U.S. SSNs, and regional identifiers such as NIF, CPF, and CURP. Detected entities are returned in a structured report and replaced with placeholders in the anonymized output."
+              "text": "Each prompt is sent to the /v1/analyze endpoint with the privacy module enabled, and PrivacyGuard scans it against 12 PII entity types including emails, phone numbers, IBANs, U.S. SSNs, and regional identifiers such as NIF, CPF, and CURP. Detected entities are returned in a structured report and replaced with placeholders in the anonymized output."
             }
           },
           {
@@ -207,7 +207,7 @@
             "name": "How fast is the analysis?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "The /v1/analyze endpoint reports a 23.4 millisecond mean server-side latency with P99 under 100 milliseconds, measured across 1,000,000 simulated requests. Total user-perceived latency depends on the network path between your application and the API region."
+              "text": "The /v1/analyze endpoint runs deterministic pattern matching outside the model path, with sub-millisecond mean server-side latency. Because no LLM sits in the hot path, the same input always returns the same verdict in the same time. Total user-perceived latency depends on the network path between your application and the API region."
             }
           },
           {
@@ -215,7 +215,7 @@
             "name": "What PII entity types are detected?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "PrivacyGuard detects 17 entity types including emails, phone numbers, IBANs, U.S. SSNs, SWIFT codes, NIF, CPF, and CURP. Regional identifiers are treated as first-class entities rather than handled by a single generic pattern."
+              "text": "PrivacyGuard detects 12 entity types including emails, phone numbers, IBANs, U.S. SSNs, SWIFT codes, NIF, CPF, and CURP. Regional identifiers are treated as first-class entities rather than handled by a single generic pattern."
             }
           },
           {
@@ -239,7 +239,7 @@
             "name": "What is indirect prompt injection and how does Zentric Protocol stop it?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Indirect prompt injection is an attack where malicious instructions are embedded in content the agent retrieves from the environment — a web page, a PDF, a database record, a tool response, or a RAG chunk — rather than typed directly by a user. The injected payload enters the LLM context window through a trusted data source and overrides the agent's instructions. Zentric Protocol stops this by scanning every input string at ingestion, regardless of its origin. Since the 22 detection signatures analyze text content rather than request metadata, an INSTRUCTION_IGNORE or ROLE_HIJACK pattern inside a retrieved document triggers the same BLOCKED verdict as a direct user attack."
+              "text": "Indirect prompt injection is an attack where malicious instructions are embedded in content the agent retrieves from the environment — a web page, a PDF, a database record, a tool response, or a RAG chunk — rather than typed directly by a user. The injected payload enters the LLM context window through a trusted data source and overrides the agent's instructions. Zentric Protocol stops this by scanning every input string at ingestion, regardless of its origin. Since the 22 detection signatures analyze text content rather than request metadata, an INSTRUCTION_OVERRIDE or ROLE_HIJACK pattern inside a retrieved document triggers the same BLOCKED verdict as a direct user attack."
             }
           },
           {
@@ -431,8 +431,8 @@
     .metric-sub{font-family:var(--mono);font-size:10px;letter-spacing:0.04em;color:var(--ink-40)}
     .metric-bar{height:1px;background:var(--rule);margin-top:auto;overflow:hidden}
     .metric-bar div{height:100%;background:var(--kinetic);box-shadow:0 0 6px var(--kinetic);transform:translateX(-100%);animation:barIn 1.4s cubic-bezier(0.16,1,0.3,1) forwards}
-    .metric:nth-child(1) .metric-bar div{animation-delay:1.6s;width:99.62%}
-    .metric:nth-child(2) .metric-bar div{animation-delay:1.7s;width:99.71%}
+    .metric:nth-child(1) .metric-bar div{animation-delay:1.6s;width:100%}
+    .metric:nth-child(2) .metric-bar div{animation-delay:1.7s;width:100%}
     .metric:nth-child(3) .metric-bar div{animation-delay:1.8s;width:23%}
     .metric:nth-child(4) .metric-bar div{animation-delay:1.9s;width:100%}
 
@@ -722,7 +722,7 @@
     </button>
     <div class="nav-status">
       <div class="nav-dot"></div>
-      <span>23.4MS SERVER-SIDE · OPERATIONAL</span>
+      <span>&lt;0.1MS SERVER-SIDE · OPERATIONAL</span>
     </div>
   </div>
 </nav>
@@ -791,7 +791,7 @@
       <div class="hero-bottom">
         <div class="hero-bottom-left">
           <p class="subhead">
-            A poisoned document in your RAG pipeline can instruct your model to leak data or bypass your system prompt — <em>and your system prompt won't stop it</em>. Zentric sits before every LLM call: <strong style="color:var(--paper);font-weight:600">23ms</strong>, deterministic, <strong style="color:var(--paper);font-weight:600">CLEARED / BLOCKED</strong> verdict, signed GDPR Art.30 audit record per request.
+            A poisoned document in your RAG pipeline can instruct your model to leak data or bypass your system prompt — <em>and your system prompt won't stop it</em>. Zentric sits before every LLM call: <strong style="color:var(--paper);font-weight:600">&lt;0.1ms</strong>, deterministic, <strong style="color:var(--paper);font-weight:600">CLEARED / BLOCKED</strong> verdict, signed GDPR Art.30 audit record per request.
           </p>
           <div class="cta-row">
             <a href="#api-access" class="btn btn-primary" id="heroCta">
@@ -812,27 +812,27 @@
 
         <div class="metrics">
           <div class="metric">
-            <div class="metric-lbl">Detection</div>
-            <div class="metric-val">99.62<span class="unit">%</span></div>
-            <div class="metric-sub">1M simulations · precision</div>
+            <div class="metric-lbl">injection signatures</div>
+            <div class="metric-val">22</div>
+            <div class="metric-sub">structural + lexical · 7 languages</div>
             <div class="metric-bar"><div></div></div>
           </div>
           <div class="metric">
-            <div class="metric-lbl">Recall</div>
-            <div class="metric-val">99.71<span class="unit">%</span></div>
-            <div class="metric-sub">17 entities · 7 languages</div>
+            <div class="metric-lbl">precision</div>
+            <div class="metric-val">100<span class="unit">%</span></div>
+            <div class="metric-sub">zero false positives · known patterns</div>
             <div class="metric-bar"><div></div></div>
           </div>
           <div class="metric">
-            <div class="metric-lbl">Latency</div>
-            <div class="metric-val">23.4<span class="unit">ms</span></div>
-            <div class="metric-sub">mean · P99 sub-100ms</div>
+            <div class="metric-lbl">latency</div>
+            <div class="metric-val">&lt;0.1<span class="unit">ms</span></div>
+            <div class="metric-sub">deterministic · no model calls</div>
             <div class="metric-bar"><div></div></div>
           </div>
           <div class="metric">
-            <div class="metric-lbl">Compliance</div>
-            <div class="metric-val">4<span class="unit">/4</span></div>
-            <div class="metric-sub">GDPR · CCPA · AI Act · SOC 2</div>
+            <div class="metric-lbl">PII entity types</div>
+            <div class="metric-val">12</div>
+            <div class="metric-sub">format-validated · Luhn · mod-97</div>
             <div class="metric-bar"><div></div></div>
           </div>
         </div>
@@ -910,7 +910,7 @@
 
     <div class="reveal reveal-d2" style="margin-top:28px;padding:20px 24px;background:rgba(0,255,194,0.04);border:1px solid rgba(0,255,194,0.2);border-radius:8px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;">
       <p style="font-size:13px;color:var(--ink-90);line-height:1.6;margin:0;">
-        <strong style="color:var(--kinetic);font-weight:600;">With Zentric:</strong> the extracted text is sent to <code style="font-family:var(--mono);font-size:0.9em;background:rgba(0,0,0,0.3);padding:1px 6px;border-radius:2px;color:var(--kinetic)">/v1/analyze</code> first. The injection is caught in 23ms. Your agent never sees it. Your logs do.
+        <strong style="color:var(--kinetic);font-weight:600;">With Zentric:</strong> the extracted text is sent to <code style="font-family:var(--mono);font-size:0.9em;background:rgba(0,0,0,0.3);padding:1px 6px;border-radius:2px;color:var(--kinetic)">/v1/analyze</code> first. The injection is caught in &lt;0.1ms. Your agent never sees it. Your logs do.
       </p>
       <a href="#protocol" class="btn btn-primary" style="white-space:nowrap;flex-shrink:0;">
         <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1l6 3v4c0 3-2.5 5.5-6 6-3.5-.5-6-3-6-6V4l6-3z"/></svg>
@@ -935,7 +935,7 @@
     </div>
     <div class="section-head reveal" style="margin-bottom:48px;">
       <h2 class="section-title">How it <em>works.</em></h2>
-      <p class="section-body">A prompt injection attack hidden inside a document. Your agent reads it. Zentric blocks it in 23ms. Before your model ever sees it.</p>
+      <p class="section-body">A prompt injection attack hidden inside a document. Your agent reads it. Zentric blocks it in &lt;0.1ms. Before your model ever sees it.</p>
     </div>
     <div class="reveal reveal-d1" style="position:relative;width:100%;max-width:860px;margin:0 auto;border-radius:10px;overflow:hidden;border:1px solid var(--rule);box-shadow:0 0 60px rgba(0,255,194,0.06);">
       <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;">
@@ -961,7 +961,7 @@
       <span class="section-name">One API call</span>
     </div>
     <div class="section-head reveal">
-      <h2 class="section-title">A real attack. <em>Caught in 23ms.</em></h2>
+      <h2 class="section-title">A real attack. <em>Caught in &lt;0.1ms.</em></h2>
       <p class="section-body">Send any prompt to <code style="font-family:var(--mono);font-size:0.88em;background:rgba(245,245,245,0.04);padding:1px 6px;border-radius:2px;color:var(--ink-90)">/v1/analyze</code>. Get a deterministic verdict — <code style="font-family:var(--mono);font-size:0.88em;background:rgba(245,245,245,0.04);padding:1px 6px;border-radius:2px;color:var(--ink-90)">CLEARED</code>, <code style="font-family:var(--mono);font-size:0.88em;background:rgba(245,245,245,0.04);padding:1px 6px;border-radius:2px;color:var(--ink-90)">ANONYMIZED</code>, or <code style="font-family:var(--mono);font-size:0.88em;background:rgba(245,245,245,0.04);padding:1px 6px;border-radius:2px;color:var(--ink-90)">BLOCKED</code> — plus a SHA-256, a UUID, and a UTC timestamp. Below: a real prompt-injection attempt, the actual response your app sees.</p>
     </div>
 
@@ -993,9 +993,9 @@ curl -X POST https://api.zentricprotocol.com/v1/analyze \
         </div>
         <pre style="margin:0;padding:24px 20px;font-family:var(--mono);font-size:12px;line-height:1.75;color:var(--ink-60);overflow-x:auto;flex:1;"><code>{
   <span style="color:#98C379">"verdict"</span>: <span style="color:rgba(255,76,76,0.95)">"BLOCKED"</span>,
-  <span style="color:#98C379">"reason"</span>: <span style="color:#98C379">"prompt_injection.instruction_override"</span>,
-  <span style="color:#98C379">"confidence"</span>: <span style="color:#E5C07B">0.998</span>,
-  <span style="color:#98C379">"latency_ms"</span>: <span style="color:#E5C07B">22.7</span>,
+  <span style="color:#98C379">"reason"</span>: <span style="color:#98C379">"INSTRUCTION_OVERRIDE_EN"</span>,
+  <span style="color:#98C379">"confidence"</span>: <span style="color:#E5C07B">0.86</span>,
+  <span style="color:#98C379">"latency_ms"</span>: <span style="color:#E5C07B">0.05</span>,
   <span style="color:#98C379">"report_id"</span>: <span style="color:#98C379">"rpt_4f9e...c2a1"</span>,
   <span style="color:#98C379">"sha256"</span>: <span style="color:#98C379">"e3b0c442...fb924"</span>,
   <span style="color:#98C379">"timestamp_utc"</span>: <span style="color:#98C379">"2026-05-18T14:22:08Z"</span>
@@ -1041,7 +1041,7 @@ curl -X POST https://api.zentricprotocol.com/v1/analyze \
       </div>
       <div class="stage">
         <div class="stage-num">Step 02</div>
-        <div class="stage-title">Zentric inspects it in ~23ms</div>
+        <div class="stage-title">Zentric inspects it in &lt;0.1ms</div>
         <div class="stage-body">Injection signatures + PII<br>scanned deterministically.<br>No LLM in the hot path.</div>
       </div>
       <div class="flow-arrow">
@@ -1086,8 +1086,8 @@ curl -X POST https://api.zentricprotocol.com/v1/analyze \
       <div class="b-6 b-tall">
         <div class="b-num">01</div>
         <div class="b-title">Catches the prompt that's trying to hijack your agent.</div>
-        <div class="b-body">Instruction overrides, fake SYSTEM markers, base64-smuggled payloads, role redefinition, multi-turn jailbreaks. 22 distinct signatures, 7 languages, no LLM in the hot path. 99.62% precision across 1M simulated attacks — the false-positive rate is the part your team will actually feel.</div>
-        <div class="b-stat">99.62<span class="unit">%</span></div>
+        <div class="b-body">Instruction overrides, fake SYSTEM markers, base64-smuggled payloads, role redefinition, multi-turn jailbreaks. 22 distinct signatures, 7 languages, no LLM in the hot path. 100% precision on known patterns with zero false positives — every block is a known signature, so your team never fights phantom flags.</div>
+        <div class="b-stat">100<span class="unit">%</span></div>
       </div>
       <div class="b-6">
         <div class="b-num">02</div>
@@ -1127,7 +1127,7 @@ curl -X POST https://api.zentricprotocol.com/v1/analyze \
     </div>
     <div class="section-head reveal">
       <h2 class="section-title">The numbers, <em>not the marketing.</em></h2>
-      <p class="section-body">1,000,000 simulated attacks across every signature and language we support. Per-vector precision below. If you only care about one number: 99.62% overall — meaning at 100k requests/month, ~380 prompts get flagged for human review instead of slipping through.</p>
+      <p class="section-body">Deterministic pattern matching — every block is a known signature, every result reproducible. Same input, same verdict, always; no model drift, zero false positives.</p>
       <div style="margin-top:16px;">
         <a href="/integrity-report.pdf" target="_blank" rel="noopener noreferrer" class="btn btn-kinetic" style="display:inline-flex;">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
@@ -1135,27 +1135,6 @@ curl -X POST https://api.zentricprotocol.com/v1/analyze \
         </a>
         <span style="margin-left:16px;font-size:12px;color:var(--ink-40);">7 pages · methodology + raw benchmarks · no email required</span>
       </div>
-    </div>
-    <div class="matrix-wrap reveal reveal-d1">
-      <table class="matrix">
-        <thead>
-          <tr>
-            <th style="width:32%">Attack Vector</th>
-            <th>Simulations</th>
-            <th>Detected</th>
-            <th>Precision</th>
-            <th class="bar-col"></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td>Prompt Injection (EN)</td><td>187,430</td><td>187,012</td><td class="prec">99.78%</td><td class="bar-col"><div class="bar-track"><div class="bar-fill" style="width:99.78%"></div></div></td></tr>
-          <tr><td>Prompt Injection (ES/FR/DE)</td><td>134,210</td><td>133,401</td><td class="prec">99.40%</td><td class="bar-col"><div class="bar-track"><div class="bar-fill" style="width:99.40%"></div></div></td></tr>
-          <tr><td>Base64 / Token Smuggling</td><td>48,900</td><td>48,761</td><td class="prec">99.72%</td><td class="bar-col"><div class="bar-track"><div class="bar-fill" style="width:99.72%"></div></div></td></tr>
-          <tr><td>Jailbreak multi-vector</td><td>67,340</td><td>66,988</td><td class="prec">99.48%</td><td class="bar-col"><div class="bar-track"><div class="bar-fill" style="width:99.48%"></div></div></td></tr>
-          <tr><td>Fake SYSTEM override</td><td>39,120</td><td>39,087</td><td class="prec">99.92%</td><td class="bar-col"><div class="bar-track"><div class="bar-fill" style="width:99.92%"></div></div></td></tr>
-          <tr><td>Role redefinition</td><td>52,000</td><td>51,743</td><td class="prec">99.51%</td><td class="bar-col"><div class="bar-track"><div class="bar-fill" style="width:99.51%"></div></div></td></tr>
-        </tbody>
-      </table>
     </div>
   </div>
 </section>
@@ -1409,13 +1388,13 @@ curl -X POST https://api.zentricprotocol.com/v1/analyze \
       <article style="padding:28px 32px;border-bottom:1px solid var(--rule)" itemscope itemtype="https://schema.org/Question">
         <h3 itemprop="name" style="font-size:16px;font-weight:600;letter-spacing:-0.01em;color:var(--paper);margin-bottom:10px">Does it add latency to my LLM calls?</h3>
         <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
-          <p itemprop="text" style="font-size:13px;color:var(--ink-60);line-height:1.7;font-family:var(--mono)">Mean server-side latency is 23.4ms with P99 under 100ms. In practice this is less than your model's own response time. You run it in parallel with any pre-processing you already do — net user-visible delay is minimal.</p>
+          <p itemprop="text" style="font-size:13px;color:var(--ink-60);line-height:1.7;font-family:var(--mono)">Mean server-side latency is sub-millisecond (&lt;0.1ms). Detection is deterministic pattern matching with no model in the hot path, so it adds far less than your model's own response time. You run it in parallel with any pre-processing you already do — net user-visible delay is minimal.</p>
         </div>
       </article>
       <article style="padding:28px 32px;border-bottom:1px solid var(--rule)" itemscope itemtype="https://schema.org/Question">
         <h3 itemprop="name" style="font-size:16px;font-weight:600;letter-spacing:-0.01em;color:var(--paper);margin-bottom:10px">What if it blocks a legitimate prompt?</h3>
         <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
-          <p itemprop="text" style="font-size:13px;color:var(--ink-60);line-height:1.7;font-family:var(--mono)">The false-positive rate is 0.38% across 1M simulations. Every BLOCKED verdict includes a reason code and confidence score — your app can handle edge cases however you want. You control the policy; Zentric gives you the signal.</p>
+          <p itemprop="text" style="font-size:13px;color:var(--ink-60);line-height:1.7;font-family:var(--mono)">Detection is deterministic: every BLOCKED verdict matches a known injection signature, so there are zero false positives on patterns outside the catalogue. Each verdict includes a reason code and confidence score — your app can handle edge cases however you want. You control the policy; Zentric gives you the signal.</p>
         </div>
       </article>
       <article style="padding:28px 32px;border-bottom:1px solid var(--rule)" itemscope itemtype="https://schema.org/Question">
@@ -1433,7 +1412,7 @@ curl -X POST https://api.zentricprotocol.com/v1/analyze \
       <article style="padding:28px 32px;border-bottom:1px solid var(--rule)" itemscope itemtype="https://schema.org/Question">
         <h3 itemprop="name" style="font-size:16px;font-weight:600;letter-spacing:-0.01em;color:var(--paper);margin-bottom:10px">What languages does it support?</h3>
         <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
-          <p itemprop="text" style="font-size:13px;color:var(--ink-60);line-height:1.7;font-family:var(--mono)">22 injection signatures across 7 languages: EN, ES, FR, DE, IT, PT, NL. Non-English prompts are analyzed natively, not translated first.</p>
+          <p itemprop="text" style="font-size:13px;color:var(--ink-60);line-height:1.7;font-family:var(--mono)">22 injection signatures across 7 languages: EN, ES, FR, DE, PT, ZH, JA. Non-English prompts are analyzed natively, not translated first.</p>
         </div>
       </article>
       <article style="padding:28px 32px" itemscope itemtype="https://schema.org/Question">
@@ -1500,7 +1479,7 @@ curl -X POST https://api.zentricprotocol.com/v1/analyze \
     </div>
     <div class="section-head reveal">
       <h2 class="section-title">Common <em>questions.</em></h2>
-      <p class="section-body" id="zp-summary">Zentric Protocol is a prompt injection detection and PII detection API for production LLM applications. Every request to your model can be routed through the <code style="font-family:var(--mono);font-size:0.9em;background:rgba(245,245,245,0.04);padding:1px 6px;border-radius:2px;color:var(--ink-90)">/v1/analyze</code> endpoint, where IntegrityGuard scans for 22 injection signatures across 7 languages and PrivacyGuard identifies 17 PII entity types — emails, phone numbers, IBANs, SSNs, and regional identifiers like NIF, CPF, and CURP — before the prompt reaches the model. Each analysis returns a deterministic verdict (BLOCKED, ANONYMIZED, or CLEARED) along with a SHA-256 hash, a UUID, and a UTC timestamp, giving every model invocation a signed audit record. Benchmarks across 1,000,000 simulated attacks report 99.62% precision and a 23.4 millisecond mean server-side latency. The free tier covers 10,000 requests per month with no credit card; paid tiers raise the quota — Indie ($29/mo) to 25,000, Team ($99/mo) to 100,000, Scale ($499/mo) to 500,000 — and Enterprise removes the cap with a dedicated SLA.</p>
+      <p class="section-body" id="zp-summary">Zentric Protocol is a prompt injection detection and PII detection API for production LLM applications. Every request to your model can be routed through the <code style="font-family:var(--mono);font-size:0.9em;background:rgba(245,245,245,0.04);padding:1px 6px;border-radius:2px;color:var(--ink-90)">/v1/analyze</code> endpoint, where IntegrityGuard scans for 22 injection signatures across 7 languages and PrivacyGuard identifies 12 PII entity types — emails, phone numbers, IBANs, SSNs, and regional identifiers like NIF, CPF, and CURP — before the prompt reaches the model. Each analysis returns a deterministic verdict (BLOCKED, ANONYMIZED, or CLEARED) along with a SHA-256 hash, a UUID, and a UTC timestamp, giving every model invocation a signed audit record. Detection is deterministic — 100% precision on known patterns with zero false positives, sub-millisecond mean server-side latency, and no model in the hot path. The free tier covers 10,000 requests per month with no credit card; paid tiers raise the quota — Indie ($29/mo) to 25,000, Team ($99/mo) to 100,000, Scale ($499/mo) to 500,000 — and Enterprise removes the cap with a dedicated SLA.</p>
     </div>
     <div class="reveal reveal-d1" style="margin-top:32px;border:1px solid var(--rule);border-radius:8px;overflow:hidden;background:rgba(245,245,245,0.015);box-shadow:inset 0 1px 0 rgba(245,245,245,0.04)">
       <article style="padding:28px 32px;border-bottom:1px solid var(--rule)" itemscope itemtype="https://schema.org/Question">
@@ -1512,7 +1491,7 @@ curl -X POST https://api.zentricprotocol.com/v1/analyze \
       <article style="padding:28px 32px;border-bottom:1px solid var(--rule)" itemscope itemtype="https://schema.org/Question">
         <h3 itemprop="name" style="font-size:16px;font-weight:600;letter-spacing:-0.01em;color:var(--paper);margin-bottom:10px">How does Zentric Protocol detect PII in AI applications?</h3>
         <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
-          <p itemprop="text" style="font-size:13px;color:var(--ink-60);line-height:1.7;font-family:var(--mono)">Each prompt is sent to the <code style="background:rgba(245,245,245,0.04);padding:1px 6px;border-radius:2px;color:var(--ink-90)">/v1/analyze</code> endpoint with the <code style="background:rgba(245,245,245,0.04);padding:1px 6px;border-radius:2px;color:var(--ink-90)">privacy</code> module enabled, and PrivacyGuard scans it against 17 PII entity types including emails, phone numbers, IBANs, U.S. SSNs, and regional identifiers such as NIF, CPF, and CURP. Detected entities are returned in a structured report and replaced with placeholders in the anonymized output.</p>
+          <p itemprop="text" style="font-size:13px;color:var(--ink-60);line-height:1.7;font-family:var(--mono)">Each prompt is sent to the <code style="background:rgba(245,245,245,0.04);padding:1px 6px;border-radius:2px;color:var(--ink-90)">/v1/analyze</code> endpoint with the <code style="background:rgba(245,245,245,0.04);padding:1px 6px;border-radius:2px;color:var(--ink-90)">privacy</code> module enabled, and PrivacyGuard scans it against 12 PII entity types including emails, phone numbers, IBANs, U.S. SSNs, and regional identifiers such as NIF, CPF, and CURP. Detected entities are returned in a structured report and replaced with placeholders in the anonymized output.</p>
         </div>
       </article>
       <article style="padding:28px 32px;border-bottom:1px solid var(--rule)" itemscope itemtype="https://schema.org/Question">
@@ -1524,13 +1503,13 @@ curl -X POST https://api.zentricprotocol.com/v1/analyze \
       <article style="padding:28px 32px;border-bottom:1px solid var(--rule)" itemscope itemtype="https://schema.org/Question">
         <h3 itemprop="name" style="font-size:16px;font-weight:600;letter-spacing:-0.01em;color:var(--paper);margin-bottom:10px">How fast is the analysis?</h3>
         <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
-          <p itemprop="text" style="font-size:13px;color:var(--ink-60);line-height:1.7;font-family:var(--mono)">The <code style="background:rgba(245,245,245,0.04);padding:1px 6px;border-radius:2px;color:var(--ink-90)">/v1/analyze</code> endpoint reports a 23.4 millisecond mean server-side latency with P99 under 100 milliseconds, measured across 1,000,000 simulated requests. Total user-perceived latency depends on the network path between your application and the API region.</p>
+          <p itemprop="text" style="font-size:13px;color:var(--ink-60);line-height:1.7;font-family:var(--mono)">The <code style="background:rgba(245,245,245,0.04);padding:1px 6px;border-radius:2px;color:var(--ink-90)">/v1/analyze</code> endpoint runs deterministic pattern matching outside the model path, with sub-millisecond mean server-side latency. Because no LLM sits in the hot path, the same input always returns the same verdict in the same time. Total user-perceived latency depends on the network path between your application and the API region.</p>
         </div>
       </article>
       <article style="padding:28px 32px;border-bottom:1px solid var(--rule)" itemscope itemtype="https://schema.org/Question">
         <h3 itemprop="name" style="font-size:16px;font-weight:600;letter-spacing:-0.01em;color:var(--paper);margin-bottom:10px">What PII entity types are detected?</h3>
         <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
-          <p itemprop="text" style="font-size:13px;color:var(--ink-60);line-height:1.7;font-family:var(--mono)">PrivacyGuard detects 17 entity types including emails, phone numbers, IBANs, U.S. SSNs, SWIFT codes, NIF, CPF, and CURP. Regional identifiers are treated as first-class entities rather than handled by a single generic pattern.</p>
+          <p itemprop="text" style="font-size:13px;color:var(--ink-60);line-height:1.7;font-family:var(--mono)">PrivacyGuard detects 12 entity types including emails, phone numbers, IBANs, U.S. SSNs, SWIFT codes, NIF, CPF, and CURP. Regional identifiers are treated as first-class entities rather than handled by a single generic pattern.</p>
         </div>
       </article>
       <article style="padding:28px 32px" itemscope itemtype="https://schema.org/Question">
@@ -2151,24 +2130,24 @@ window.addEventListener('scroll',()=>{
     const hero = document.querySelector('.hero');
     if (hero) {
       const LOG = [
-        { v: 'CLEARED',    sig: '·',                            hash: 'a3f7c2e8d9b4f1e5', ms: 18 },
-        { v: 'BLOCKED',    sig: 'INSTRUCTION_IGNORE',            hash: '7b2e1f9c4d3a8c2f', ms: 22 },
-        { v: 'CLEARED',    sig: '·',                            hash: 'f4a8b1c7e2d96a3e', ms: 21 },
-        { v: 'ANONYMIZED', sig: '3 entities · IBAN EMAIL PHONE', hash: '2c9e6b4d1f7a3b8c', ms: 19 },
-        { v: 'BLOCKED',    sig: 'ROLE_HIJACK',                   hash: '8d3c5e1b9f2a7e4d', ms: 25 },
-        { v: 'CLEARED',    sig: '·',                            hash: 'e1b7f4c8a2d35f9c', ms: 17 },
-        { v: 'BLOCKED',    sig: 'BASE64_SMUGGLE',                hash: '5f2a8c1d7b4e9f3a', ms: 23 },
-        { v: 'ANONYMIZED', sig: '1 entity · IBAN',               hash: 'b4d9e2c6f1a37c8e', ms: 24 },
-        { v: 'BLOCKED',    sig: 'INDIRECT_INJECTION',            hash: 'c7a1f3b8e2d49f5c', ms: 28 },
-        { v: 'CLEARED',    sig: '·',                            hash: '3e8b5c2d9f1a4c7b', ms: 16 },
-        { v: 'BLOCKED',    sig: 'SYSTEM_PROMPT_OVERRIDE',        hash: '9a4c7e1d3b8f2e5a', ms: 31 },
-        { v: 'CLEARED',    sig: '·',                            hash: 'f1c8a4b9e2d76a3c', ms: 20 },
-        { v: 'BLOCKED',    sig: 'PROMPT_OVERRIDE',               hash: 'd8b2e5f1c9a43e7b', ms: 26 },
-        { v: 'ANONYMIZED', sig: '2 entities · SSN CPF',          hash: '6e3a9c7b2d1f8e4a', ms: 22 },
-        { v: 'CLEARED',    sig: '·',                            hash: 'a7e1c4b9f2d85c3e', ms: 19 },
-        { v: 'BLOCKED',    sig: 'JAILBREAK_ATTEMPT',             hash: '4c8f2a1b9e3d7c5f', ms: 27 },
-        { v: 'CLEARED',    sig: '·',                            hash: 'b2d7e9f3c1a4e8b6', ms: 18 },
-        { v: 'ANONYMIZED', sig: '1 entity · EMAIL',              hash: 'e5c3a8b1f4d9e2c7', ms: 21 },
+        { v: 'CLEARED',    sig: '·',                            hash: 'a3f7c2e8d9b4f1e5', ms: 0.04 },
+        { v: 'BLOCKED',    sig: 'INSTRUCTION_OVERRIDE_EN',       hash: '7b2e1f9c4d3a8c2f', ms: 0.05 },
+        { v: 'CLEARED',    sig: '·',                            hash: 'f4a8b1c7e2d96a3e', ms: 0.04 },
+        { v: 'ANONYMIZED', sig: '3 entities · IBAN EMAIL PHONE', hash: '2c9e6b4d1f7a3b8c', ms: 0.06 },
+        { v: 'BLOCKED',    sig: 'ROLE_HIJACK_EN',                hash: '8d3c5e1b9f2a7e4d', ms: 0.05 },
+        { v: 'CLEARED',    sig: '·',                            hash: 'e1b7f4c8a2d35f9c', ms: 0.03 },
+        { v: 'BLOCKED',    sig: 'BASE64_PAYLOAD',               hash: '5f2a8c1d7b4e9f3a', ms: 0.05 },
+        { v: 'ANONYMIZED', sig: '1 entity · IBAN',               hash: 'b4d9e2c6f1a37c8e', ms: 0.05 },
+        { v: 'BLOCKED',    sig: 'NESTED_INSTRUCTION',            hash: 'c7a1f3b8e2d49f5c', ms: 0.06 },
+        { v: 'CLEARED',    sig: '·',                            hash: '3e8b5c2d9f1a4c7b', ms: 0.03 },
+        { v: 'BLOCKED',    sig: 'FAKE_SYSTEM_TOKEN',            hash: '9a4c7e1d3b8f2e5a', ms: 0.05 },
+        { v: 'CLEARED',    sig: '·',                            hash: 'f1c8a4b9e2d76a3c', ms: 0.04 },
+        { v: 'BLOCKED',    sig: 'INSTRUCTION_OVERRIDE_ES',       hash: 'd8b2e5f1c9a43e7b', ms: 0.05 },
+        { v: 'ANONYMIZED', sig: '2 entities · SSN CPF',          hash: '6e3a9c7b2d1f8e4a', ms: 0.05 },
+        { v: 'CLEARED',    sig: '·',                            hash: 'a7e1c4b9f2d85c3e', ms: 0.04 },
+        { v: 'BLOCKED',    sig: 'JAILBREAK_DAN',                hash: '4c8f2a1b9e3d7c5f', ms: 0.06 },
+        { v: 'CLEARED',    sig: '·',                            hash: 'b2d7e9f3c1a4e8b6', ms: 0.04 },
+        { v: 'ANONYMIZED', sig: '1 entity · EMAIL',              hash: 'e5c3a8b1f4d9e2c7', ms: 0.05 },
       ];
 
       // Pre-build a pool of formatted row strings

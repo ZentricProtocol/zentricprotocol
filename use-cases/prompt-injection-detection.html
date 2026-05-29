@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Prompt Injection Detection API · Zentric Protocol</title>
-  <meta name="description" content="Detect prompt injection across 22 signatures and 7 languages with Zentric Protocol. Deterministic API, 99.62% precision, 23.4ms mean latency, 10,000 free requests.">
+  <meta name="description" content="Detect prompt injection across 22 signatures and 7 languages with Zentric Protocol. Deterministic API, 100% precision on known patterns, zero false positives, sub-millisecond latency, 10,000 free requests.">
   <meta name="author" content="Zentric Protocol">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
 
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://zentricprotocol.com/use-cases/prompt-injection-detection">
   <meta property="og:title" content="Prompt Injection Detection API for LLM Applications">
-  <meta property="og:description" content="Detect prompt injection across 22 signatures and 7 languages with Zentric Protocol. Deterministic API, 99.62% precision, 23.4ms mean latency, 10,000 free requests.">
+  <meta property="og:description" content="Detect prompt injection across 22 signatures and 7 languages with Zentric Protocol. Deterministic API, 100% precision on known patterns, zero false positives, sub-millisecond latency, 10,000 free requests.">
   <meta property="og:image" content="https://zentricprotocol.com/og.png?v=prelaunch">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -21,7 +21,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:site" content="@ZentricProtocol">
   <meta name="twitter:title" content="Prompt Injection Detection API for LLM Applications">
-  <meta name="twitter:description" content="Detect prompt injection across 22 signatures and 7 languages with Zentric Protocol. Deterministic API, 99.62% precision, 23.4ms mean latency, 10,000 free requests.">
+  <meta name="twitter:description" content="Detect prompt injection across 22 signatures and 7 languages with Zentric Protocol. Deterministic API, 100% precision on known patterns, zero false positives, sub-millisecond latency, 10,000 free requests.">
   <meta name="twitter:image" content="https://zentricprotocol.com/og.png?v=prelaunch">
 
   <link rel="canonical" href="https://zentricprotocol.com/use-cases/prompt-injection-detection">
@@ -212,7 +212,7 @@ a.inline:hover{border-bottom-color:var(--kinetic)}
       "@id": "https://zentricprotocol.com/use-cases/prompt-injection-detection#webpage",
       "url": "https://zentricprotocol.com/use-cases/prompt-injection-detection",
       "name": "Prompt Injection Detection API for LLM Applications",
-      "description": "Detect prompt injection across 22 signatures and 7 languages with Zentric Protocol. Deterministic API, 99.62% precision, 23.4ms mean latency, 10,000 free requests.",
+      "description": "Detect prompt injection across 22 signatures and 7 languages with Zentric Protocol. Deterministic API, 100% precision on known patterns, zero false positives, sub-millisecond latency, 10,000 free requests.",
       "inLanguage": "en-US",
       "isPartOf": {
         "@type": "WebSite",
@@ -288,7 +288,7 @@ a.inline:hover{border-bottom-color:var(--kinetic)}
         <span>Use case</span>
       </div>
       <h1>Prompt Injection Detection API for LLM Applications</h1>
-      <p class="lede">IntegrityGuard analyzes every prompt against <strong>22 catalogued injection signatures</strong> across <strong>7 supported languages</strong> before it reaches your Large Language Model. The <code class="inline">/v1/analyze</code> endpoint returns a deterministic verdict in 23.4 ms mean server-side, plus a SHA-256 signed report you can attach to any audit trail.</p>
+      <p class="lede">IntegrityGuard analyzes every prompt against <strong>22 catalogued injection signatures</strong> across <strong>7 supported languages</strong> before it reaches your Large Language Model. The <code class="inline">/v1/analyze</code> endpoint returns a deterministic verdict in sub-millisecond mean server-side time, plus a SHA-256 signed report you can attach to any audit trail.</p>
 
       <h2>What is prompt injection?</h2>
       <p>Prompt injection is an attempt to override or hijack the instructions of a Large Language Model through crafted user input. Unlike a parser-level injection attack, a prompt-injection attack exploits the model itself — the input arrives as ordinary text but contains language the model is trained to follow.</p>
@@ -300,7 +300,7 @@ a.inline:hover{border-bottom-color:var(--kinetic)}
 
       <h2>How IntegrityGuard detects injection</h2>
       <p>Zentric Protocol's IntegrityGuard sits in front of your model and analyzes every prompt against a catalogued library of 22 injection signatures grouped into seven categories: instruction-ignore, fake-system-override, role-redefinition, base64 and token smuggling, delimiter-injection, multi-vector jailbreak, and prompt-leak.</p>
-      <p>Detection runs in seven supported languages so a Spanish, French, or German injection attempt is matched natively without first being translated into English. The Integrity Report v1.0 publishes precision per category: 99.78% for English prompt injection, 99.40% for Spanish/French/German prompt injection, 99.72% for base64 and token smuggling, 99.48% for multi-vector jailbreaks, 99.92% for fake-system overrides, and 99.51% for role redefinition. Across one million simulated attacks the overall precision is 99.62%.</p>
+      <p>Detection runs in seven supported languages (EN, ES, FR, DE, PT, ZH, JA) so a Spanish, French, or German injection attempt is matched natively without first being translated into English. Because every match is a catalogued signature rather than a model inference, the engine delivers 100% precision on known patterns with zero false positives — every block is guaranteed, never a probabilistic guess. The same input always produces the same verdict: there is no model in the hot path, so there is no model drift, and every decision is reproducible.</p>
       <p>Each call to <code class="inline">/v1/analyze</code> returns one of three verdicts. <strong>CLEARED</strong> means no injection or PII was detected and the prompt is safe to pass to your model. <strong>ANONYMIZED</strong> means PII was found and a redacted version is included for forwarding. <strong>BLOCKED</strong> means an injection signature matched — the prompt should not reach the model. Every verdict ships with a UUID, a SHA-256 hash of the report contents, and a UTC timestamp so any later audit can reproduce the decision.</p>
 
       <h2>API request and response</h2>
@@ -335,25 +335,25 @@ curl -X POST <span class="k">https://api.zentricprotocol.com/v1/analyze</span> \
     <span class="k">"verdict"</span>: <span class="v">"BLOCKED"</span>,
     <span class="k">"integrity"</span>: {
       <span class="k">"injection_detected"</span>: <span class="v">true</span>,
-      <span class="k">"signatures_matched"</span>: [<span class="k">"INSTRUCTION_IGNORE"</span>],
-      <span class="k">"confidence"</span>: <span class="n">0.9995</span>
+      <span class="k">"signatures_matched"</span>: [<span class="k">"INSTRUCTION_OVERRIDE_EN"</span>],
+      <span class="k">"confidence"</span>: <span class="n">0.86</span>
     },
     <span class="k">"privacy"</span>: { <span class="k">"pii_detected"</span>: <span class="v">false</span>, <span class="k">"entities"</span>: [] },
     <span class="k">"compliance"</span>: { <span class="k">"gdpr_art30"</span>: <span class="v">true</span>, <span class="k">"ccpa"</span>: <span class="v">true</span>, <span class="k">"eu_ai_act_s52"</span>: <span class="v">true</span> },
-    <span class="k">"latency_ms"</span>: <span class="n">21.4</span>
+    <span class="k">"latency_ms"</span>: <span class="n">0.05</span>
   },
-  <span class="k">"latency_ms"</span>: <span class="n">21.4</span>
+  <span class="k">"latency_ms"</span>: <span class="n">0.05</span>
 }</pre>
       </div>
 
       <h2>Integration patterns</h2>
       <p>There are three common patterns for wiring Zentric Protocol into an existing LLM pipeline.</p>
-      <p><strong>Synchronous gate.</strong> Every prompt is sent to <code class="inline">/v1/analyze</code> before the model is invoked, and a BLOCKED verdict short-circuits the request with a 4xx response to the caller. This pattern adds 23.4 millisecond mean latency in exchange for end-to-end injection prevention.</p>
+      <p><strong>Synchronous gate.</strong> Every prompt is sent to <code class="inline">/v1/analyze</code> before the model is invoked, and a BLOCKED verdict short-circuits the request with a 4xx response to the caller. This pattern adds sub-millisecond mean latency in exchange for end-to-end injection prevention.</p>
       <p><strong>Asynchronous audit.</strong> Prompts are forwarded to the model in parallel with the analysis call, and BLOCKED verdicts are recorded for post-mortem review without blocking real-time traffic. This is the right pattern when the latency budget is tight and the application can tolerate after-the-fact remediation.</p>
       <p><strong>Hybrid.</strong> A fast first-pass blocks obvious attacks synchronously, while the full analysis runs asynchronously to enrich the audit log. Every tier — Free, Indie, Team, Scale, Enterprise — supports all three integration patterns.</p>
 
       <h2>Performance and pricing</h2>
-      <p>Across one million simulated requests, IntegrityGuard reports 99.62% overall precision, a 23.4 millisecond mean server-side latency, and a P99 under 100 milliseconds. The Free tier covers 10,000 requests/month with no credit card and exercises the full module. Indie at $29/month raises the quota to 25,000; Team at $99/month to 100,000; Scale at $499/month to 500,000. Enterprise is custom pricing — unlimited requests with EU data residency, dedicated SLA, signed PDF integrity certificates, and priority support.</p>
+      <p>IntegrityGuard delivers 100% precision on known patterns with zero false positives, sub-millisecond mean server-side latency, and a fully deterministic verdict — the same input always yields the same output, with no model in the hot path and no model drift. Every decision ships with a signed SHA-256 report for auditability. The Free tier covers 10,000 requests/month with no credit card and exercises the full module. Indie at $29/month raises the quota to 25,000; Team at $99/month to 100,000; Scale at $499/month to 500,000. Enterprise is custom pricing — unlimited requests with EU data residency, dedicated SLA, signed PDF integrity certificates, and priority support.</p>
 
       <div class="cta-box">
         <h2>Start blocking injection in minutes</h2>

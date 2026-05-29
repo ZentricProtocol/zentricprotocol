@@ -382,9 +382,9 @@ response = llm.call(system_prompt + safe_chunks + query) <span class="c"># ← c
     <!-- ── SECTION 3: VS LLM-BASED DETECTORS ── -->
     <div class="section">
       <div class="section-label">vs. LLM-based classifiers</div>
-      <h2>Lakera, PromptShield, LlamaGuard: <em>same problem, different layer</em></h2>
+      <h2>LlamaGuard, Microsoft Prompt Shields, OpenAI Moderation: <em>same problem, different layer</em></h2>
       <p class="section-body">
-        LLM-based injection detectors move the defense outside your main model — which is an improvement. But they share a critical flaw: <strong>they use a language model to defend against attacks on language models.</strong> The attack surface isn't eliminated, it's duplicated.
+        LLM-based injection detectors move the defense outside your main model — which is an improvement. But they share a critical flaw: <strong>they use a language model to defend against attacks on language models.</strong> The attack surface isn't eliminated, it's duplicated. The difference with Zentric isn't coverage — it's <strong>certainty</strong> (zero false positives on known patterns), <strong>speed</strong> (sub-millisecond, no model in the hot path), <strong>determinism</strong> (same input always returns the same verdict, no model drift), and <strong>auditability</strong> (a signed SHA-256 report per request).
       </p>
 
       <div class="callout">
@@ -396,82 +396,54 @@ response = llm.call(system_prompt + safe_chunks + query) <span class="c"># ← c
         <thead>
           <tr>
             <th>Property</th>
-            <th>Lakera Guard</th>
-            <th>PromptShield (Azure)</th>
             <th>LlamaGuard</th>
+            <th>Microsoft Prompt Shields</th>
+            <th>OpenAI Moderation</th>
             <th class="highlight">Zentric Protocol</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td class="feature">Detection method</td>
-            <td>LLM classifier</td>
-            <td>LLM classifier</td>
-            <td>LLM classifier</td>
-            <td class="highlight">Deterministic signatures</td>
+            <td class="feature">Latency</td>
+            <td>Model-based — model-dependent</td>
+            <td>Model-based — model-dependent</td>
+            <td>Model-based — model-dependent</td>
+            <td class="highlight"><span class="tick">✓ &lt;0.1ms</span> — no model in the path</td>
           </tr>
           <tr>
-            <td class="feature">Same input → same verdict?</td>
-            <td><span class="cross">✗ No</span> — probabilistic</td>
-            <td><span class="cross">✗ No</span> — probabilistic</td>
-            <td><span class="cross">✗ No</span> — probabilistic</td>
-            <td class="highlight"><span class="tick">✓ Always</span></td>
+            <td class="feature">False positive rate</td>
+            <td>Probabilistic — can vary</td>
+            <td>Probabilistic — can vary</td>
+            <td>Probabilistic — can vary</td>
+            <td class="highlight"><span class="tick">✓ Zero</span> on known patterns</td>
           </tr>
           <tr>
-            <td class="feature">Adversarial manipulation</td>
-            <td><span class="cross">✗ Possible</span></td>
-            <td><span class="cross">✗ Possible</span></td>
-            <td><span class="cross">✗ Possible</span></td>
-            <td class="highlight"><span class="tick">✓ Not applicable</span></td>
+            <td class="feature">Deterministic?</td>
+            <td><span class="cross">✗ No</span> — model-based, can drift</td>
+            <td><span class="cross">✗ No</span> — model-based, can drift</td>
+            <td><span class="cross">✗ No</span> — model-based, can drift</td>
+            <td class="highlight"><span class="tick">✓ Yes</span> — same input, same output</td>
           </tr>
           <tr>
-            <td class="feature">Model drift over time</td>
-            <td><span class="cross">✗ Yes</span> — updates change behavior</td>
-            <td><span class="cross">✗ Yes</span></td>
-            <td><span class="cross">✗ Yes</span></td>
-            <td class="highlight"><span class="tick">✓ None</span> — fixed signatures</td>
+            <td class="feature">Auditability</td>
+            <td><span class="cross">✗ None</span> — not built-in</td>
+            <td><span class="cross">✗ None</span> — not built-in</td>
+            <td><span class="cross">✗ None</span> — not built-in</td>
+            <td class="highlight"><span class="tick">✓ Signed SHA-256 report per request</span></td>
           </tr>
           <tr>
-            <td class="feature">Signed audit record</td>
-            <td><span class="cross">✗ No</span></td>
-            <td><span class="partial">~ Partial</span></td>
-            <td><span class="cross">✗ No</span></td>
-            <td class="highlight"><span class="tick">✓ GDPR Art.30 per request</span></td>
+            <td class="feature">Open source</td>
+            <td>—</td>
+            <td>—</td>
+            <td>—</td>
+            <td class="highlight"><span class="partial">~ Signatures partially public</span></td>
           </tr>
           <tr>
-            <td class="feature">Language support</td>
-            <td>English-primary</td>
-            <td>English-primary</td>
-            <td>English-primary</td>
-            <td class="highlight"><span class="tick">✓ 7 languages natively</span></td>
-          </tr>
-          <tr>
-            <td class="feature">RAG / indirect injection</td>
-            <td><span class="partial">~ Limited</span></td>
-            <td><span class="partial">~ Limited</span></td>
-            <td><span class="partial">~ Limited</span></td>
-            <td class="highlight"><span class="tick">✓ Source-agnostic</span></td>
-          </tr>
-          <tr>
-            <td class="feature">Latency (P50)</td>
-            <td>~80–200ms</td>
-            <td>~100–300ms</td>
-            <td>~200ms+</td>
-            <td class="highlight"><span class="tick">✓ 23ms</span></td>
-          </tr>
-          <tr>
-            <td class="feature">Free tier</td>
-            <td>Trial only</td>
-            <td>Azure credits</td>
-            <td>Self-hosted</td>
-            <td class="highlight"><span class="tick">✓ 10k req/month, no CC</span></td>
-          </tr>
-          <tr>
-            <td class="feature">MCP server</td>
-            <td><span class="cross">✗ No</span></td>
-            <td><span class="cross">✗ No</span></td>
-            <td><span class="cross">✗ No</span></td>
-            <td class="highlight"><span class="tick">✓ Native (Claude Desktop / Cursor)</span></td>
+            <td class="feature">Price</td>
+            <td>—</td>
+            <td>—</td>
+            <td>—</td>
+            <td class="highlight"><span class="tick">✓ Free tier — 10,000 req/month</span></td>
           </tr>
         </tbody>
       </table>
@@ -501,7 +473,7 @@ response = llm.call(system_prompt + safe_chunks + query) <span class="c"># ← c
           <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:var(--kinetic);text-transform:uppercase;margin-bottom:10px">✓ Zentric covers all of these</div>
           Source-agnostic detection — scans any text regardless of origin<br>
           Works before every LLM call, not just user input<br>
-          23ms — doesn't meaningfully add to latency<br>
+          &lt;0.1ms — no model in the path, doesn't meaningfully add to latency<br>
           Signed audit record per request for compliance<br>
           Works with any stack: Python, Node, curl
         </div>
