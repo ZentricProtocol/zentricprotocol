@@ -12,26 +12,43 @@
 const UPSTREAM = 'https://api.zentricprotocol.com/v1/analyze';
 
 // Raw signature ID → human-readable category. Used to sanitize the upstream
-// response. Anything not in this map collapses to a generic label so we never
-// leak signature naming conventions to the public.
+// response. Language suffixes (_EN/_ES/_FR/...) collapse to the same category,
+// and anything unknown becomes a generic label, so we never leak signature
+// naming conventions to the public. (Engine v2 signature IDs.)
 const SIGNATURE_CATEGORIES = {
-  INSTRUCTION_IGNORE: 'Instruction Override',
-  FAKE_SYSTEM_OVERRIDE: 'Fake System Marker',
-  ROLE_REDEFINITION: 'Role Manipulation',
-  ROLE_OVERRIDE: 'Role Manipulation',
-  BASE64_SMUGGLING: 'Base64 Smuggling',
+  FAKE_SYSTEM_TOKEN: 'Fake System Marker',
   DELIMITER_INJECTION: 'Delimiter Injection',
+  BASE64_PAYLOAD: 'Base64 Smuggling',
+  PROMPT_LEAKAGE_REQUEST: 'Prompt Leakage',
+  NESTED_INSTRUCTION: 'Nested Instruction',
+  AUTHORITY_CLAIM: 'Authority Claim',
+  DATA_EXFILTRATION: 'Data Exfiltration',
+  INSTRUCTION_OVERRIDE: 'Instruction Override',
+  ROLE_HIJACK: 'Role Manipulation',
+  JAILBREAK_DAN: 'Jailbreak (DAN)',
+  HYPOTHETICAL_FRAME: 'Hypothetical Framing',
+  CONFIDENCE_MANIPULATION: 'Coercion / Compliance Pressure',
 };
+
+function categorizeSignature(sig) {
+  if (SIGNATURE_CATEGORIES[sig]) return SIGNATURE_CATEGORIES[sig];
+  const base = sig.replace(/_(EN|ES|FR|DE|PT|IT|NL|ZH|JA)$/, '');
+  return SIGNATURE_CATEGORIES[base] || 'Anomalous pattern';
+}
 
 const PII_CATEGORIES = {
   EMAIL: 'Email Address',
   PHONE: 'Phone Number',
-  SSN: 'U.S. SSN',
+  CREDIT_CARD: 'Credit Card',
   IBAN: 'IBAN',
-  SWIFT: 'SWIFT Code',
-  NIF: 'NIF',
-  CPF: 'CPF',
-  CURP: 'CURP',
+  IP_ADDRESS: 'IP Address',
+  DATE_OF_BIRTH: 'Date of Birth',
+  PASSPORT: 'Passport Number',
+  NIF_NIE: 'Spanish NIF/NIE',
+  SSN: 'U.S. SSN',
+  CPF: 'Brazilian CPF',
+  CURP: 'Mexican CURP',
+  NHS_NUMBER: 'UK NHS Number',
 };
 
 // In-memory per-IP token bucket. Survives within a warm serverless instance,
@@ -66,10 +83,10 @@ function sanitize(result) {
     return { verdict: result?.verdict ?? 'UNKNOWN' };
   }
   const sigs = result.report.integrity?.signatures_matched ?? [];
-  const categoriesMatched = sigs.map((s) => SIGNATURE_CATEGORIES[s] || 'Anomalous pattern');
+  const categoriesMatched = sigs.map(categorizeSignature);
   const piiEntities = (result.report.privacy?.entities ?? []).map((e) => ({
     category: PII_CATEGORIES[e.type] || 'Personal data',
-    action: e.action,
+    action: e.action ?? 'REDACTED', // v2 entities are always redacted; no per-entity action field
   }));
 
   let primary = categoriesMatched[0] || piiEntities[0]?.category || null;

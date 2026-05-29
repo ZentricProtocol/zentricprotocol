@@ -65,8 +65,8 @@ const TOOL_OUTPUT_SCHEMA = {
           description: 'Results from the injection detection module.',
           properties: {
             injection_detected: { type: 'boolean', description: 'True if an injection or jailbreak pattern was found.' },
-            signatures_matched: { type: 'array', items: { type: 'string' }, description: 'List of matched injection signature IDs (e.g. INSTRUCTION_IGNORE, ROLE_HIJACK).' },
-            confidence: { type: 'number', description: 'Confidence score between 0 and 1.' },
+            signatures_matched: { type: 'array', items: { type: 'string' }, description: 'List of matched injection signature IDs (e.g. INSTRUCTION_OVERRIDE_EN, ROLE_HIJACK_ES, BASE64_PAYLOAD).' },
+            confidence: { type: ['number', 'null'], description: 'Confidence score between 0 and 1, or null when no injection was detected.' },
           },
         },
         privacy: {
@@ -80,8 +80,8 @@ const TOOL_OUTPUT_SCHEMA = {
               items: {
                 type: 'object',
                 properties: {
-                  type: { type: 'string', description: 'PII type (e.g. EMAIL, PHONE, CREDIT_CARD, NAME).' },
-                  value: { type: 'string', description: 'The original PII value.' },
+                  type: { type: 'string', description: 'PII type (e.g. EMAIL, PHONE, CREDIT_CARD, IBAN, IP_ADDRESS, NIF_NIE, SSN, CPF, CURP, NHS_NUMBER, PASSPORT, DATE_OF_BIRTH).' },
+                  value: { type: 'string', description: 'Masked PII value (the raw value is never returned).' },
                   start: { type: 'number', description: 'Start character offset in the input string.' },
                   end: { type: 'number', description: 'End character offset in the input string.' },
                 },
@@ -89,9 +89,12 @@ const TOOL_OUTPUT_SCHEMA = {
             },
           },
         },
-        sha256: { type: 'string', description: 'SHA-256 hash of the input for audit trail purposes.' },
-        request_id: { type: 'string', description: 'Unique UUID for this analysis request, used in audit reports.' },
-        latency_ms: { type: 'number', description: 'API response time in milliseconds.' },
+        sha256: { type: 'string', description: 'SHA-256 hash of the report content for audit trail / tamper detection.' },
+        report_id: { type: 'string', description: 'Unique report identifier (zp_...).' },
+        uuid: { type: 'string', description: 'Unique UUID for this analysis request, used in audit reports.' },
+        engine_version: { type: 'string', description: 'Detection engine version (e.g. "2.0.0").' },
+        audit_record: { type: 'boolean', description: 'True when a signed audit record was generated for this request.' },
+        latency_ms: { type: 'number', description: 'Server-side analysis time in milliseconds.' },
       },
     },
     anonymized_input: {
