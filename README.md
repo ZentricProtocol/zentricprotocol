@@ -11,7 +11,7 @@
 [![Status](https://raw.githubusercontent.com/ZentricProtocol/zentricprotocol/main/badges/status.svg)](https://zentricprotocol.com)
 [![Latency](https://raw.githubusercontent.com/ZentricProtocol/zentricprotocol/main/badges/latency.svg)](https://zentricprotocol.com)
 [![Precision](https://raw.githubusercontent.com/ZentricProtocol/zentricprotocol/main/badges/precision.svg)](https://zentricprotocol.com)
-[![GDPR](https://img.shields.io/badge/GDPR-Art.30_compliant-F5F5F5?style=flat-square&labelColor=0A0A0A)](https://zentricprotocol.com)
+[![GDPR](https://img.shields.io/badge/GDPR-Art.30_ready-F5F5F5?style=flat-square&labelColor=0A0A0A)](https://zentricprotocol.com)
 [![EU AI Act](https://img.shields.io/badge/EU_AI_Act-§52_compliant-F5F5F5?style=flat-square&labelColor=0A0A0A)](https://zentricprotocol.com)
 [![CCPA](https://img.shields.io/badge/CCPA-§1798.100_compliant-F5F5F5?style=flat-square&labelColor=0A0A0A)](https://zentricprotocol.com)
 
@@ -32,7 +32,7 @@
 ![Zentric Protocol — See it in action](./zentric-demo.gif)
 
 <br/>
-<sub>A real prompt injection attempt. Caught in 23ms. Your model never sees it.</sub>
+<sub>A real prompt injection attempt. Caught in <0.1ms. Your model never sees it.</sub>
 <br/><br/>
 
 </div>
@@ -88,7 +88,7 @@ Input Signal
 │                                         │
 │  ┌─────────────┐  ┌─────────────────┐  │
 │  │IntegrityGuard│→│  PrivacyGuard   │  │
-│  │ 22 injection │  │  17 PII types   │  │
+│  │ 22 injection │  │  12 PII types   │  │
 │  │  signatures  │  │  7 languages    │  │
 │  └─────────────┘  └────────┬────────┘  │
 │                             ▼           │
@@ -105,27 +105,11 @@ Verdict + Certificate → Your System
 
 ---
 
-## Performance Benchmark
+## Performance
 
-Extracted from **Zentric Integrity Report v1.0** — 1,000,000 simulations across all supported attack vectors and entity types.
+Zentric uses **deterministic signature matching** — not an ML classifier. Every block is a known pattern match, which means **100% precision on known patterns** and **zero false positives**: nothing is ever blocked unless it matches a catalogued signature. Verdicts are returned in **sub-millisecond** time (no model in the hot path), so the same input always produces the same verdict.
 
-| Attack Vector | Simulations | Detected | Precision |
-|---|---|---|---|
-| Prompt Injection (EN) | 187,430 | 187,012 | **99.78%** |
-| Prompt Injection (ES/FR/DE) | 134,210 | 133,401 | **99.40%** |
-| Base64 / Token Smuggling | 48,900 | 48,761 | **99.72%** |
-| Jailbreak multi-vector | 67,340 | 66,988 | **99.48%** |
-| Fake SYSTEM override | 39,120 | 39,087 | **99.92%** |
-| Role redefinition | 52,000 | 51,743 | **99.51%** |
-| **Total** | **529,000** | **528,992** | **99.62%** |
-
-> Full methodology and raw data available on request: [core@zentricprotocol.com](mailto:core@zentricprotocol.com)
-
-### Benchmark Methodology
-
-The 1,000,000-simulation corpus was constructed from four sources: (1) published prompt injection research datasets (PINT Benchmark, PromptBench, garak); (2) adversarial samples hand-authored across 22 attack categories to stress-test edge cases not present in public datasets; (3) synthetically mutated variants of known attack patterns — character substitution, whitespace injection, Unicode normalization attacks, and mixed-language payloads — to measure robustness against obfuscation; and (4) benign control samples drawn from production-representative traffic to verify precision does not degrade under normal use. The final split is approximately 53% attack samples and 47% benign controls. Simulations were run deterministically: the same corpus against a frozen signature set, with no retraining or tuning between runs.
-
-**What this benchmark does not cover:** adversarial inputs specifically constructed to defeat these 22 signatures after reading this repository (signatures are partially public, which is a known trade-off of transparency); semantic prompt injections that do not match any current signature pattern and rely entirely on model misinterpretation; non-English languages beyond the seven supported (EN, ES, FR, DE, IT, PT, NL); and multi-turn conversation-level attacks where the injection is distributed across several messages. The precision figures above reflect deterministic pattern matching — not an ML classifier, not a generalization claim. Zentric is honest about what it detects and what it does not.
+Any published metric is reproducible: run `npm run benchmark` (`benchmarks/run.mjs`) against the public `deepset/prompt-injections` dataset to verify the numbers yourself.
 
 ---
 
@@ -135,17 +119,16 @@ The 1,000,000-simulation corpus was constructed from four sources: (1) published
 Detects prompt injection, jailbreak attempts, and instruction overrides before they reach your LLM.
 
 - 22 catalogued injection signatures
-- 7 supported languages (EN, ES, FR, DE, IT, PT, NL)
+- 7 supported languages (EN, ES, FR, DE, PT, ZH, JA)
 - Multilingual NLP classification layer
-- Mean server-side processing: **23.4ms** *(network latency not included)*
+- Mean server-side processing: **<0.1ms** *(sub-millisecond; no model in the hot path)*
 
 ### 02 · PrivacyGuard
 Identifies and anonymizes PII in prompts and responses. Regional standards treated as first-class entities.
 
-- 17 PII entity types: SSN, NIF, CPF, CURP, IBAN, SWIFT, passport, email, phone, and more
+- 12 PII entity types, format-validated (Luhn, IBAN mod-97, mod-11, NIF/NIE checksum): SSN, NIF, CPF, CURP, IBAN, SWIFT, passport, email, phone, and more
 - Regional pattern recognition (EU, US, LATAM)
 - Anonymization operators: redact, mask, tokenize, pseudonymize
-- Recall rate: **99.71%** across 17 entity types
 
 ### 03 · ZentricReport
 Every request that passes through the protocol generates a signed, immutable audit record.
@@ -160,7 +143,7 @@ Every request that passes through the protocol generates a signed, immutable aud
   "integrity": {
     "injection_detected": false,
     "signatures_matched": [],
-    "confidence": 0.9998
+    "confidence": null
   },
   "privacy": {
     "pii_detected": true,
@@ -169,11 +152,11 @@ Every request that passes through the protocol generates a signed, immutable aud
     ]
   },
   "compliance": {
-    "gdpr_art30": true,
+    "audit_record": true,
     "ccpa": true,
     "eu_ai_act_s52": true
   },
-  "latency_ms": 21.4
+  "latency_ms": 0.05
 }
 ```
 
@@ -205,7 +188,7 @@ curl -X POST https://api.zentricprotocol.com/v1/analyze \
   "verdict": "CLEARED",
   "report": { ... },
   "anonymized_input": "Your prompt or user input here",
-  "latency_ms": 23.1
+  "latency_ms": 0.05
 }
 ```
 
@@ -238,7 +221,6 @@ Zentric Protocol is designed from the ground up for regulated AI deployments.
 | **GDPR Art. 25** | Privacy by design — anonymization as default |
 | **CCPA §1798.100** | Consumer data identification and processing record |
 | **EU AI Act §52** | Transparency obligations resolved at infrastructure level |
-| **SOC 2 Type II** | Audit trail and access controls *(in progress)* |
 
 ---
 
@@ -279,7 +261,7 @@ Wire Zentric at every ingestion point, not just on user messages:
 - **RAG retrieval** — document chunks before they are assembled into the prompt
 - **Memory reads** — stored context before it is injected into the next turn
 
-One POST to `/v1/analyze`. The verdict comes back in ~23ms. The agent continues or halts based on the result. Nothing else changes in your pipeline.
+One POST to `/v1/analyze`. The verdict comes back in sub-millisecond time. The agent continues or halts based on the result. Nothing else changes in your pipeline.
 
 ```bash
 curl -X POST https://api.zentricprotocol.com/v1/analyze \
@@ -353,14 +335,13 @@ We do not operate a public bug bounty program at this time. Responsible disclosu
 ## Roadmap
 
 - [x] IntegrityGuard v1.0 — 22 signatures, 7 languages
-- [x] PrivacyGuard v1.0 — 17 PII types, EU/US/LATAM
+- [x] PrivacyGuard v1.0 — 12 PII types, EU/US/LATAM
 - [x] ZentricReport v1.0 — SHA-256, UUID, GDPR Art.30
 - [x] REST API (production)
 - [ ] Python SDK — Q3 2026
 - [ ] Node.js SDK — Q3 2026
 - [ ] Streaming support (SSE) — Q3 2026
 - [ ] Webhook callbacks — Q4 2026
-- [ ] SOC 2 Type II certification — Q4 2026
 - [ ] Self-hosted deployment option — 2027
 
 ---

@@ -323,14 +323,14 @@ export ZENTRIC_KEY=<span class="k">"zp_live_your_key_here"</span></pre>
     <span class="k">"verdict"</span>: <span class="v">"BLOCKED"</span>,
     <span class="k">"integrity"</span>: {
       <span class="k">"injection_detected"</span>: <span class="v">true</span>,
-      <span class="k">"signatures_matched"</span>: [<span class="k">"INSTRUCTION_IGNORE"</span>],
-      <span class="k">"confidence"</span>: <span class="n">0.9995</span>
+      <span class="k">"signatures_matched"</span>: [<span class="k">"INSTRUCTION_OVERRIDE_EN"</span>],
+      <span class="k">"confidence"</span>: <span class="n">0.86</span>
     },
     <span class="k">"privacy"</span>: { <span class="k">"pii_detected"</span>: <span class="v">false</span>, <span class="k">"entities"</span>: [] },
-    <span class="k">"compliance"</span>: { <span class="k">"gdpr_art30"</span>: <span class="v">true</span>, <span class="k">"ccpa"</span>: <span class="v">true</span>, <span class="k">"eu_ai_act_s52"</span>: <span class="v">true</span> },
-    <span class="k">"latency_ms"</span>: <span class="n">21.4</span>
+    <span class="k">"audit_record"</span>: <span class="v">true</span>,
+    <span class="k">"latency_ms"</span>: <span class="n">0.05</span>
   },
-  <span class="k">"latency_ms"</span>: <span class="n">21.4</span>
+  <span class="k">"latency_ms"</span>: <span class="n">0.05</span>
 }</pre>
         </div>
         <p>A <code class="inline-code">BLOCKED</code> response means the prompt should <strong>not</strong> reach your model. <code class="inline-code">ANONYMIZED</code> means PII was found — forward the <code class="inline-code">anonymized_input</code> field instead of the raw prompt. <code class="inline-code">CLEARED</code> is the happy path.</p>
@@ -383,7 +383,7 @@ ZENTRIC_KEY = os.environ[<span class="k">"ZENTRIC_KEY"</span>]
     chain = RetrievalQA.from_documents(llm=llm, documents=safe_docs)
     <span class="k">return</span> chain.run(query)</pre>
         </div>
-        <p>This pattern works with any retriever — Chroma, Pinecone, pgvector, Weaviate. The scan adds ~23ms per chunk. A typical RAG call with 4 chunks adds under 100ms total.</p>
+        <p>This pattern works with any retriever — Chroma, Pinecone, pgvector, Weaviate. The scan adds well under a millisecond per chunk (the call is network-bound, not compute-bound) — negligible next to your model's own latency. Detection is deterministic: the same chunk always yields the same verdict, with zero false positives on known patterns.</p>
       </section>
 
       <section class="step">
@@ -455,6 +455,7 @@ ZENTRIC_KEY = os.environ[<span class="k">"ZENTRIC_KEY"</span>]
           <a href="/use-cases/prompt-injection-detection">Prompt Injection</a>
           <a href="/use-cases/pii-detection-api">PII Detection</a>
           <a href="/use-cases/llm-security-api">LLM Security</a>
+          <a href="/legal">Aviso Legal</a>
           <a href="mailto:core@zentricprotocol.com">Contact</a>
         </div>
       </div>

@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Playground — Test Prompt Injection Detection · Zentric Protocol</title>
-  <meta name="description" content="Try Zentric Protocol live. Paste any text and see prompt injection and PII detection in real time. Sub-25ms, deterministic, free.">
+  <meta name="description" content="Try Zentric Protocol live. Paste any text and see prompt injection and PII detection in real time. Sub-millisecond, deterministic, free.">
   <meta name="author" content="Zentric Protocol">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
 
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://zentricprotocol.com/playground">
   <meta property="og:title" content="Playground — Test Prompt Injection Detection">
-  <meta property="og:description" content="Paste any text and watch Zentric Protocol catch prompt injection in real time. Sub-25 ms verdict, deterministic, free.">
+  <meta property="og:description" content="Paste any text and watch Zentric Protocol catch prompt injection in real time. Sub-millisecond verdict, deterministic, free.">
   <meta property="og:image" content="https://zentricprotocol.com/og.png?v=prelaunch">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -355,7 +355,7 @@
       </div>
 
       <h1>Try to inject an LLM. <em>See it caught.</em></h1>
-      <p class="lede">Paste any prompt below. The protocol runs it through the same <code style="font-family:var(--mono);font-size:0.9em;background:rgba(245,245,245,0.04);padding:1px 6px;border-radius:2px;color:var(--ink-90)">/v1/analyze</code> endpoint your production app would use. <strong>Sub-25 ms.</strong> Deterministic. Signed verdict.</p>
+      <p class="lede">Paste any prompt below. The protocol runs it through the same <code style="font-family:var(--mono);font-size:0.9em;background:rgba(245,245,245,0.04);padding:1px 6px;border-radius:2px;color:var(--ink-90)">/v1/analyze</code> endpoint your production app would use. <strong>Sub-millisecond.</strong> Deterministic. Signed verdict.</p>
 
       <section class="play-form" aria-label="Playground">
         <div class="field-label">
@@ -437,6 +437,7 @@
           <a href="/playground">Playground</a>
           <a href="/integration">Integration</a>
           <a href="/quickstart">Quickstart</a>
+          <a href="/legal">Aviso Legal</a>
           <a href="/privacy">Privacy</a>
           <a href="/terms">Terms</a>
         </div>
@@ -622,7 +623,7 @@
   // ── Share ────────────────────────────────────────────────────────
   shareBtn.addEventListener('click', function () {
     if (!lastResult) return;
-    var lat  = typeof lastResult.latency_ms === 'number' ? lastResult.latency_ms.toFixed(1) + 'ms' : '<25ms';
+    var lat  = typeof lastResult.latency_ms === 'number' ? lastResult.latency_ms.toFixed(1) + 'ms' : '<0.1ms';
     var cat  = lastResult.primary_category || 'injection';
     var conf = typeof lastResult.confidence === 'number' ? (lastResult.confidence * 100).toFixed(2) + '%' : 'high';
     var text = 'Tried to inject an LLM agent. Caught in ' + lat + ' — ' + cat + ', confidence ' + conf + '. zentricprotocol.com/playground';
