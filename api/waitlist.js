@@ -276,14 +276,25 @@ export default async function handler(req, res) {
     });
   }
 
-  const { email } = req.body;
+  const { email, consent } = req.body;
 
   // Validate email
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return res.status(400).json({ error: 'Invalid email address' });
   }
 
+  // Consent is the legal basis for sending the API key + product updates
+  // (GDPR Art.6(1)(a) and LSSI-CE Art.21). Require explicit opt-in. We store
+  // nothing extra — we just refuse to proceed without it, and log that it was given.
+  if (consent !== true) {
+    return res.status(400).json({
+      error: 'CONSENT_REQUIRED',
+      message: 'You must accept the Privacy Policy to receive your API key.',
+    });
+  }
+
   const normalizedEmail = email.toLowerCase().trim();
+  console.log(`[waitlist] consent=true for signup (${normalizedEmail})`);
 
   // Generic response used for both new and already-registered emails so the
   // endpoint does not reveal whether a given address is registered (prevents

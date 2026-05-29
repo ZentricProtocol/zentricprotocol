@@ -559,8 +559,8 @@
     .waitlist-label{font-family:var(--mono);font-size:10px;letter-spacing:0.22em;color:var(--kinetic);text-transform:uppercase;margin-bottom:20px;display:block}
     .waitlist-title{font-size:clamp(28px,4vw,48px);font-weight:700;letter-spacing:-0.04em;line-height:1.05;margin-bottom:16px}
     .waitlist-body{font-size:15px;color:var(--ink-60);line-height:1.6;margin-bottom:36px}
-    .waitlist-form{display:flex;gap:8px;max-width:440px;margin:0 auto 16px}
-    @media(max-width:540px){.waitlist-form{flex-direction:column}}
+    .waitlist-form{display:flex;flex-direction:column;gap:10px;max-width:440px;margin:0 auto 16px}
+    .waitlist-form .waitlist-input,.waitlist-form .waitlist-btn{width:100%}
     .waitlist-input{flex:1;background:rgba(245,245,245,0.04);border:1px solid var(--rule-strong);border-radius:6px;padding:13px 16px;font-family:var(--display);font-size:13px;color:var(--paper);outline:none;transition:border-color 0.2s,box-shadow 0.2s;letter-spacing:-0.005em}
     .waitlist-input::placeholder{color:var(--ink-40)}
     .waitlist-input:focus{border-color:rgba(245,245,245,0.35);box-shadow:0 0 0 3px rgba(245,245,245,0.06)}
@@ -1460,6 +1460,16 @@ curl -X POST https://api.zentricprotocol.com/v1/analyze \
           required
           aria-label="Work email address"
         >
+        <label style="display:flex;align-items:flex-start;gap:10px;
+font-family:var(--mono);font-size:11px;color:var(--ink-40);
+line-height:1.5;cursor:pointer;margin-bottom:12px;">
+          <input type="checkbox" id="consent" name="consent" required
+            style="margin-top:2px;accent-color:var(--kinetic);flex-shrink:0;">
+          <span>I accept the <a href="/privacy" style="color:var(--kinetic);
+          text-decoration:none;">Privacy Policy</a> and consent to receive
+          my API key and occasional product updates by email.
+          I can unsubscribe at any time.</span>
+        </label>
         <button class="waitlist-btn" type="submit" id="waitlist-submit">
           Get API key →
         </button>
@@ -1684,10 +1694,11 @@ curl -X POST https://api.zentricprotocol.com/v1/analyze \
      ============================================================ -->
 <script>
 // ── WAITLIST FORM ────────────────────────────────────────────────
-const form   = document.getElementById('waitlist-form');
-const emailI = document.getElementById('waitlist-email');
-const btn    = document.getElementById('waitlist-submit');
-const msg    = document.getElementById('waitlist-msg');
+const form    = document.getElementById('waitlist-form');
+const emailI  = document.getElementById('waitlist-email');
+const consentI = document.getElementById('consent');
+const btn     = document.getElementById('waitlist-submit');
+const msg     = document.getElementById('waitlist-msg');
 
 function setMsg(text, type, isHtml) {
   if (isHtml) {
@@ -1711,6 +1722,14 @@ if (form) {
       return;
     }
 
+    // Consent is required (GDPR Art.6(1)(a) / LSSI-CE Art.21). The form is
+    // novalidate, so enforce it in JS too — not just via the HTML5 required attr.
+    if (!consentI || !consentI.checked) {
+      setMsg('Please accept the Privacy Policy to receive your API key.', 'error');
+      if (consentI) consentI.focus();
+      return;
+    }
+
     // Disable UI
     btn.disabled = true;
     btn.textContent = 'Sending…';
@@ -1720,7 +1739,7 @@ if (form) {
       const res = await fetch('/api/waitlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, consent: consentI.checked }),
       });
 
       const data = await res.json();
