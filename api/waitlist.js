@@ -42,8 +42,6 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-const FREE_TIER_LIMIT = 2000;
-
 function generateApiKey() {
   const random = crypto.randomBytes(24).toString('hex');
   return `zp_live_${random}`;
@@ -287,8 +285,18 @@ export default async function handler(req, res) {
 
   const normalizedEmail = email.toLowerCase().trim();
 
+  // Generic response used for both new and already-registered emails so the
+  // endpoint does not reveal whether a given address is registered (prevents
+  // email enumeration).
+  const genericResponse = {
+    success: true,
+    message: 'api_key_sent',
+    hint: 'If that email is valid, your API key is on its way. Check your inbox (and spam folder).',
+  };
+
   try {
-    // Check if email already registered
+    // Check if email already registered. If so, return the generic response
+    // without re-sending — same payload as a fresh signup.
     const { data: existing } = await supabase
       .from('free_api_keys')
       .select('key_prefix')
@@ -296,11 +304,7 @@ export default async function handler(req, res) {
       .single();
 
     if (existing) {
-      return res.status(200).json({
-        success: true,
-        message: 'already_registered',
-        hint: 'Check your inbox — your API key was already sent.',
-      });
+      return res.status(200).json(genericResponse);
     }
 
     // Generate API key
@@ -337,11 +341,7 @@ export default async function handler(req, res) {
       console.error('DB insert failed after email sent:', insertError, 'email:', normalizedEmail, 'prefix:', keyPrefix);
     }
 
-    return res.status(200).json({
-      success: true,
-      message: 'api_key_sent',
-      hint: 'Check your inbox (and spam folder) for your API key.',
-    });
+    return res.status(200).json(genericResponse);
 
   } catch (error) {
     console.error('Waitlist error:', error);

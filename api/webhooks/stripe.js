@@ -61,7 +61,15 @@ function getPlanFromPriceId(priceId) {
     [process.env.STRIPE_PRICE_GROWTH]:     'growth',
     [process.env.STRIPE_PRICE_ENTERPRISE]: 'enterprise',
   };
-  return map[priceId] ?? 'growth';
+  const plan = map[priceId];
+  if (!plan) {
+    // Unknown price ID = env misconfiguration or a new Stripe price that has
+    // not been wired up. Default to the LOWEST paid tier (never over-grant) and
+    // log loudly so it can be corrected.
+    console.error(`[stripe-webhook] Unknown price ID "${priceId}" — defaulting to 'indie'. Check STRIPE_PRICE_* env vars.`);
+    return 'indie';
+  }
+  return plan;
 }
 
 // ---------------------------------------------------------------------------
@@ -134,10 +142,17 @@ async function handleSubscriptionUpdated(subscription) {
   const priceId = subscription.items.data[0]?.price?.id;
   const plan    = getPlanFromPriceId(priceId);
 
+  // current_period_end can be null on some Stripe test fixtures / proration
+  // events — guard so we never throw on `null * 1000` (which would 500 and
+  // trigger an endless Stripe retry loop).
+  const periodEnd = subscription.current_period_end
+    ? new Date(subscription.current_period_end * 1000).toISOString()
+    : null;
+
   await updateSubscriptionByStripeId(subscription.id, {
     status: subscription.status,
     plan,
-    current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+    current_period_end: periodEnd,
   });
   console.log(`[stripe-webhook] updated: ${subscription.id} → ${plan} (${subscription.status})`);
 }
