@@ -323,7 +323,7 @@
     .banner-close{position:absolute;right:20px;background:none;border:none;cursor:pointer;color:inherit;opacity:0.5;font-size:16px;line-height:1;padding:4px 8px}
     .banner-close:hover{opacity:1}
     body.banner-visible .nav{top:40px}
-    body.banner-visible .hero{padding-top:200px}
+    body.banner-visible .hero{padding-top:150px}
     @media(max-width:640px){.launch-banner{font-size:10px;letter-spacing:0.12em;gap:10px}.banner-close{right:8px}}
 
     /* NAV */
@@ -382,10 +382,10 @@
     @media(max-width:540px){.drawer-link{padding:14px 20px;font-size:16px}.drawer-sub{padding-left:36px}}
 
     /* HERO */
-    .hero{position:relative;min-height:100vh;padding:160px 0 100px;display:flex;flex-direction:column;justify-content:space-between;overflow:visible}
+    .hero{position:relative;min-height:100vh;padding:112px 0 100px;display:flex;flex-direction:column;justify-content:space-between;overflow:visible}
     .hero-grid{position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(to right,rgba(245,245,245,0.022) 1px,transparent 1px),linear-gradient(to bottom,rgba(245,245,245,0.022) 1px,transparent 1px);background-size:100px 100px;mask-image:radial-gradient(ellipse 70% 60% at 50% 40%,black 30%,transparent 95%);-webkit-mask-image:radial-gradient(ellipse 70% 60% at 50% 40%,black 30%,transparent 95%)}
     .hero-spotlight{position:absolute;width:1000px;height:1000px;border-radius:50%;background:radial-gradient(circle,rgba(0,255,194,0.04) 0%,rgba(245,245,245,0.02) 30%,transparent 60%);pointer-events:none;transform:translate(-50%,-50%);transition:left 0.5s cubic-bezier(0.16,1,0.3,1),top 0.5s cubic-bezier(0.16,1,0.3,1);mix-blend-mode:plus-lighter}
-    .hero-content{position:relative;z-index:2;display:flex;flex-direction:column;gap:72px;flex:1;justify-content:center}
+    .hero-content{position:relative;z-index:2;display:flex;flex-direction:column;gap:72px;flex:1;justify-content:flex-start}
 
     .hero-eyebrow{display:flex;align-items:center;gap:24px;opacity:0;animation:slideUp 0.9s cubic-bezier(0.16,1,0.3,1) 0.1s forwards}
     .tag-pill{display:inline-flex;align-items:center;gap:10px;padding:6px 14px;border:1px solid var(--rule-strong);border-radius:999px;font-family:var(--mono);font-size:10px;letter-spacing:0.18em;color:var(--ink-60);background:rgba(245,245,245,0.015);box-shadow:inset 0 1px 0 rgba(245,245,245,0.04);text-transform:uppercase}
