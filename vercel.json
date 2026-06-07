@@ -9,7 +9,8 @@
     { "source": "/mcp", "destination": "/api/mcp" }
   ],
   "crons": [
-    { "path": "/api/cron/reset-monthly", "schedule": "5 0 1 * *" }
+    { "path": "/api/cron/reset-monthly", "schedule": "5 0 1 * *" },
+    { "path": "/api/cron/keepalive", "schedule": "0 6 * * *" }
   ],
   "headers": [
     {

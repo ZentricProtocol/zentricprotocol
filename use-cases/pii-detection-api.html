@@ -325,7 +325,7 @@ curl -X POST <span class="k">https://api.zentricprotocol.com/v1/analyze</span> \
   }'</span></pre>
       </div>
 
-      <p>In the response the verdict is ANONYMIZED. The <code class="inline">privacy.pii_detected</code> flag is true and the <code class="inline">privacy.entities</code> array contains one record per match. The <code class="inline">anonymized_input</code> field replaces every detected entity with a <code class="inline">[REDACTED]</code> placeholder while preserving the rest of the prompt unchanged. Your application forwards <code class="inline">anonymized_input</code> to the LLM and never sends the raw value across the wire to the model.</p>
+      <p>In the response the verdict is ANONYMIZED. The <code class="inline">privacy.pii_detected</code> flag is true and the <code class="inline">privacy.entities</code> array contains one record per match — each with the detected <code class="inline">type</code>, a masked <code class="inline">value</code> (the raw secret is never echoed back), and the <code class="inline">start</code>/<code class="inline">end</code> character offsets in the original input. The <code class="inline">anonymized_input</code> field replaces every detected entity with a typed placeholder such as <code class="inline">[EMAIL]</code> or <code class="inline">[SSN]</code> while preserving the rest of the prompt unchanged. Your application forwards <code class="inline">anonymized_input</code> to the LLM and never sends the raw value across the wire to the model.</p>
 
       <div class="codeblock">
         <div class="codeblock-head"><span>RESPONSE · 200 OK</span><span class="badge">◆ ANONYMIZED</span></div>
@@ -343,14 +343,14 @@ curl -X POST <span class="k">https://api.zentricprotocol.com/v1/analyze</span> \
     <span class="k">"privacy"</span>: {
       <span class="k">"pii_detected"</span>: <span class="v">true</span>,
       <span class="k">"entities"</span>: [
-        { <span class="k">"type"</span>: <span class="k">"EMAIL"</span>, <span class="k">"action"</span>: <span class="k">"REDACTED"</span>, <span class="k">"position"</span>: [<span class="n">12</span>, <span class="n">33</span>] },
-        { <span class="k">"type"</span>: <span class="k">"SSN"</span>,   <span class="k">"action"</span>: <span class="k">"REDACTED"</span>, <span class="k">"position"</span>: [<span class="n">49</span>, <span class="n">60</span>] }
+        { <span class="k">"type"</span>: <span class="k">"EMAIL"</span>, <span class="k">"value"</span>: <span class="k">"jo********om"</span>, <span class="k">"start"</span>: <span class="n">12</span>, <span class="k">"end"</span>: <span class="n">33</span> },
+        { <span class="k">"type"</span>: <span class="k">"SSN"</span>,   <span class="k">"value"</span>: <span class="k">"21*******99"</span>, <span class="k">"start"</span>: <span class="n">49</span>, <span class="k">"end"</span>: <span class="n">60</span> }
       ]
     },
     <span class="k">"audit_record"</span>: <span class="v">true</span>,
     <span class="k">"latency_ms"</span>: <span class="n">0.05</span>
   },
-  <span class="k">"anonymized_input"</span>: <span class="k">"My email is [REDACTED] and my SSN is [REDACTED]."</span>,
+  <span class="k">"anonymized_input"</span>: <span class="k">"My email is [EMAIL] and my SSN is [SSN]."</span>,
   <span class="k">"latency_ms"</span>: <span class="n">0.05</span>
 }</pre>
       </div>
