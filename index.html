@@ -1948,13 +1948,10 @@ window.addEventListener('scroll',()=>{
         scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true }
       });
     }
-    document.querySelectorAll('#problem .reveal-d1, #proof .reveal-d1, #explainer .reveal-d1, #agents .reveal-d2').forEach(el => {
-      gsap.to(el, {
-        y: () => -window.innerHeight * 0.08,
-        ease: 'none',
-        scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: true }
-      });
-    });
+    // NOTE: upward parallax drift on the demo cards was removed — on tall/wide
+    // viewports the -8%vh shift pulled cards up into the section title above
+    // them (e.g. "coming." overlapping the invoice card). Cards now stay in
+    // their natural layout position; no overlap on reload or scroll.
   }
 
   // ── Touch devices stop here — no cursor / magnetic / lens / tilt ──
