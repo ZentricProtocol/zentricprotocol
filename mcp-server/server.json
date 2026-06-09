@@ -1,17 +1,17 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.ZentricProtocol/zentric-protocol-mcp",
-  "description": "Prompt injection + PII detection for LLM apps and agent pipelines. Deterministic, sub-25ms.",
+  "description": "Prompt injection + PII detection for LLM apps and agent pipelines. Deterministic verdicts with a signed audit record per request (GDPR Art. 30 evidence, EU AI Act readiness).",
   "repository": {
     "url": "https://github.com/ZentricProtocol/zentricprotocol",
     "source": "github"
   },
-  "version": "0.1.8",
+  "version": "0.1.9",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "zentric-protocol-mcp",
-      "version": "0.1.8",
+      "version": "0.1.9",
       "transport": { "type": "stdio" }
     }
   ]

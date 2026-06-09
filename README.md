@@ -6,7 +6,7 @@
 
 # ZENTRIC PROTOCOL
 
-**PII Integrity · Deterministic Infrastructure · Secure Protocol**
+**Prompt injection detection & PII anonymization with a signed audit trail — for LLM apps and AI agents.**
 
 [![Status](https://raw.githubusercontent.com/ZentricProtocol/zentricprotocol/main/badges/status.svg)](https://zentricprotocol.com)
 [![Latency](https://raw.githubusercontent.com/ZentricProtocol/zentricprotocol/main/badges/latency.svg)](https://zentricprotocol.com)
@@ -17,12 +17,12 @@
 
 <br/>
 
-*The protocol layer between intent and execution in AI systems.*  
-*Every signal examined. Every verdict signed. Nothing passes without record.*
+*Every prompt, RAG chunk and tool output inspected before it reaches your model — deterministic `CLEARED / ANONYMIZED / BLOCKED` verdicts with a signed audit record (SHA-256 + UUID + UTC) per request.*  
+*Detection tells you what happened. **The audit record is what you show your auditor** — GDPR Art. 30 evidence today, EU AI Act readiness tomorrow.*
 
 <br/>
 
-[**→ Request Access**](https://zentricprotocol.com) · [**Documentation**](mailto:core@zentricprotocol.com) · [**Integrity Report v1.0**](mailto:core@zentricprotocol.com)
+[**→ Get API key (free, 10,000 req/mo)**](https://zentricprotocol.com#api-access) · [**Quickstart**](https://zentricprotocol.com/quickstart) · [**Integrity Report v1.0 (PDF)**](https://zentricprotocol.com/integrity-report.pdf)
 
 </div>
 
@@ -46,7 +46,7 @@ This repository exists for **transparency and contribution** — not as a deploy
 | What's in this repo | What's not in this repo |
 |---|---|
 | Authentication middleware (`/middleware`) | IntegrityGuard detection engine |
-| Stripe webhook handler (`/api/webhooks`) | PrivacyGuard NLP classification layer |
+| Stripe webhook handler (`/api/webhooks`) | PrivacyGuard PII detection engine |
 | Supabase schema & migrations (`/supabase`) | Signature database (22 injection vectors) |
 | API interface contracts & response shapes | Model weights and training data |
 | Landing page & documentation (`index.html`) | Audit record signing infrastructure |
@@ -120,7 +120,7 @@ Detects prompt injection, jailbreak attempts, and instruction overrides before t
 
 - 22 catalogued injection signatures
 - 7 supported languages (EN, ES, FR, DE, PT, ZH, JA)
-- Multilingual NLP classification layer
+- Deterministic multilingual signature matching — no ML model in the verdict path
 - Mean server-side processing: **<0.1ms** *(sub-millisecond; no model in the hot path)*
 
 ### 02 · PrivacyGuard

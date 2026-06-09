@@ -1,8 +1,8 @@
 {
   "name": "zentric-protocol-mcp",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "mcpName": "io.github.ZentricProtocol/zentric-protocol-mcp",
-  "description": "Prompt injection + PII detection MCP server for AI agents. 22 signatures, 7 languages, ~23ms latency. Signed GDPR Art.30 audit reports.",
+  "description": "Prompt injection detection + PII anonymization MCP server for AI agents, with a signed audit trail. Deterministic verdicts (CLEARED/ANONYMIZED/BLOCKED), 22 signatures, 7 languages. Every request returns a SHA-256-signed audit record — GDPR Art. 30 evidence and EU AI Act readiness built in.",
   "type": "module",
   "icon": "https://zentricprotocol.com/og.png",
   "bin": {
@@ -47,7 +47,16 @@
     "eu-ai-act",
     "rag-security",
     "jailbreak-detection",
-    "input-validation"
+    "input-validation",
+    "ai-audit-trail",
+    "audit-log",
+    "signed-audit-log",
+    "ai-compliance",
+    "compliance-evidence",
+    "gdpr-article-30",
+    "eu-ai-act-readiness",
+    "llm-audit",
+    "mcp-security"
   ],
   "homepage": "https://zentricprotocol.com",
   "bugs": {
