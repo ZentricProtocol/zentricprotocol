@@ -199,7 +199,6 @@ curl -X POST https://api.zentricprotocol.com/v1/analyze \
 | `CLEARED` | Input passed all checks. Safe to forward to LLM. |
 | `BLOCKED` | Injection or high-risk pattern detected. Reject. |
 | `ANONYMIZED` | PII found and redacted. Anonymized input returned. |
-| `REVIEW` | Low-confidence detection. Human review recommended. |
 
 ### SDKs
 
